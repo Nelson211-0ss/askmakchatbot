@@ -109,7 +109,7 @@ var Auth = {
     }
   },
 
-  /** Admins skip student “return to chat” URLs (e.g. login?next=/chat.html from sidebar). */
+  /** Students never enter the chatbot; only admins may use /chat.html or /admin.html. */
   redirectAuthenticated: function(user, safeNext) {
     var admin =
       user &&
@@ -117,19 +117,29 @@ var Auth = {
         .trim()
         .toLowerCase() === 'admin';
     if (admin) {
-      var adminDest =
+      if (
         safeNext &&
-        (safeNext === '/admin.html' ||
-          safeNext.indexOf('/admin.html') === 0 ||
-          safeNext.indexOf('/admin/') === 0);
-      window.location.href = adminDest ? safeNext : '/admin.html';
+        (safeNext === '/chat.html' ||
+          safeNext.indexOf('/chat.html') === 0 ||
+          safeNext === '/admin.html' ||
+          safeNext.indexOf('/admin.html') === 0)
+      ) {
+        window.location.href = safeNext;
+        return;
+      }
+      window.location.href = '/admin.html';
       return;
     }
-    if (safeNext && safeNext.indexOf('/admin') >= 0) {
-      window.location.href = '/chat.html';
+    if (
+      safeNext &&
+      (safeNext.indexOf('/admin') >= 0 ||
+        safeNext === '/chat.html' ||
+        safeNext.indexOf('/chat.html') === 0)
+    ) {
+      window.location.href = '/';
       return;
     }
-    window.location.href = safeNext || '/chat.html';
+    window.location.href = safeNext || '/';
   },
 
   handleLogin: async function(form) {

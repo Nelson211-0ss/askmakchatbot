@@ -2,12 +2,25 @@ const db = require('../config/db');
 const storage = require('./storage');
 const { getOpenAIClient, hasOpenAIApiKey } = require('./openaiClient');
 
+/** Keeps vectors aligned with `documents.embedding vector(1536)` in schema.sql. */
+function embeddingCreateBody(input) {
+    const model = process.env.EMBEDDING_MODEL || 'text-embedding-3-small';
+    const body = {
+        model,
+        input
+    };
+    if (String(model).startsWith('text-embedding-3')) {
+        const dim = parseInt(process.env.EMBEDDING_DIMENSIONS || '1536', 10);
+        if (dim > 0) body.dimensions = dim;
+    }
+    return body;
+}
+
 async function generateEmbedding(text) {
     const openai = getOpenAIClient();
-    const response = await openai.embeddings.create({
-        model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
-        input: text.substring(0, 8000)
-    });
+    const response = await openai.embeddings.create(
+        embeddingCreateBody(text.substring(0, 8000))
+    );
     return response.data[0].embedding;
 }
 
@@ -20,10 +33,9 @@ async function generateEmbeddings(texts) {
     const openai = getOpenAIClient();
     const results = [];
     for (const batch of batches) {
-        const response = await openai.embeddings.create({
-            model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
-            input: batch.map(t => t.substring(0, 8000))
-        });
+        const response = await openai.embeddings.create(
+            embeddingCreateBody(batch.map(t => t.substring(0, 8000)))
+        );
         results.push(...response.data.map(d => d.embedding));
     }
     return results;
@@ -219,6 +231,7 @@ function formatContextForLLM(docs, retrieval = {}) {
 }
 
 module.exports = {
+    embeddingCreateBody,
     generateEmbedding, generateEmbeddings, vectorSearch, fullTextSearch,
     hybridSearch, expandAbbreviations, formatContextForLLM, retrievalStrength
 };

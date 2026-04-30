@@ -17,7 +17,7 @@
     }
     return fetch('/api/admin' + path, opts).then(function(res) {
       if (res.status === 401) { window.location.href = '/login.html'; return Promise.reject(); }
-      if (res.status === 403) { window.location.href = '/chat.html'; return Promise.reject(); }
+      if (res.status === 403) { window.location.href = '/'; return Promise.reject(); }
       var ct = res.headers.get('content-type') || '';
       if (ct.indexOf('application/json') >= 0) return res.json().then(function(j) {
         if (!res.ok) throw new Error(j.error || 'Request failed');
@@ -732,7 +732,7 @@
           .trim()
           .toLowerCase() !== 'admin'
       ) {
-        window.location.href = '/chat.html';
+        window.location.href = '/';
         return;
       }
       var displayName = data.user.full_name || data.user.email || 'Admin';

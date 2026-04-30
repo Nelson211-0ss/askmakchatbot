@@ -1,23 +1,29 @@
 const router = require('express').Router();
-const { v4: uuidv4 } = require('uuid');
 const db = require('../config/db');
-const { optionalAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { messageLimiter } = require('../middleware/rateLimit');
 const { streamResponse, generateTitle } = require('../services/openai');
 const { extractMemories } = require('../services/memory');
 const storage = require('../services/storage');
 
-router.use(optionalAuth);
+router.use(requireAuth, requireAdmin);
+
+/** @returns {null} not found, {false} forbidden, {true} ok */
+async function chatOwnedByUser(chatId, userId) {
+    const r = await db.query('SELECT user_id FROM chats WHERE id = $1', [chatId]);
+    if (!r.rows.length) return null;
+    const uid = r.rows[0].user_id;
+    if (!uid) return false;
+    return String(uid) === String(userId);
+}
 
 router.post('/', async (req, res, next) => {
     try {
-        const userId = req.user?.id || null;
-        const guestToken = req.guestToken || null;
         const title = req.body.title || 'New chat';
 
         const result = await db.query(
-            `INSERT INTO chats (user_id, guest_token, title) VALUES ($1, $2, $3) RETURNING *`,
-            [userId, guestToken, title]
+            `INSERT INTO chats (user_id, guest_token, title) VALUES ($1, NULL, $2) RETURNING *`,
+            [req.user.id, title]
         );
 
         res.status(201).json(result.rows[0]);
@@ -28,23 +34,10 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
     try {
-        const userId = req.user?.id;
-        const guestToken = req.guestToken;
-
-        let result;
-        if (userId) {
-            result = await db.query(
-                'SELECT * FROM chats WHERE user_id = $1 ORDER BY updated_at DESC',
-                [userId]
-            );
-        } else if (guestToken) {
-            result = await db.query(
-                'SELECT * FROM chats WHERE guest_token = $1 ORDER BY updated_at DESC',
-                [guestToken]
-            );
-        } else {
-            return res.json({ chats: [] });
-        }
+        const result = await db.query(
+            'SELECT * FROM chats WHERE user_id = $1 ORDER BY updated_at DESC',
+            [req.user.id]
+        );
 
         res.json({ chats: result.rows });
     } catch (err) {
@@ -57,21 +50,13 @@ router.get('/search', async (req, res, next) => {
         const q = req.query.q;
         if (!q) return res.json({ chats: [] });
 
-        const userId = req.user?.id;
-        const guestToken = req.guestToken;
-
-        const ownerCondition = userId
-            ? 'c.user_id = $2'
-            : 'c.guest_token = $2';
-        const ownerValue = userId || guestToken;
-
         const result = await db.query(
             `SELECT DISTINCT c.* FROM chats c
              JOIN messages m ON m.chat_id = c.id
-             WHERE ${ownerCondition}
+             WHERE c.user_id = $2
              AND (c.title ILIKE $1 OR m.content ILIKE $1)
              ORDER BY c.updated_at DESC LIMIT 20`,
-            ['%' + q + '%', ownerValue]
+            ['%' + q + '%', req.user.id]
         );
 
         res.json({ chats: result.rows });
@@ -82,34 +67,16 @@ router.get('/search', async (req, res, next) => {
 
 router.delete('/all', async (req, res, next) => {
     try {
-        const userId = req.user?.id;
-        const guestToken = req.guestToken;
-
-        if (userId) {
-            const keys = await db.query(
-                `SELECT DISTINCT m.image_key FROM messages m
-                 INNER JOIN chats c ON c.id = m.chat_id
-                 WHERE c.user_id = $1 AND m.image_key IS NOT NULL`,
-                [userId]
-            );
-            for (const row of keys.rows) {
-                await storage.deleteFile(process.env.MINIO_BUCKET_UPLOADS, row.image_key).catch(() => {});
-            }
-            await db.query('DELETE FROM chats WHERE user_id = $1', [userId]);
-        } else if (guestToken) {
-            const keys = await db.query(
-                `SELECT DISTINCT m.image_key FROM messages m
-                 INNER JOIN chats c ON c.id = m.chat_id
-                 WHERE c.guest_token = $1 AND m.image_key IS NOT NULL`,
-                [guestToken]
-            );
-            for (const row of keys.rows) {
-                await storage.deleteFile(process.env.MINIO_BUCKET_UPLOADS, row.image_key).catch(() => {});
-            }
-            await db.query('DELETE FROM chats WHERE guest_token = $1', [guestToken]);
-        } else {
-            return res.status(400).json({ error: 'No session' });
+        const keys = await db.query(
+            `SELECT DISTINCT m.image_key FROM messages m
+             INNER JOIN chats c ON c.id = m.chat_id
+             WHERE c.user_id = $1 AND m.image_key IS NOT NULL`,
+            [req.user.id]
+        );
+        for (const row of keys.rows) {
+            await storage.deleteFile(process.env.MINIO_BUCKET_UPLOADS, row.image_key).catch(() => {});
         }
+        await db.query('DELETE FROM chats WHERE user_id = $1', [req.user.id]);
 
         res.json({ message: 'All chats cleared' });
     } catch (err) {
@@ -119,8 +86,11 @@ router.delete('/all', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
+        const owned = await chatOwnedByUser(req.params.id, req.user.id);
+        if (owned === null) return res.status(404).json({ error: 'Chat not found' });
+        if (!owned) return res.status(403).json({ error: 'Forbidden' });
+
         const chat = await db.query('SELECT * FROM chats WHERE id = $1', [req.params.id]);
-        if (!chat.rows.length) return res.status(404).json({ error: 'Chat not found' });
 
         const messages = await db.query(
             'SELECT * FROM messages WHERE chat_id = $1 ORDER BY created_at ASC',
@@ -129,9 +99,9 @@ router.get('/:id', async (req, res, next) => {
 
         for (const msg of messages.rows) {
             if (msg.image_key) {
-                msg.image_url = await storage.getPresignedUrl(
-                    process.env.MINIO_BUCKET_UPLOADS, msg.image_key
-                ).catch(() => null);
+                msg.image_url = await storage
+                    .getPresignedUrl(process.env.MINIO_BUCKET_UPLOADS, msg.image_key)
+                    .catch(() => null);
             }
         }
 
@@ -143,6 +113,10 @@ router.get('/:id', async (req, res, next) => {
 
 router.get('/:id/messages', async (req, res, next) => {
     try {
+        const owned = await chatOwnedByUser(req.params.id, req.user.id);
+        if (owned === null) return res.status(404).json({ error: 'Chat not found' });
+        if (!owned) return res.status(403).json({ error: 'Forbidden' });
+
         const result = await db.query(
             'SELECT * FROM messages WHERE chat_id = $1 ORDER BY created_at ASC',
             [req.params.id]
@@ -150,9 +124,9 @@ router.get('/:id/messages', async (req, res, next) => {
 
         for (const msg of result.rows) {
             if (msg.image_key) {
-                msg.image_url = await storage.getPresignedUrl(
-                    process.env.MINIO_BUCKET_UPLOADS, msg.image_key
-                ).catch(() => null);
+                msg.image_url = await storage
+                    .getPresignedUrl(process.env.MINIO_BUCKET_UPLOADS, msg.image_key)
+                    .catch(() => null);
             }
         }
 
@@ -164,6 +138,10 @@ router.get('/:id/messages', async (req, res, next) => {
 
 router.patch('/:id', async (req, res, next) => {
     try {
+        const owned = await chatOwnedByUser(req.params.id, req.user.id);
+        if (owned === null) return res.status(404).json({ error: 'Chat not found' });
+        if (!owned) return res.status(403).json({ error: 'Forbidden' });
+
         const { title } = req.body;
         if (!title) return res.status(400).json({ error: 'Title required' });
 
@@ -181,6 +159,10 @@ router.patch('/:id', async (req, res, next) => {
 
 router.delete('/:id', async (req, res, next) => {
     try {
+        const owned = await chatOwnedByUser(req.params.id, req.user.id);
+        if (owned === null) return res.status(404).json({ error: 'Chat not found' });
+        if (!owned) return res.status(403).json({ error: 'Forbidden' });
+
         const messages = await db.query(
             'SELECT image_key FROM messages WHERE chat_id = $1 AND image_key IS NOT NULL',
             [req.params.id]
@@ -202,6 +184,10 @@ router.post('/:id/messages', messageLimiter, async (req, res, next) => {
         const chatId = req.params.id;
         const { content, image_key } = req.body;
 
+        const owned = await chatOwnedByUser(chatId, req.user.id);
+        if (owned === null) return res.status(404).json({ error: 'Chat not found' });
+        if (!owned) return res.status(403).json({ error: 'Forbidden' });
+
         if (!content && !image_key) {
             return res.status(400).json({ error: 'Message content or image required' });
         }
@@ -209,9 +195,6 @@ router.post('/:id/messages', messageLimiter, async (req, res, next) => {
         if (content && content.length > 2000) {
             return res.status(400).json({ error: 'Message too long (max 2000 characters)' });
         }
-
-        const chat = await db.query('SELECT id FROM chats WHERE id = $1', [chatId]);
-        if (!chat.rows.length) return res.status(404).json({ error: 'Chat not found' });
 
         await db.query(
             `INSERT INTO messages (chat_id, role, content, image_key)
@@ -224,16 +207,28 @@ router.post('/:id/messages', messageLimiter, async (req, res, next) => {
         res.setHeader('Connection', 'keep-alive');
         res.flushHeaders();
 
-        const userId = req.user?.id || null;
+        const userId = req.user.id;
 
-        const result = await streamResponse(chatId, content || 'Describe this image', userId, image_key, (data) => {
-            res.write('data: ' + JSON.stringify(data) + '\n\n');
-        });
+        const result = await streamResponse(
+            chatId,
+            content || 'Describe this image',
+            userId,
+            image_key,
+            (data) => {
+                res.write('data: ' + JSON.stringify(data) + '\n\n');
+            }
+        );
 
         const msgResult = await db.query(
             `INSERT INTO messages (chat_id, role, content, tokens_used, sources, confidence_score)
              VALUES ($1, 'assistant', $2, $3, $4, $5) RETURNING id`,
-            [chatId, result.content, result.tokensUsed, JSON.stringify(result.sources), result.confidenceScore]
+            [
+                chatId,
+                result.content,
+                result.tokensUsed,
+                JSON.stringify(result.sources),
+                result.confidenceScore
+            ]
         );
 
         if (result.sources.length) {
@@ -251,9 +246,7 @@ router.post('/:id/messages', messageLimiter, async (req, res, next) => {
             await db.query('UPDATE chats SET title = $1 WHERE id = $2', [title, chatId]);
         }
 
-        if (userId) {
-            extractMemories(userId, content, result.content).catch(() => {});
-        }
+        extractMemories(userId, content, result.content).catch(() => {});
     } catch (err) {
         console.error('[Chat Error]', err.stack || err.message || err);
         if (!res.headersSent) return next(err);

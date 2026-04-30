@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const db = require('../config/db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
-router.use(requireAuth);
+router.use(requireAuth, requireAdmin);
 
 router.get('/', async (req, res, next) => {
     try {

@@ -3,7 +3,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
-const { optionalAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { uploadLimiter } = require('../middleware/rateLimit');
 const storage = require('../services/storage');
 
@@ -21,13 +21,13 @@ const upload = multer({
     }
 });
 
-router.use(optionalAuth);
+router.use(requireAuth, requireAdmin);
 
 router.post('/image', uploadLimiter, upload.single('image'), async (req, res, next) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No image provided' });
 
-        const owner = req.user?.id || req.guestToken || 'anonymous';
+        const owner = req.user.id;
         const chatId = req.body.chat_id || 'general';
         const ext = path.extname(req.file.originalname) || '.jpg';
         const id = uuidv4();

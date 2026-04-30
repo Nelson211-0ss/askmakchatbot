@@ -16,9 +16,12 @@ function normalizeApiKey(raw) {
 function getOpenAIClient() {
     const apiKey = normalizeApiKey(process.env.OPENAI_API_KEY);
     if (!apiKey) {
-        throw new Error(
+        const e = new Error(
             'OPENAI_API_KEY is not set. Add it to your .env file (see .env.example if present).'
         );
+        e.status = 503;
+        e.expose = true;
+        throw e;
     }
     if (!client) client = new OpenAI({ apiKey });
     return client;
