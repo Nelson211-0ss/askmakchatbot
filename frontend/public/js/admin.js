@@ -725,7 +725,13 @@
       if (!r.ok) { window.location.href = '/login.html'; return; }
       return r.json();
     }).then(function(data) {
-      if (!data || !data.user || data.user.role !== 'admin') {
+      if (
+        !data ||
+        !data.user ||
+        String(data.user.role || '')
+          .trim()
+          .toLowerCase() !== 'admin'
+      ) {
         window.location.href = '/chat.html';
         return;
       }

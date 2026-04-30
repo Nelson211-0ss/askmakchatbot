@@ -109,6 +109,29 @@ var Auth = {
     }
   },
 
+  /** Admins skip student “return to chat” URLs (e.g. login?next=/chat.html from sidebar). */
+  redirectAuthenticated: function(user, safeNext) {
+    var admin =
+      user &&
+      String(user.role || '')
+        .trim()
+        .toLowerCase() === 'admin';
+    if (admin) {
+      var adminDest =
+        safeNext &&
+        (safeNext === '/admin.html' ||
+          safeNext.indexOf('/admin.html') === 0 ||
+          safeNext.indexOf('/admin/') === 0);
+      window.location.href = adminDest ? safeNext : '/admin.html';
+      return;
+    }
+    if (safeNext && safeNext.indexOf('/admin') >= 0) {
+      window.location.href = '/chat.html';
+      return;
+    }
+    window.location.href = safeNext || '/chat.html';
+  },
+
   handleLogin: async function(form) {
     var btn = form.querySelector('button[type="submit"]');
     var originalText = btn.textContent;
@@ -128,13 +151,7 @@ var Auth = {
       var next = params.get('next');
       var safeNext = next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : null;
 
-      if (this.user.role === 'admin') {
-        window.location.href = safeNext || '/admin.html';
-      } else if (safeNext && safeNext.indexOf('/admin') >= 0) {
-        window.location.href = '/chat.html';
-      } else {
-        window.location.href = safeNext || '/chat.html';
-      }
+      this.redirectAuthenticated(this.user, safeNext);
     } catch (e) {
       this.showAlert(e.message || 'Invalid email or password', 'error');
     } finally {
@@ -198,13 +215,14 @@ var Auth = {
       btn.disabled = true;
       btn.textContent = 'Verifying...';
 
-      await API.post('/auth/verify', {
+      var vr = await API.post('/auth/verify', {
         email: email,
         code: form.querySelector('[name="code"]').value
       });
 
       localStorage.removeItem('verify_email');
-      window.location.href = '/chat.html';
+      var verifiedUser = vr.user || vr;
+      this.redirectAuthenticated(verifiedUser, null);
     } catch (e) {
       this.showAlert(e.message || 'Invalid verification code', 'error');
     } finally {

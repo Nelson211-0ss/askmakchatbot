@@ -1,5 +1,11 @@
 const jwt = require('jsonwebtoken');
 
+function adminRoleDecoded(role) {
+    return String(role || '')
+        .trim()
+        .toLowerCase();
+}
+
 function requireAuth(req, res, next) {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ error: 'Authentication required' });
@@ -27,7 +33,7 @@ function optionalAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-    if (!req.user || req.user.role !== 'admin') {
+    if (!req.user || adminRoleDecoded(req.user.role) !== 'admin') {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
@@ -41,7 +47,7 @@ function requireAdminPage(req, res, next) {
     }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (decoded.role !== 'admin') {
+        if (adminRoleDecoded(decoded.role) !== 'admin') {
             return res.redirect(302, '/chat.html');
         }
         next();

@@ -257,7 +257,17 @@ router.post('/:id/messages', messageLimiter, async (req, res, next) => {
     } catch (err) {
         console.error('[Chat Error]', err.stack || err.message || err);
         if (!res.headersSent) return next(err);
-        res.write('data: ' + JSON.stringify({ type: 'error', message: 'Something went wrong' }) + '\n\n');
+        const key401 =
+            err.status === 401 ||
+            (typeof err.message === 'string' && err.message.includes('Incorrect API key'));
+        const keyMissing =
+            typeof err.message === 'string' && err.message.includes('OPENAI_API_KEY is not set');
+        const msg = key401
+            ? 'OpenAI rejected your API key (401). Set a valid OPENAI_API_KEY in .env from https://platform.openai.com/api-keys'
+            : keyMissing
+              ? 'OPENAI_API_KEY is not set. Add it to your .env from https://platform.openai.com/api-keys'
+              : 'Something went wrong';
+        res.write('data: ' + JSON.stringify({ type: 'error', message: msg }) + '\n\n');
         res.end();
     }
 });
