@@ -1,13 +1,12 @@
-const OpenAI = require('openai');
 const db = require('../config/db');
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const { getOpenAIClient, hasOpenAIApiKey } = require('./openaiClient');
 
 async function extractMemories(userId, userMessage, assistantMessage) {
     if (!userId) return;
+    if (!hasOpenAIApiKey()) return;
 
     try {
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAIClient().chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
                 {
@@ -63,9 +62,9 @@ async function summarizeHistory(messages) {
 
     const older = messages.slice(0, -8);
     const recent = messages.slice(-8);
-
+    if (!hasOpenAIApiKey()) return recent;
     try {
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAIClient().chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
                 { role: 'system', content: 'Summarize this conversation history in 2-3 sentences, preserving key facts and context.' },

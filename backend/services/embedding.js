@@ -1,10 +1,9 @@
-const OpenAI = require('openai');
 const db = require('../config/db');
 const storage = require('./storage');
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const { getOpenAIClient, hasOpenAIApiKey } = require('./openaiClient');
 
 async function generateEmbedding(text) {
+    const openai = getOpenAIClient();
     const response = await openai.embeddings.create({
         model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
         input: text.substring(0, 8000)
@@ -18,6 +17,7 @@ async function generateEmbeddings(texts) {
         batches.push(texts.slice(i, i + 100));
     }
 
+    const openai = getOpenAIClient();
     const results = [];
     for (const batch of batches) {
         const response = await openai.embeddings.create({
@@ -99,7 +99,9 @@ async function hybridSearch(query, options = {}) {
         : parseFloat(process.env.RAG_MIN_RETRIEVAL_SCORE || '0.22');
 
     const [vectorResults, textResults] = await Promise.all([
-        vectorSearch(query, options),
+        hasOpenAIApiKey()
+            ? vectorSearch(query, options).catch(() => [])
+            : Promise.resolve([]),
         fullTextSearch(query, options).catch(() => [])
     ]);
 
