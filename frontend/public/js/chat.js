@@ -3,11 +3,28 @@ var Chat = {
   isStreaming: false,
   controller: null,
   inChatMode: false,
+  /** In-memory turns for guests only (not sent to server except as prompt context). */
+  guestTurns: [],
+
+  updateAccountChrome: function() {
+    var signedIn = Auth.isAuthenticated();
+    var gh = document.getElementById('guest-menu-hint');
+    var gsi = document.getElementById('guest-menu-signin');
+    var gsu = document.getElementById('guest-menu-signup');
+    var mem = document.getElementById('memories-btn');
+    var lo = document.getElementById('logout-btn');
+    if (gh) gh.classList.toggle('hidden', signedIn);
+    if (gsi) gsi.classList.toggle('hidden', signedIn);
+    if (gsu) gsu.classList.toggle('hidden', signedIn);
+    if (mem) mem.classList.toggle('hidden', !signedIn);
+    if (lo) lo.classList.toggle('hidden', !signedIn);
+  },
 
   init: function() {
     var self = this;
 
     Auth.init().then(function() {
+      self.updateAccountChrome();
       Sidebar.init();
       self.renderWelcome();
       Upload.init();
@@ -134,11 +151,13 @@ var Chat = {
   renderWelcome: function() {
     var name = Auth.user ? Auth.user.full_name.split(' ')[0] : 'there';
     document.getElementById('welcome-greeting').textContent = 'Hi ' + name + ', how can I help you today?';
+    this.updateAccountChrome();
     this.switchToWelcome();
   },
 
   newChat: function() {
     this.chatId = null;
+    this.guestTurns = [];
     this.isStreaming = false;
     if (this.controller) { this.controller.abort(); this.controller = null; }
     Sidebar.activeId = null;
@@ -196,21 +215,13 @@ var Chat = {
     this.showTyping(true);
 
     try {
-      if (!this.chatId) {
-        var chatResult = await API.post('/chats', { title: text.substring(0, 50) });
-        this.chatId = chatResult.id;
-        Sidebar.addChat(chatResult);
-      }
-
       this.controller = new AbortController();
       var self = this;
       var botContent = '';
       var botDiv = null;
+      var signedIn = Auth.isAuthenticated();
 
-      await API.stream('/chats/' + this.chatId + '/messages', {
-        content: text,
-        image_key: imageKey
-      }, function(data) {
+      function onStreamData(data) {
         if (data.type === 'token' || data.type === 'delta') {
           botContent += data.content || data.delta || '';
           if (!botDiv) {
@@ -239,13 +250,38 @@ var Chat = {
             if (wrapper) wrapper.insertAdjacentHTML('beforeend', actionsHtml);
             self.bindActions(botDiv);
           }
+          if (!signedIn && botContent) {
+            self.guestTurns.push({ role: 'user', content: text });
+            self.guestTurns.push({ role: 'assistant', content: botContent });
+          }
         }
 
         if (data.type === 'error') {
           self.showTyping(false);
           Utils.showToast(data.message || 'Something went wrong', 'error');
         }
-      }, this.controller.signal);
+      }
+
+      if (signedIn) {
+        if (!this.chatId) {
+          var chatResult = await API.post('/chats', { title: text.substring(0, 50) });
+          this.chatId = chatResult.id;
+          Sidebar.addChat(chatResult);
+        }
+        await API.stream(
+          '/chats/' + this.chatId + '/messages',
+          { content: text, image_key: imageKey },
+          onStreamData,
+          this.controller.signal
+        );
+      } else {
+        await API.stream(
+          '/chats/guest/stream',
+          { content: text, image_key: imageKey, history: this.guestTurns.slice() },
+          onStreamData,
+          this.controller.signal
+        );
+      }
 
     } catch (e) {
       if (e.name !== 'AbortError') {

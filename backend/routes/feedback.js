@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const db = require('../config/db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
-router.use(requireAuth, requireAdmin);
+router.use(requireAuth);
 
 router.post('/', async (req, res, next) => {
     try {

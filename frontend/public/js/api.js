@@ -19,18 +19,10 @@ var API = {
 
     if (response.status === 401) {
       var path = window.location.pathname;
-      var publicPages = ['/login.html', '/signup.html', '/', '/index.html', '/verify.html'];
+      var publicPages = ['/login.html', '/signup.html', '/', '/index.html', '/verify.html', '/chat.html'];
       if (publicPages.indexOf(path) === -1) {
         window.location.href = '/login.html';
         throw { status: 401, message: 'Unauthorized' };
-      }
-    }
-
-    if (response.status === 403) {
-      var chatPath = window.location.pathname;
-      if (chatPath === '/chat.html' || (chatPath.length >= 9 && chatPath.slice(-9) === 'chat.html')) {
-        window.location.href = '/';
-        throw { status: 403, message: 'Forbidden' };
       }
     }
 
@@ -74,10 +66,6 @@ var API = {
     if (response.status === 401 && onChatPage) {
       window.location.href = '/login.html?next=%2Fchat.html';
       throw { status: 401, message: 'Unauthorized' };
-    }
-    if (response.status === 403 && onChatPage) {
-      window.location.href = '/';
-      throw { status: 403, message: 'Forbidden' };
     }
 
     if (!response.ok) {

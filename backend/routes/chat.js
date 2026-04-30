@@ -1,12 +1,19 @@
 const router = require('express').Router();
 const db = require('../config/db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 const { messageLimiter } = require('../middleware/rateLimit');
-const { streamResponse, generateTitle } = require('../services/openai');
+const { streamResponse, streamResponseEphemeral, generateTitle } = require('../services/openai');
 const { extractMemories } = require('../services/memory');
 const storage = require('../services/storage');
 
-router.use(requireAuth, requireAdmin);
+router.use(optionalAuth);
+
+function requireRegisteredUser(req, res, next) {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+}
 
 /** @returns {null} not found, {false} forbidden, {true} ok */
 async function chatOwnedByUser(chatId, userId) {
@@ -17,7 +24,63 @@ async function chatOwnedByUser(chatId, userId) {
     return String(uid) === String(userId);
 }
 
-router.post('/', async (req, res, next) => {
+/**
+ * Guest / ephemeral: no chats or messages are written. Uses in-request history only.
+ */
+router.post('/guest/stream', messageLimiter, async (req, res, next) => {
+    try {
+        if (req.user && req.user.id) {
+            return res.status(400).json({ error: 'Use /chats/:id/messages when signed in' });
+        }
+
+        const { content, image_key, history } = req.body || {};
+        if (!content && !image_key) {
+            return res.status(400).json({ error: 'Message content or image required' });
+        }
+        if (content && content.length > 2000) {
+            return res.status(400).json({ error: 'Message too long (max 2000 characters)' });
+        }
+
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.flushHeaders();
+
+        const result = await streamResponseEphemeral(
+            history || [],
+            content || 'Describe this image',
+            null,
+            image_key,
+            (data) => {
+                res.write('data: ' + JSON.stringify(data) + '\n\n');
+            }
+        );
+
+        if (result.sources.length) {
+            res.write('data: ' + JSON.stringify({ type: 'sources', sources: result.sources }) + '\n\n');
+        }
+
+        res.write('data: ' + JSON.stringify({ type: 'done', message_id: null, ephemeral: true }) + '\n\n');
+        res.end();
+    } catch (err) {
+        console.error('[Guest Chat Error]', err.stack || err.message || err);
+        if (!res.headersSent) return next(err);
+        const key401 =
+            err.status === 401 ||
+            (typeof err.message === 'string' && err.message.includes('Incorrect API key'));
+        const keyMissing =
+            typeof err.message === 'string' && err.message.includes('OPENAI_API_KEY is not set');
+        const msg = key401
+            ? 'OpenAI rejected your API key (401). Set a valid OPENAI_API_KEY in .env from https://platform.openai.com/api-keys'
+            : keyMissing
+              ? 'OPENAI_API_KEY is not set. Add it to your .env from https://platform.openai.com/api-keys'
+              : 'Something went wrong';
+        res.write('data: ' + JSON.stringify({ type: 'error', message: msg }) + '\n\n');
+        res.end();
+    }
+});
+
+router.post('/', requireRegisteredUser, async (req, res, next) => {
     try {
         const title = req.body.title || 'New chat';
 
@@ -34,6 +97,9 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
     try {
+        if (!req.user || !req.user.id) {
+            return res.json({ chats: [] });
+        }
         const result = await db.query(
             'SELECT * FROM chats WHERE user_id = $1 ORDER BY updated_at DESC',
             [req.user.id]
@@ -50,6 +116,10 @@ router.get('/search', async (req, res, next) => {
         const q = req.query.q;
         if (!q) return res.json({ chats: [] });
 
+        if (!req.user || !req.user.id) {
+            return res.json({ chats: [] });
+        }
+
         const result = await db.query(
             `SELECT DISTINCT c.* FROM chats c
              JOIN messages m ON m.chat_id = c.id
@@ -65,7 +135,7 @@ router.get('/search', async (req, res, next) => {
     }
 });
 
-router.delete('/all', async (req, res, next) => {
+router.delete('/all', requireRegisteredUser, async (req, res, next) => {
     try {
         const keys = await db.query(
             `SELECT DISTINCT m.image_key FROM messages m
@@ -84,7 +154,7 @@ router.delete('/all', async (req, res, next) => {
     }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireRegisteredUser, async (req, res, next) => {
     try {
         const owned = await chatOwnedByUser(req.params.id, req.user.id);
         if (owned === null) return res.status(404).json({ error: 'Chat not found' });
@@ -111,7 +181,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-router.get('/:id/messages', async (req, res, next) => {
+router.get('/:id/messages', requireRegisteredUser, async (req, res, next) => {
     try {
         const owned = await chatOwnedByUser(req.params.id, req.user.id);
         if (owned === null) return res.status(404).json({ error: 'Chat not found' });
@@ -136,7 +206,7 @@ router.get('/:id/messages', async (req, res, next) => {
     }
 });
 
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', requireRegisteredUser, async (req, res, next) => {
     try {
         const owned = await chatOwnedByUser(req.params.id, req.user.id);
         if (owned === null) return res.status(404).json({ error: 'Chat not found' });
@@ -157,7 +227,7 @@ router.patch('/:id', async (req, res, next) => {
     }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireRegisteredUser, async (req, res, next) => {
     try {
         const owned = await chatOwnedByUser(req.params.id, req.user.id);
         if (owned === null) return res.status(404).json({ error: 'Chat not found' });
@@ -179,7 +249,7 @@ router.delete('/:id', async (req, res, next) => {
     }
 });
 
-router.post('/:id/messages', messageLimiter, async (req, res, next) => {
+router.post('/:id/messages', messageLimiter, requireRegisteredUser, async (req, res, next) => {
     try {
         const chatId = req.params.id;
         const { content, image_key } = req.body;

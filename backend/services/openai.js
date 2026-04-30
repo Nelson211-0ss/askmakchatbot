@@ -56,8 +56,12 @@ async function getChatHistory(chatId, limit = 8) {
 }
 
 async function buildMessages(chatId, userContent, userId, imageKey) {
-    const memories = await getUserMemories(userId);
     const history = await getChatHistory(chatId, 12);
+    return buildMessagesFromHistory(history, userContent, userId, imageKey);
+}
+
+async function buildMessagesFromHistory(history, userContent, userId, imageKey) {
+    const memories = await getUserMemories(userId);
     const priorForPrompt = stripLatestUserTurn(history, userContent, imageKey);
     const searchQuery = buildStandaloneSearchQuery(priorForPrompt, userContent);
 
@@ -112,12 +116,42 @@ async function buildMessages(chatId, userContent, userId, imageKey) {
     return {
         messages,
         searchQuery: isSimple ? null : searchQuery,
-        retrieval: isSimple
-            ? null
-            : retrieval,
+        retrieval: isSimple ? null : retrieval,
         documentCount: documents.length,
         ragSkipped: isSimple
     };
+}
+
+function sanitizeGuestHistory(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const m of raw.slice(-24)) {
+        if (!m || typeof m !== 'object') continue;
+        if (m.role !== 'user' && m.role !== 'assistant') continue;
+        const content = String(m.content || '').trim().slice(0, 8000);
+        if (!content) continue;
+        out.push({ role: m.role, content, image_key: null });
+    }
+    return out;
+}
+
+async function streamResponseEphemeral(priorHistory, userContent, userId, imageKey, onData) {
+    const history = sanitizeGuestHistory(priorHistory);
+    const built = await buildMessagesFromHistory(history, userContent, userId, imageKey);
+    const { messages, searchQuery, retrieval, ragSkipped, documentCount } = built;
+
+    logRetrieval({
+        chat_id: null,
+        user_message: (userContent || '').substring(0, 500),
+        search_query: searchQuery,
+        best_strength: retrieval?.bestStrength,
+        passed_threshold: retrieval?.passedThreshold,
+        threshold: retrieval?.threshold,
+        document_count: documentCount,
+        rag_skipped: ragSkipped
+    });
+
+    return runCompletionStream(messages, userContent, userId, retrieval, ragSkipped, onData);
 }
 
 async function streamResponse(chatId, userContent, userId, imageKey, onData) {
@@ -135,6 +169,10 @@ async function streamResponse(chatId, userContent, userId, imageKey, onData) {
         rag_skipped: ragSkipped
     });
 
+    return runCompletionStream(messages, userContent, userId, retrieval, ragSkipped, onData);
+}
+
+async function runCompletionStream(messages, userContent, userId, retrieval, ragSkipped, onData) {
     const tools = getToolSchemas();
 
     let fullContent = '';
@@ -231,9 +269,7 @@ async function streamResponse(chatId, userContent, userId, imageKey, onData) {
     await callOpenAI(messages);
 
     const confidenceScore =
-        ragSkipped || !retrieval
-            ? null
-            : Math.round((retrieval.bestStrength + Number.EPSILON) * 1000) / 1000;
+        ragSkipped || !retrieval ? null : Math.round((retrieval.bestStrength + Number.EPSILON) * 1000) / 1000;
 
     return { content: fullContent, tokensUsed, sources, confidenceScore };
 }
@@ -254,4 +290,4 @@ async function generateTitle(content) {
     }
 }
 
-module.exports = { streamResponse, generateTitle };
+module.exports = { streamResponse, streamResponseEphemeral, generateTitle };

@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 const db = require('./config/db');
 const errorHandler = require('./middleware/error');
 const { guestMiddleware } = require('./middleware/guest');
-const { requireAdminPage, requireAdminChatPage } = require('./middleware/auth');
+const { requireAdminPage } = require('./middleware/auth');
 
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
@@ -93,10 +93,6 @@ const publicDir = path.join(__dirname, '..', 'frontend', 'public');
 
 app.get('/admin.html', requireAdminPage, (req, res) => {
     res.sendFile(path.join(publicDir, 'admin.html'));
-});
-
-app.get('/chat.html', requireAdminChatPage, (req, res) => {
-    res.sendFile(path.join(publicDir, 'chat.html'));
 });
 
 app.use(express.static(publicDir));

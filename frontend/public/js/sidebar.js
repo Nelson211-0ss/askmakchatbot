@@ -66,6 +66,12 @@ var Sidebar = {
   },
 
   clearAllHistory: async function() {
+    if (!Auth.isAuthenticated()) {
+      Chat.guestTurns = [];
+      Chat.newChat();
+      Utils.showToast('Conversation cleared (guest session)', 'success');
+      return;
+    }
     if (!this.chats.length) {
       Utils.showToast('No chats to clear', 'info');
       return;

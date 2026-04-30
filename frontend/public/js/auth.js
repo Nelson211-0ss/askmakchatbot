@@ -109,7 +109,7 @@ var Auth = {
     }
   },
 
-  /** Students never enter the chatbot; only admins may use /chat.html or /admin.html. */
+  /** Admins default to dashboard; students default to chat. */
   redirectAuthenticated: function(user, safeNext) {
     var admin =
       user &&
@@ -130,16 +130,11 @@ var Auth = {
       window.location.href = '/admin.html';
       return;
     }
-    if (
-      safeNext &&
-      (safeNext.indexOf('/admin') >= 0 ||
-        safeNext === '/chat.html' ||
-        safeNext.indexOf('/chat.html') === 0)
-    ) {
-      window.location.href = '/';
+    if (safeNext && (safeNext.indexOf('/admin.html') === 0 || safeNext.indexOf('/admin/') === 0)) {
+      window.location.href = '/chat.html';
       return;
     }
-    window.location.href = safeNext || '/';
+    window.location.href = safeNext || '/chat.html';
   },
 
   handleLogin: async function(form) {

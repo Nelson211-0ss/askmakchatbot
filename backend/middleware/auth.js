@@ -57,28 +57,9 @@ function requireAdminPage(req, res, next) {
     }
 }
 
-/** Chat UI: only admins may open the chatbot (same cookie/JWT rules as admin dashboard). */
-function requireAdminChatPage(req, res, next) {
-    const token = req.cookies.token;
-    if (!token) {
-        return res.redirect(302, '/login.html?next=/chat.html');
-    }
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (adminRoleDecoded(decoded.role) !== 'admin') {
-            return res.redirect(302, '/');
-        }
-        next();
-    } catch (err) {
-        res.clearCookie('token');
-        return res.redirect(302, '/login.html?next=/chat.html');
-    }
-}
-
 module.exports = {
     requireAuth,
     optionalAuth,
     requireAdmin,
-    requireAdminPage,
-    requireAdminChatPage
+    requireAdminPage
 };

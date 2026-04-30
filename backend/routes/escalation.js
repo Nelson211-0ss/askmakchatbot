@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const db = require('../config/db');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
 
-router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
+router.post('/', optionalAuth, async (req, res, next) => {
     try {
         const { chat_id, message_id, reason } = req.body;
         if (!chat_id || !message_id) {
