@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email - AskMak</title>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="font-sans bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center px-5">
+
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <img src="/assets/mak_logo.png" alt="Makerere University" class="h-16 w-auto mx-auto mb-3">
+      <a href="/" class="text-2xl font-bold tracking-tight text-mak-dark dark:text-white inline-block mb-2">Ask<span class="text-mak-green">Mak</span></a>
+      <div class="w-14 h-14 rounded-full bg-mak-green/10 text-mak-green flex items-center justify-center mx-auto my-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      </div>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Enter the 6-digit code printed in the terminal where the AskMak server is running (or from your email if email verification is enabled).</p>
+      <p id="verify-notice" class="hidden mt-3 text-xs text-gray-600 dark:text-gray-400 text-center leading-relaxed px-1"></p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+      <div id="alert" class="hidden"></div>
+
+      <form id="verify-form" class="space-y-4">
+        <div class="space-y-1">
+          <label for="code" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Verification code</label>
+          <input type="text" name="code" id="code" placeholder="000000" required maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+            class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition text-center tracking-[0.3em] text-lg font-semibold">
+        </div>
+
+        <button type="submit" class="w-full bg-mak-green text-white py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition cursor-pointer">
+          Verify email
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <button id="resend-btn" class="text-sm text-gray-500 dark:text-gray-400 hover:text-mak-green dark:hover:text-mak-green transition bg-transparent border-none cursor-pointer">
+          Resend Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>Auth.setupForms();</script>
+</body>
+</html>

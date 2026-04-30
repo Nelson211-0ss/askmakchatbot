@@ -1,0 +1,56 @@
+# VPS / Dockeruser policy stack (ports 4000–4999, external network, ~/docker-volumes).
+# Prerequisites (no sudo, user in docker group):
+#   docker network create dockeruser_network
+#   mkdir -p "${HOME}/docker-volumes/askmak/pgdata" "${HOME}/docker-volumes/askmak/minio"
+# Run: docker compose -f docker-compose.dockeruser.yml up -d
+#
+# Matching .env (host runs Node/npm):
+#   PORT=4500 (or any free port in 4000–4999 — avoid clashes with other apps)
+#   DATABASE_URL=postgresql://askmak:askmak_dev@127.0.0.1:4520/askmak
+#   MINIO_ENDPOINT=http://127.0.0.1:4900
+#   MINIO_CONSOLE_URL=http://127.0.0.1:4901
+#   CORS_ORIGIN=http://YOUR_PUBLIC_IP:4500
+# Open the same PORT in Oracle / cloud firewall if you expose the UI.
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4520:5432"
+    environment:
+      POSTGRES_USER: askmak
+      POSTGRES_PASSWORD: askmak_dev
+      POSTGRES_DB: askmak
+    volumes:
+      - ${HOME}/docker-volumes/askmak/pgdata:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./backend/db/admin_schema.sql:/docker-entrypoint-initdb.d/02-admin_schema.sql
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/03-seed.sql
+    networks:
+      - dockeruser_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U askmak -d askmak"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  minio:
+    image: minio/minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "127.0.0.1:4900:9000"
+      - "127.0.0.1:4901:9001"
+    environment:
+      MINIO_ROOT_USER: askmak_minio
+      MINIO_ROOT_PASSWORD: askmak_minio_secret
+    volumes:
+      - ${HOME}/docker-volumes/askmak/minio:/data
+    networks:
+      - dockeruser_network
+
+networks:
+  dockeruser_network:
+    external: true

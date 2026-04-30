@@ -1,0 +1,44 @@
+{
+  "name": "askmak",
+  "version": "1.0.0",
+  "description": "Intelligent chatbot for Makerere University student support",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "setup-minio": "node backend/scripts/setup-minio.js",
+    "ingest": "node backend/scripts/ingest.js",
+    "eval": "node backend/scripts/eval.js",
+    "setup": "docker compose up -d && node backend/scripts/setup-minio.js",
+    "setup-dockeruser": "docker compose -f docker-compose.dockeruser.yml up -d && node backend/scripts/setup-minio.js",
+    "vps:bootstrap": "bash scripts/vps-bootstrap.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1028.0",
+    "@aws-sdk/s3-request-presigner": "^3.1028.0",
+    "bcrypt": "^6.0.0",
+    "cheerio": "^1.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
+    "joi": "^18.1.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.5",
+    "openai": "^6.34.0",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.20.0",
+    "sharp": "^0.34.5",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,0 +1,30 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: askmak
+      POSTGRES_PASSWORD: askmak_dev
+      POSTGRES_DB: askmak
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./backend/db/admin_schema.sql:/docker-entrypoint-initdb.d/02-admin_schema.sql
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/03-seed.sql
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: askmak_minio
+      MINIO_ROOT_PASSWORD: askmak_minio_secret
+    volumes:
+      - minio_data:/data
+
+volumes:
+  pgdata:
+  minio_data:

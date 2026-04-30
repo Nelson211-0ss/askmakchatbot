@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AskMak - Makerere University Support</title>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="relative font-sans bg-transparent text-gray-900 dark:text-gray-100 min-h-dvh flex flex-col">
+
+  <div class="home-chatbot-bg" aria-hidden="true">
+    <div class="home-chatbot-bg__mesh"></div>
+    <div class="home-chatbot-bg__grid"></div>
+    <div class="home-chatbot-bg__orb home-chatbot-bg__orb--1"></div>
+    <div class="home-chatbot-bg__orb home-chatbot-bg__orb--2"></div>
+  </div>
+
+  <header class="relative z-10 shrink-0 bg-white/70 dark:bg-gray-950/75 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-2.5 min-w-0">
+        <img src="assets/mak_logo.png" alt="Makerere University" class="h-8 sm:h-9 w-auto shrink-0">
+        <span class="text-lg sm:text-xl font-bold tracking-tight text-mak-dark dark:text-white truncate">Ask<span class="text-mak-green">Mak</span></span>
+      </a>
+      <nav class="flex items-center gap-5 sm:gap-6 shrink-0">
+        <a href="login.html" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-mak-green dark:hover:text-mak-green transition py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-70" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+          Sign in
+        </a>
+        <a href="signup.html" class="text-sm font-semibold text-mak-green hover:text-[#008a45] dark:hover:text-emerald-400 transition py-2">Sign up</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+    <div class="my-auto w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 flex flex-col items-center gap-6 sm:gap-8">
+      <section class="home-hero shrink-0 w-full max-w-2xl mx-auto text-center" aria-labelledby="home-hero-heading">
+        <h1 id="home-hero-heading" class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] mb-2 sm:mb-3 text-mak-dark dark:text-white animate-hero-title motion-reduce:animate-none">
+          Your intelligent <span class="whitespace-nowrap">campus <span class="text-mak-green home-hero-accent">assistant</span></span>
+        </h1>
+        <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400 leading-snug mb-4 sm:mb-5 max-w-lg mx-auto animate-hero-sub motion-reduce:animate-none">
+          Get instant answers about admissions, programs, fees, calendar, campus life, and everything Makerere.
+        </p>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 animate-hero-cta motion-reduce:animate-none">
+          <a href="chat.html" class="inline-flex items-center justify-center gap-2 bg-mak-green text-white px-6 py-2.5 sm:py-3 rounded-xl text-sm font-medium hover:opacity-90 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+            Start chatting
+          </a>
+          <a href="chat.html?guest=1" class="inline-flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-6 py-2.5 sm:py-3 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+            Try as guest
+          </a>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full max-w-4xl mx-auto">
+        <div class="p-4 sm:p-5 rounded-xl border border-gray-200/90 dark:border-gray-600/80 bg-white/92 dark:bg-gray-900/88 backdrop-blur-md shadow-md shadow-gray-900/5 dark:shadow-black/40 hover:border-mak-green/45 dark:hover:border-mak-green/40 hover:shadow-lg transition group flex flex-col min-h-0">
+          <div class="w-9 h-9 rounded-lg bg-mak-green/10 text-mak-green flex items-center justify-center mb-2 sm:mb-3 shrink-0 group-hover:bg-mak-green group-hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </div>
+          <h3 class="font-semibold text-sm sm:text-base mb-1 text-mak-dark dark:text-gray-50">Knowledge base</h3>
+          <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-snug">Official knowledge base and university resources.</p>
+        </div>
+        <div class="p-4 sm:p-5 rounded-xl border border-gray-200/90 dark:border-gray-600/80 bg-white/92 dark:bg-gray-900/88 backdrop-blur-md shadow-md shadow-gray-900/5 dark:shadow-black/40 hover:border-mak-dark/35 dark:hover:border-white/35 hover:shadow-lg transition group flex flex-col min-h-0">
+          <div class="w-9 h-9 rounded-lg bg-mak-dark/10 dark:bg-white/10 text-mak-dark dark:text-white flex items-center justify-center mb-2 sm:mb-3 shrink-0 group-hover:bg-mak-dark group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-mak-dark transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+          </div>
+          <h3 class="font-semibold text-sm sm:text-base mb-1 text-mak-dark dark:text-gray-50">Student accounts</h3>
+          <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-snug">Sign in with Makerere webmail for saved, personalized chats.</p>
+        </div>
+        <div class="p-4 sm:p-5 rounded-xl border border-gray-200/90 dark:border-gray-600/80 bg-white/92 dark:bg-gray-900/88 backdrop-blur-md shadow-md shadow-gray-900/5 dark:shadow-black/40 hover:border-mak-green/45 dark:hover:border-mak-green/40 hover:shadow-lg transition group flex flex-col min-h-0">
+          <div class="w-9 h-9 rounded-lg bg-mak-green/10 text-mak-green flex items-center justify-center mb-2 sm:mb-3 shrink-0 group-hover:bg-mak-green group-hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="font-semibold text-sm sm:text-base mb-1 text-mak-dark dark:text-gray-50">Smart conversations</h3>
+          <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-snug">Context and preferences for better answers over time.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/theme.js"></script>
+</body>
+</html>

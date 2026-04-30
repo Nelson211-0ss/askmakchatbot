@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "description": "Retrieval checks: after ingest, `npm run eval` should show passes. Adjust must_contain to match your actual KB text.",
+  "cases": [
+    {
+      "id": "admissions-mention",
+      "query": "How do I apply to Makerere University undergraduate admissions",
+      "must_contain": ["makerere", "admission"],
+      "min_retrieval_strength": 0.08
+    },
+    {
+      "id": "fees-mention",
+      "query": "Where do I find tuition and fees payment at Makerere",
+      "must_contain": ["makerere", "fee"],
+      "min_retrieval_strength": 0.08
+    },
+    {
+      "id": "university-identity",
+      "query": "What is Makerere University known for",
+      "must_contain": ["makerere", "uganda"],
+      "min_retrieval_strength": 0.05
+    }
+  ]
+}

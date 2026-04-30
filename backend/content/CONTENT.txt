@@ -1,0 +1,2 @@
+Drop curated .md, .txt, or .pdf files here before running `npm run ingest`.
+Files are indexed with the scraped mak.ac.ug content. Use clear titles and factual text for best retrieval.
