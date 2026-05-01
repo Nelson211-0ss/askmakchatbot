@@ -197,6 +197,13 @@ var Auth = {
       if (result.message) {
         sessionStorage.setItem('verify_notice', result.message);
       }
+      var sp = new URLSearchParams(window.location.search);
+      var nextRaw = sp.get('next');
+      if (nextRaw && nextRaw.charAt(0) === '/' && nextRaw.charAt(1) !== '/') {
+        sessionStorage.setItem('auth_next', nextRaw);
+      } else {
+        sessionStorage.removeItem('auth_next');
+      }
       window.location.href = '/verify.html';
     } catch (e) {
       this.showAlert(e.message || 'Signup failed. Please try again.', 'error');
@@ -227,7 +234,11 @@ var Auth = {
 
       localStorage.removeItem('verify_email');
       var verifiedUser = vr.user || vr;
-      this.redirectAuthenticated(verifiedUser, null);
+      var storedNext = sessionStorage.getItem('auth_next');
+      sessionStorage.removeItem('auth_next');
+      var safeNext =
+        storedNext && storedNext.charAt(0) === '/' && storedNext.charAt(1) !== '/' ? storedNext : null;
+      this.redirectAuthenticated(verifiedUser, safeNext);
     } catch (e) {
       this.showAlert(e.message || 'Invalid verification code', 'error');
     } finally {

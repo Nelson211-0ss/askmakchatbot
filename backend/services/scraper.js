@@ -5,6 +5,41 @@ const { v4: uuidv4 } = require('uuid');
 const DOCUMENTS_BUCKET = process.env.MINIO_BUCKET_DOCUMENTS || 'documents';
 const DELAY_MS = 1500;
 
+/** Official Makerere hosts only (main site and subdomains). */
+function isMakerereHostname(host) {
+    const h = String(host || '').toLowerCase();
+    return h === 'mak.ac.ug' || h.endsWith('.mak.ac.ug');
+}
+
+const SKIP_PATH_EXT = /\.(pdf|zip|jpe?g|png|gif|webp|css|js|xml|json|svg|ico|woff2?|mp3|mp4|m4v|docx?|xlsx?|pptx?)(\?|$)/i;
+
+function normalizeCrawlUrl(href) {
+    const u = new URL(href);
+    u.hash = '';
+    if (u.pathname.length > 1 && u.pathname.endsWith('/')) u.pathname = u.pathname.slice(0, -1);
+    return u.href;
+}
+
+function collectSubsiteLinks(html, pageUrl) {
+    const $ = cheerio.load(html);
+    const out = new Set();
+    $('a[href]').each((_, el) => {
+        const href = $(el).attr('href');
+        if (!href || href.startsWith('#') || href.toLowerCase().startsWith('javascript:')) return;
+        try {
+            const u = new URL(href, pageUrl);
+            if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
+            if (!isMakerereHostname(u.hostname)) return;
+            const path = u.pathname + u.search;
+            if (SKIP_PATH_EXT.test(path)) return;
+            out.add(normalizeCrawlUrl(u.href));
+        } catch {
+            /* invalid URL */
+        }
+    });
+    return [...out];
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -112,44 +147,95 @@ async function scrapeAnswersMak() {
     return articles;
 }
 
+const MAK_NETWORK_SEEDS = [
+    'https://www.mak.ac.ug',
+    'https://www.mak.ac.ug/about-makerere',
+    'https://www.mak.ac.ug/admissions',
+    'https://www.mak.ac.ug/academics',
+    'https://www.mak.ac.ug/student-life',
+    'https://www.mak.ac.ug/research',
+    'https://www.mak.ac.ug/about-makerere/contact-us',
+    'https://www.mak.ac.ug/about-makerere/academic-calendar',
+    'https://www.mak.ac.ug/events'
+];
+
+function parseExtraSeeds() {
+    const raw = process.env.INGEST_MAK_EXTRA_SEEDS || '';
+    return raw
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .filter((u) => {
+            try {
+                return isMakerereHostname(new URL(u).hostname);
+            } catch {
+                return false;
+            }
+        });
+}
+
 async function scrapeMakMainSite() {
     const articles = [];
-    const pages = [
-        'https://www.mak.ac.ug',
-        'https://www.mak.ac.ug/about-makerere',
-        'https://www.mak.ac.ug/admissions',
-        'https://www.mak.ac.ug/academics',
-        'https://www.mak.ac.ug/student-life',
-        'https://www.mak.ac.ug/research',
-        'https://www.mak.ac.ug/about-makerere/contact-us',
-        'https://www.mak.ac.ug/about-makerere/academic-calendar'
-    ];
+    const maxPages = Math.min(400, Math.max(15, parseInt(process.env.INGEST_MAK_MAX_PAGES || '120', 10)));
+    const maxDepth = Math.min(5, Math.max(1, parseInt(process.env.INGEST_MAK_MAX_DEPTH || '3', 10)));
+    const maxQueue = Math.min(8000, Math.max(500, parseInt(process.env.INGEST_MAK_MAX_QUEUE || '4000', 10)));
 
-    for (const url of pages) {
+    const seeds = [...new Set([...MAK_NETWORK_SEEDS, ...parseExtraSeeds()].map(normalizeCrawlUrl))];
+    const queue = seeds.map((url) => ({ url, depth: 0 }));
+    const visited = new Set();
+    let fetched = 0;
+
+    while (queue.length && fetched < maxPages) {
+        if (queue.length > maxQueue) {
+            queue.splice(maxQueue);
+        }
+        const { url, depth } = queue.shift();
+        let norm;
+        try {
+            norm = normalizeCrawlUrl(url);
+        } catch {
+            continue;
+        }
+        if (visited.has(norm)) continue;
+        visited.add(norm);
+
         try {
             await delay(DELAY_MS);
-            console.log(`Scraping: ${url}`);
-            const html = await fetchPage(url);
+            console.log(`Scraping (${fetched + 1}/${maxPages}, depth ${depth}): ${norm}`);
+            const html = await fetchPage(norm);
+            fetched++;
+
             const $ = cheerio.load(html);
             cleanHtml($);
 
             const title = $('h1').first().text().trim() || $('title').text().trim();
             const content = $('main, article, .content, .region-content, body')
-                .first().text().replace(/\s+/g, ' ').trim();
+                .first()
+                .text()
+                .replace(/\s+/g, ' ')
+                .trim();
 
-            if (!content || content.length < 50) continue;
+            if (content && content.length >= 50) {
+                const imageKeys = await scrapeImages($, norm);
+                articles.push({
+                    title,
+                    content: content.substring(0, 10000),
+                    source_url: norm,
+                    category: categorize(title + ' ' + content.substring(0, 500)),
+                    image_keys: imageKeys
+                });
+            }
 
-            const imageKeys = await scrapeImages($, url);
-
-            articles.push({
-                title,
-                content: content.substring(0, 10000),
-                source_url: url,
-                category: categorize(title + ' ' + content.substring(0, 500)),
-                image_keys: imageKeys
-            });
+            if (depth < maxDepth) {
+                for (const link of collectSubsiteLinks(html, norm)) {
+                    if (visited.has(link)) continue;
+                    if (queue.length < maxQueue) {
+                        queue.push({ url: link, depth: depth + 1 });
+                    }
+                }
+            }
         } catch (err) {
-            console.warn(`Failed: ${url} - ${err.message}`);
+            console.warn(`Failed: ${norm} - ${err.message}`);
         }
     }
 
@@ -194,4 +280,11 @@ function chunkText(text, maxTokens = 600, overlap = 100) {
     return chunks;
 }
 
-module.exports = { scrapeAnswersMak, scrapeMakMainSite, chunkText, categorize, fetchPage };
+module.exports = {
+    scrapeAnswersMak,
+    scrapeMakMainSite,
+    chunkText,
+    categorize,
+    fetchPage,
+    isMakerereHostname
+};

@@ -1,4 +1,5 @@
 const cheerio = require('cheerio');
+const { isMakerereHostname } = require('../scraper');
 
 async function fetchPage(url) {
     const response = await fetch(url, {
@@ -33,13 +34,21 @@ function register(reg) {
             required: ['url']
         }
     }, async (args) => {
-        const url = args.url;
-        if (!url.match(/^https?:\/\/[^/]*\.?mak\.ac\.ug/)) {
-            return { error: 'Only mak.ac.ug domains are allowed' };
+        let parsed;
+        try {
+            parsed = new URL(args.url);
+        } catch {
+            return { error: 'Invalid URL' };
         }
-        const html = await fetchPage(url);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return { error: 'Only http(s) URLs are allowed' };
+        }
+        if (!isMakerereHostname(parsed.hostname)) {
+            return { error: 'Only *.mak.ac.ug domains are allowed' };
+        }
+        const html = await fetchPage(parsed.href);
         const { title, content } = extractContent(html);
-        return { title, content, url, fetched_at: new Date().toISOString() };
+        return { title, content, url: parsed.href, fetched_at: new Date().toISOString() };
     });
 
     reg('get_upcoming_events', {

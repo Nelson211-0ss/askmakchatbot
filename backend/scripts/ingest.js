@@ -175,7 +175,7 @@ async function run() {
 
     try {
         const mainArticles = await scrapeMakMainSite();
-        console.log(`  Found ${mainArticles.length} pages from www.mak.ac.ug`);
+        console.log(`  Found ${mainArticles.length} pages from Makerere subsites (*.mak.ac.ug crawl)`);
         allArticles.push(...mainArticles);
     } catch (err) {
         console.error('  Scraping www.mak.ac.ug failed:', err.message);
