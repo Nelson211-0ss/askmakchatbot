@@ -1811,7 +1811,7 @@ option {
   padding-left: 0;
 }
 
-/* Empty state: vertically center greeting + centered composer & quick picks; chatting: composer docked bottom */
+/* Empty state: vertically center greeting + composer; chatting: composer docked bottom */
 #chat-body.chat-body-welcome {
   justify-content: center;
   gap: 1.5rem;

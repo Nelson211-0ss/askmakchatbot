@@ -115,8 +115,20 @@
         </div>
       </div>
 
-      <div class="relative shrink-0 ml-auto">
-        <button id="user-menu-btn" type="button" aria-haspopup="true" aria-label="Account and settings" class="flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl max-lg:bg-zinc-200/90 max-lg:hover:bg-zinc-200 max-lg:text-zinc-700 max-lg:dark:bg-chat-canvas max-lg:dark:text-zinc-200 max-lg:dark:hover:bg-mak-green/12 lg:bg-zinc-200/90 lg:hover:bg-zinc-200 lg:text-zinc-700 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-chat-raised transition border-none cursor-pointer p-0">
+      <div class="flex items-center shrink-0 ml-auto gap-1 sm:gap-1.5">
+        <button type="button" id="header-theme-toggle" title="Toggle theme" aria-label="Toggle color theme"
+          class="flex items-center justify-center w-10 h-10 min-w-[2.75rem] min-h-[2.75rem] sm:min-w-[2.5rem] sm:min-h-[2.5rem] rounded-xl border-none cursor-pointer transition touch-manipulation
+          max-lg:bg-zinc-200/90 max-lg:hover:bg-zinc-200 max-lg:text-zinc-700 max-lg:dark:bg-chat-canvas max-lg:dark:text-zinc-200 max-lg:dark:hover:bg-mak-green/12
+          lg:bg-zinc-200/90 lg:hover:bg-zinc-200 lg:text-zinc-700 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-white/[0.06]">
+          <span class="dark:hidden" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </span>
+          <span class="hidden dark:inline" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </span>
+        </button>
+      <div class="relative shrink-0">
+        <button id="user-menu-btn" type="button" aria-haspopup="true" aria-label="Account and settings" class="flex items-center justify-center w-10 h-10 min-w-[2.75rem] min-h-[2.75rem] sm:min-w-[2.5rem] sm:min-h-[2.5rem] rounded-xl max-lg:bg-zinc-200/90 max-lg:hover:bg-zinc-200 max-lg:text-zinc-700 max-lg:dark:bg-chat-canvas max-lg:dark:text-zinc-200 max-lg:dark:hover:bg-mak-green/12 lg:bg-zinc-200/90 lg:hover:bg-zinc-200 lg:text-zinc-700 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-chat-raised transition border-none cursor-pointer p-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="1.75"/><path d="M9 11h6"/><path d="M7 21v-5a5 5 0 0 1 10 0v5"/></svg>
         </button>
         <div id="user-menu-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-chat-raised rounded-lg shadow-xl shadow-zinc-900/12 dark:shadow-black/40 dark:border dark:border-chat-line z-50 w-[min(18rem,calc(100vw-1.5rem-env(safe-area-inset-left)-env(safe-area-inset-right)))] max-h-[min(70vh,22rem)] overflow-y-auto thin-scroll p-1 pt-0">
@@ -143,6 +155,7 @@
             Sign out
           </button>
         </div>
+      </div>
       </div>
     </header>
 
@@ -177,9 +190,11 @@
 
       <div id="composer-panel" class="composer-panel relative z-[20] w-full shrink-0 flex flex-col items-center
         lg:bg-transparent lg:backdrop-blur-none lg:shadow-none lg:border-0 max-lg:bg-transparent max-lg:dark:bg-transparent max-lg:border-0 max-lg:shadow-none
-        lg:pb-[max(1rem,env(safe-area-inset-bottom,0px))] lg:pt-3 lg:px-6
-        pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 px-4 sm:px-6">
-        <div id="image-preview" class="hidden flex w-full max-w-2xl mx-auto items-center gap-3 bg-zinc-100/60 dark:bg-white/[0.06] border-0 rounded-lg p-2 mb-2">
+        lg:pb-[max(1rem,env(safe-area-inset-bottom,0px))] lg:pt-3
+        lg:pl-[max(1.25rem,env(safe-area-inset-left,0px))] lg:pr-[max(1.25rem,env(safe-area-inset-right,0px))]
+        pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3
+        pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
+        <div id="image-preview" class="hidden flex max-sm:w-[min(21rem,calc(100vw-1.75rem))] sm:w-[min(100%,32rem)] max-w-full mx-auto items-center gap-3 bg-zinc-100/60 dark:bg-white/[0.06] border-0 rounded-2xl p-2 mb-2">
           <img src="" alt="Preview" class="w-12 h-12 rounded object-cover">
           <div class="flex-1 min-w-0">
             <div class="preview-name text-xs font-medium truncate text-zinc-700 dark:text-zinc-200"></div>
@@ -190,36 +205,25 @@
           </button>
         </div>
 
-        <div id="upload-progress" class="hidden mb-2 w-full max-w-2xl mx-auto">
+        <div id="upload-progress" class="hidden mb-2 max-sm:w-[min(21rem,calc(100vw-1.75rem))] sm:w-[min(100%,32rem)] max-w-full mx-auto">
           <div class="h-1 bg-zinc-200 dark:bg-chat-canvas rounded-full overflow-hidden">
             <div class="progress-bar h-full bg-mak-green dark:bg-mak-green/70 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
-        <div class="composer-input-row flex w-full max-w-2xl mx-auto items-end justify-center gap-1.5 sm:gap-2 rounded-[1.25rem] px-3 py-2.5 sm:px-3.5 border border-zinc-300/95 dark:border-zinc-600/85 bg-white/95 dark:bg-chat-raised/95 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06)] transition-[box-shadow,border-color] focus-within:border-mak-green/70 dark:focus-within:border-mak-green/55 focus-within:shadow-[0_0_0_3px_rgba(0,107,60,0.12)] dark:focus-within:shadow-[0_0_0_3px_rgba(0,107,60,0.18)]">
-          <button class="attach-btn shrink-0 w-10 h-10 sm:w-8 sm:h-8 rounded-xl sm:rounded-lg hover:bg-zinc-100 dark:hover:bg-mak-green/12 flex items-center justify-center text-zinc-400 dark:text-zinc-500 bg-transparent border-none cursor-pointer transition touch-manipulation">
+        <div class="composer-input-row flex max-sm:w-[min(21rem,calc(100vw-1.75rem))] sm:w-[min(100%,32rem)] max-w-full mx-auto items-end justify-center gap-1 max-sm:gap-[0.35rem] sm:gap-1.5 rounded-[1.85rem] max-sm:rounded-[1.65rem] sm:rounded-[2rem] max-sm:px-[0.45rem] max-sm:py-[0.4rem] sm:px-2.5 sm:py-2 min-h-[3.1rem] sm:min-h-[3.25rem] border border-zinc-300/95 dark:border-zinc-600/85 bg-white/95 dark:bg-chat-raised/95 shadow-[0_2px_8px_-2px_rgba(15,23,42,0.08)] max-sm:shadow-[0_3px_14px_-4px_rgba(15,23,42,0.12)] dark:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.35)] dark:max-sm:shadow-[0_4px_20px_-6px_rgba(0,0,0,0.45)] transition-[box-shadow,border-color] focus-within:border-mak-green/70 dark:focus-within:border-mak-green/55 focus-within:shadow-[0_0_0_3px_rgba(0,107,60,0.12)] dark:focus-within:shadow-[0_0_0_3px_rgba(0,107,60,0.18)] box-border">
+          <button class="attach-btn shrink-0 w-10 h-10 min-w-[2.75rem] min-h-[2.75rem] sm:min-w-0 sm:min-h-0 sm:w-9 sm:h-9 rounded-full hover:bg-zinc-100 dark:hover:bg-mak-green/12 flex items-center justify-center text-zinc-400 dark:text-zinc-500 bg-transparent border-none cursor-pointer transition touch-manipulation">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
           <textarea id="message-input" placeholder="Ask about courses, fees, admissions…" rows="1"
-            class="flex-1 min-h-[44px] sm:min-h-0 resize-none border-none outline-none bg-transparent text-base sm:text-sm text-left text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 leading-relaxed py-2 sm:py-1 max-h-32"></textarea>
-          <button id="send-btn" type="button" disabled aria-label="Send message" class="shrink-0 w-11 h-11 sm:w-10 sm:h-10 min-w-[2.75rem] min-h-[2.75rem] sm:min-w-[2.5rem] sm:min-h-[2.5rem] rounded-xl sm:rounded-lg bg-mak-green text-white flex items-center justify-center disabled:opacity-35 transition cursor-pointer border-none touch-manipulation shadow-sm shadow-mak-green/25 dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="opacity-95" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            class="flex-1 min-h-[2.75rem] sm:min-h-[2.5rem] resize-none border-none outline-none bg-transparent text-base sm:text-sm text-left text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 leading-relaxed py-2.5 sm:py-2 max-h-32"></textarea>
+          <button id="send-btn" type="button" disabled aria-label="Send message" class="shrink-0 w-10 h-10 min-w-[2.75rem] min-h-[2.75rem] sm:w-9 sm:h-9 sm:min-w-[2.25rem] sm:min-h-[2.25rem] rounded-full bg-mak-green text-white flex items-center justify-center disabled:opacity-35 transition cursor-pointer border-none touch-manipulation shadow-sm shadow-mak-green/25 dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="opacity-95 sm:w-[17px] sm:h-[17px]" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
 
-        <div id="welcome-quick-section" class="mt-3 w-full max-w-2xl mx-auto flex flex-col items-center">
-        <p class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 text-center mb-2 w-full">Quick picks</p>
-        <div id="welcome-actions" class="flex flex-row flex-wrap justify-center gap-2 w-full pb-1 px-0.5 mt-1">
-          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What are the admissions requirements and deadlines at Makerere University?">Admissions</button>
-          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What undergraduate and postgraduate courses and programs does Makerere University offer?">Courses</button>
-          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What is the fee structure and tuition at Makerere University?">Fees Structure</button>
-          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="Where can I find the academic calendar for Makerere University (semester dates and exams)?">Academic Calendar</button>
-          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="Where can I find a campus map and main facilities at Makerere University?">Campus Map</button>
-        </div>
-        </div>
-
-        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mt-3 leading-relaxed px-1">AskMak can make mistakes—double-check deadlines and fees.<span class="block mt-1">Official records live on <a href="https://myportal.mak.ac.ug/" target="_blank" rel="noopener noreferrer" class="text-mak-green font-medium underline underline-offset-2 hover:text-mak-gold inline-flex items-center gap-0.5">MyPortal <span class="sr-only">(opens in new tab)</span><svg class="inline shrink-0 opacity-70" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 0 0 6"/><path d="M10 14 21 3"/></svg></a>.</span></p>
+        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mt-3 leading-relaxed px-2 max-sm:w-[min(21rem,calc(100vw-1.75rem))] sm:w-[min(100%,32rem)] max-w-full mx-auto">AskMak can make mistakes—double-check deadlines and fees.<span class="block mt-1">Official records live on <a href="https://myportal.mak.ac.ug/" target="_blank" rel="noopener noreferrer" class="text-mak-green font-medium underline underline-offset-2 hover:text-mak-gold inline-flex items-center gap-0.5">MyPortal <span class="sr-only">(opens in new tab)</span><svg class="inline shrink-0 opacity-70" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 0 0 6"/><path d="M10 14 21 3"/></svg></a>.</span></p>
       </div>
     </div>
 

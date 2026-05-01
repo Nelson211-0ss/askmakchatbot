@@ -48,7 +48,15 @@ var Chat = {
 
     sendBtn.addEventListener('click', function() { self.sendMessage(); });
 
-    document.getElementById('theme-toggle').addEventListener('click', function() { Theme.toggle(); });
+    var themeToggleSidebar = document.getElementById('theme-toggle');
+    if (themeToggleSidebar) themeToggleSidebar.addEventListener('click', function() { Theme.toggle(); });
+    var themeToggleHeader = document.getElementById('header-theme-toggle');
+    if (themeToggleHeader) {
+      themeToggleHeader.addEventListener('click', function(e) {
+        e.stopPropagation();
+        Theme.toggle();
+      });
+    }
     document.getElementById('modal-theme-toggle').addEventListener('click', function() { Theme.toggle(); });
 
     document.getElementById('user-menu-btn').addEventListener('click', function(e) {
@@ -106,15 +114,6 @@ var Chat = {
       msgs.scrollTo({ top: msgs.scrollHeight, behavior: 'smooth' });
     });
 
-    document.querySelectorAll('.quick-action').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var text = (btn.getAttribute('data-send') || '').trim() || btn.textContent.trim();
-        document.getElementById('message-input').value = text;
-        document.getElementById('send-btn').disabled = false;
-        self.sendMessage();
-      });
-    });
-
     window.addEventListener('online', function() {
       document.getElementById('offline-banner').classList.add('hidden');
     });
@@ -127,8 +126,6 @@ var Chat = {
     if (!this.inChatMode) {
       this.inChatMode = true;
       document.getElementById('welcome-screen').classList.add('hidden');
-      var welcomeQuick = document.getElementById('welcome-quick-section');
-      if (welcomeQuick) welcomeQuick.classList.add('hidden');
       var msgs = document.getElementById('chat-messages');
       msgs.classList.remove('hidden');
       msgs.classList.add('flex', 'flex-col', 'flex-1');
@@ -143,8 +140,6 @@ var Chat = {
   switchToWelcome: function() {
     this.inChatMode = false;
     document.getElementById('welcome-screen').classList.remove('hidden');
-    var welcomeQuick = document.getElementById('welcome-quick-section');
-    if (welcomeQuick) welcomeQuick.classList.remove('hidden');
     var msgs = document.getElementById('chat-messages');
     msgs.innerHTML = '';
     msgs.classList.add('hidden');
