@@ -263,14 +263,14 @@ option {
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* Admin sidebar: green-tinted scroll thumb */
+/* Admin sidebar: neutral scroll thumb */
 #admin-sidebar .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 166, 81, 0.35);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 3px;
 }
 
 #admin-sidebar .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 166, 81, 0.55);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* Admin sidebar nav icons (active/hover on `.admin-nav`; avoid Tailwind group-data on same element as `group`) */
@@ -283,7 +283,7 @@ option {
   justify-content: center;
   border-radius: 0.5rem;
   background-color: rgba(0, 0, 0, 0.2);
-  color: #00a651;
+  color: rgba(255, 255, 255, 0.78);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
@@ -292,7 +292,7 @@ option {
 }
 
 #admin-sidebar .admin-nav[data-active='true'] .admin-sidebar-nav-icon {
-  background-color: rgba(0, 166, 81, 0.38);
+  background-color: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
 
@@ -1623,7 +1623,7 @@ option {
   color: rgba(148, 163, 184, 0.88);
 }
 
-/* Chat column: animated .chat-canvas-bg behind thread; solid brand bar is on #chat-header */
+/* Chat column: animated .chat-canvas-bg behind thread; #chat-header is neutral on mobile, transparent on lg+ */
 #chat-main {
   background-color: transparent;
   background-image: none;
@@ -1796,23 +1796,6 @@ option {
   .chat-canvas-bg__shimmer {
     opacity: 0.12;
   }
-}
-
-/* Faint academic motif over chat canvas (books + mortarboard, low contrast) */
-.askmak-chat-watermark::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.045;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' fill='none'%3E%3Cpath fill='%23006B3C' d='M60 18 12 38l48 20 48-20-48-20Zm-34 30v24l34 14 34-14V48l-34 14-34-14Z'/%3E%3Cpath stroke='%23006B3C' stroke-width='3' stroke-linecap='round' d='M28 78v12c0 8 14 14 32 14s32-6 32-14V78'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-  background-position: 50% 38%;
-  background-repeat: repeat;
-}
-
-.dark .askmak-chat-watermark::after {
-  opacity: 0.06;
 }
 
 .dark #chat-messages.thin-scroll::-webkit-scrollbar-thumb {

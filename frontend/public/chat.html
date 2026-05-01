@@ -20,12 +20,12 @@
     class="flex-col hidden lg:flex shrink-0 isolate overflow-hidden z-30 lg:relative
     w-[280px] sm:w-[300px] max-w-[300px] min-w-0
     bg-zinc-100 text-zinc-800 border-r border-zinc-200 shadow-[4px_0_24px_-14px_rgba(0,0,0,0.08)]
-    dark:bg-chat-sidebar dark:text-zinc-100 dark:border-chat-line dark:shadow-[6px_0_28px_-14px_rgba(0,0,0,0.42),0_0_48px_-20px_rgba(0,166,81,0.14)]
+    dark:bg-chat-sidebar dark:text-zinc-100 dark:border-white/[0.08] dark:shadow-[6px_0_28px_-14px_rgba(0,0,0,0.42)]
     max-lg:fixed max-lg:left-0 max-lg:top-[env(safe-area-inset-top,0px)] max-lg:bottom-[env(safe-area-inset-bottom,0px)] max-lg:z-50 max-lg:w-[min(100vw-0.75rem,300px)] max-lg:max-w-[min(100vw-0.75rem,300px)]
     lg:static">
 
     <div class="relative z-10 flex flex-col flex-1 min-h-0">
-      <div class="shrink-0 px-4 pt-4 pb-3 border-b border-zinc-200/90 dark:border-chat-line/50">
+      <div class="shrink-0 px-4 pt-4 pb-3 border-b border-zinc-200/90 dark:border-white/[0.08]">
         <a href="/" class="flex items-center gap-2.5 hover:opacity-90 transition no-underline" title="AskMak home">
           <img src="/assets/mak_logo.png" alt="Makerere University" class="h-9 w-auto shrink-0">
           <span class="text-lg font-bold tracking-tight"><span class="text-mak-dark dark:text-white">Ask</span><span class="text-mak-green">Mak</span></span>
@@ -82,7 +82,7 @@
 
   <main id="chat-main" class="flex-1 flex flex-col min-w-0 relative bg-transparent overflow-hidden">
 
-    <div class="chat-canvas-bg askmak-chat-watermark" aria-hidden="true">
+    <div class="chat-canvas-bg" aria-hidden="true">
       <div class="chat-canvas-bg__base"></div>
       <div class="chat-canvas-bg__mesh"></div>
       <div class="chat-canvas-bg__grid"></div>
@@ -92,20 +92,19 @@
     </div>
 
     <header id="chat-header" role="banner" class="relative z-50 shrink-0 flex items-center gap-2 lg:gap-4
-      bg-mak-green text-white shadow-[0_2px_12px_-2px_rgba(0,53,38,0.35)]
+      max-lg:bg-white/95 max-lg:dark:bg-chat-raised max-lg:shadow-[0_1px_10px_-2px_rgba(15,23,42,0.08)] dark:max-lg:shadow-[0_1px_14px_-4px_rgba(0,0,0,0.42)]
       pl-[max(0.875rem,env(safe-area-inset-left,0px))] pr-[max(0.875rem,env(safe-area-inset-right,0px))]
       pt-[max(0.625rem,env(safe-area-inset-top,0px))] pb-3 lg:pb-[0.8rem]
-      lg:border-b-0 lg:shadow-none lg:bg-transparent lg:pt-[max(0.5rem,env(safe-area-inset-top,0px))] lg:pb-2.5
-      max-lg:border-b max-lg:border-white/10">
+      lg:shadow-none lg:bg-transparent lg:pt-[max(0.5rem,env(safe-area-inset-top,0px))] lg:pb-2.5">
 
       <div class="flex min-w-0 flex-1 items-center gap-2 lg:hidden">
-        <button id="sidebar-toggle" type="button" class="w-11 h-11 min-w-[2.75rem] min-h-[2.75rem] shrink-0 rounded-full flex items-center justify-center bg-transparent hover:bg-white/10 active:bg-white/15 text-white border-none cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]" aria-label="Open menu">
+        <button id="sidebar-toggle" type="button" class="w-11 h-11 min-w-[2.75rem] min-h-[2.75rem] shrink-0 rounded-full flex items-center justify-center bg-transparent hover:bg-zinc-200/80 active:bg-zinc-200 dark:hover:bg-white/10 dark:active:bg-white/15 text-zinc-700 dark:text-zinc-100 border-none cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]" aria-label="Open menu">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
         <img src="/assets/mak_logo.png" alt="" class="h-8 w-auto shrink-0 rounded-md bg-white/95 p-0.5" width="64" height="64" decoding="async" />
         <div class="min-w-0 flex-1 text-left leading-tight">
-          <span class="block font-semibold text-[1rem] tracking-tight truncate">AskMak</span>
-          <span class="block text-[0.7rem] text-white/85 font-normal leading-snug truncate">Makerere Assistant</span>
+          <span class="block font-semibold text-[1rem] tracking-tight truncate text-zinc-800 dark:text-zinc-50">AskMak</span>
+          <span class="block text-[0.7rem] text-zinc-500 dark:text-zinc-400 font-normal leading-snug truncate">Makerere Assistant</span>
         </div>
       </div>
 
@@ -117,7 +116,7 @@
       </div>
 
       <div class="relative shrink-0 ml-auto">
-        <button id="user-menu-btn" type="button" aria-haspopup="true" aria-label="Account and settings" class="flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl bg-white/10 hover:bg-white/20 lg:bg-zinc-200/90 lg:text-zinc-700 lg:hover:bg-zinc-200 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-chat-raised transition border-none cursor-pointer p-0">
+        <button id="user-menu-btn" type="button" aria-haspopup="true" aria-label="Account and settings" class="flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl max-lg:bg-zinc-200/90 max-lg:hover:bg-zinc-200 max-lg:text-zinc-700 max-lg:dark:bg-chat-canvas max-lg:dark:text-zinc-200 max-lg:dark:hover:bg-mak-green/12 lg:bg-zinc-200/90 lg:hover:bg-zinc-200 lg:text-zinc-700 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-chat-raised transition border-none cursor-pointer p-0">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="1.75"/><path d="M9 11h6"/><path d="M7 21v-5a5 5 0 0 1 10 0v5"/></svg>
         </button>
         <div id="user-menu-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-chat-raised rounded-lg shadow-xl shadow-zinc-900/12 dark:shadow-black/40 dark:border dark:border-chat-line z-50 w-[min(18rem,calc(100vw-1.5rem-env(safe-area-inset-left)-env(safe-area-inset-right)))] max-h-[min(70vh,22rem)] overflow-y-auto thin-scroll p-1 pt-0">
