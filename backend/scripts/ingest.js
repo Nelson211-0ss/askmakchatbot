@@ -128,14 +128,25 @@ async function ingestLocalContent() {
 
         if (ext === '.pdf') {
             try {
-                const pdfParse = require('pdf-parse');
+                const { PDFParse } = require('pdf-parse');
                 const buffer = fs.readFileSync(filePath);
-                const data = await pdfParse(buffer);
+                const parser = new PDFParse({ data: buffer });
+                let rawText = '';
+                let pdfTitle = file;
+                try {
+                    const textResult = await parser.getText();
+                    const infoResult = await parser.getInfo();
+                    rawText = textResult.text || '';
+                    const dict = infoResult.info || {};
+                    pdfTitle = dict.Title || dict.title || file;
+                } finally {
+                    await parser.destroy();
+                }
                 articles.push({
-                    title: data.info?.Title || file,
-                    content: data.text,
+                    title: pdfTitle,
+                    content: rawText,
                     source_url: 'local://' + file,
-                    category: categorize((data.info?.Title || '') + ' ' + data.text.substring(0, 500)),
+                    category: categorize(String(pdfTitle) + ' ' + String(rawText).substring(0, 500)),
                     image_keys: []
                 });
             } catch (err) {

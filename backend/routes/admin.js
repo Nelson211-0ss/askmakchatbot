@@ -7,18 +7,50 @@ const db = require('../config/db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { adminLimiter } = require('../middleware/rateLimit');
 const storage = require('../services/storage');
-const { generateEmbedding } = require('../services/embedding');
+const { generateEmbedding, generateEmbeddings } = require('../services/embedding');
+const { chunkText } = require('../services/scraper');
 const { getToolSchemas } = require('../services/mcp/registry');
 
 const DOC_BUCKET = process.env.MINIO_BUCKET_DOCUMENTS || 'documents';
 const REF_BUCKET = process.env.MINIO_BUCKET_REFERENCE || 'reference';
 const UP_BUCKET = process.env.MINIO_BUCKET_UPLOADS || 'uploads';
 
+const MIN_KB_CHUNK_WORDS = Math.max(4, parseInt(process.env.INGEST_MIN_CHUNK_WORDS || '10', 10));
+
+function wordCountKb(s) {
+    return (s || '').split(/\s+/).filter(Boolean).length;
+}
+
+async function extractTextFromPdfBuffer(buffer) {
+    const { PDFParse } = require('pdf-parse');
+    const parser = new PDFParse({ data: buffer });
+    try {
+        const textResult = await parser.getText();
+        const infoResult = await parser.getInfo();
+        const text = (textResult.text || '').replace(/\s+/g, ' ').trim();
+        const dict = infoResult.info || {};
+        const docTitle = dict.Title || dict.title || null;
+        return { text, docTitle };
+    } finally {
+        await parser.destroy();
+    }
+}
+
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 15 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype);
+        cb(null, ok);
+    }
+});
+
+const uploadKbPdf = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 25 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const name = (file.originalname || '').toLowerCase();
+        const ok = file.mimetype === 'application/pdf' || name.endsWith('.pdf');
         cb(null, ok);
     }
 });
@@ -563,6 +595,93 @@ router.get('/documents', async (req, res, next) => {
     }
 });
 
+/** Must be registered before GET /documents/:id so "upload-pdf" is not parsed as an id. */
+router.post('/documents/upload-pdf', (req, res, next) => {
+    uploadKbPdf.single('file')(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ error: 'PDF too large (max 25MB)' });
+            }
+            return next(err);
+        }
+        next();
+    });
+}, async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'PDF file required (field name: file)' });
+        }
+        const category = (req.body.category || 'faq').trim() || 'faq';
+        let title = (req.body.title || '').trim();
+        const buffer = req.file.buffer;
+
+        let text;
+        let docTitleFromPdf = null;
+        try {
+            const extracted = await extractTextFromPdfBuffer(buffer);
+            text = extracted.text;
+            docTitleFromPdf = extracted.docTitle;
+        } catch (e) {
+            return res.status(400).json({ error: 'Could not read PDF: ' + (e && e.message ? e.message : String(e)) });
+        }
+
+        if (!text || text.length < 20) {
+            return res.status(400).json({ error: 'No extractable text in this PDF (scanned PDFs may need OCR).' });
+        }
+
+        if (!title) {
+            title =
+                (docTitleFromPdf && String(docTitleFromPdf).trim()) ||
+                path.parse(req.file.originalname || 'upload').name ||
+                'Uploaded PDF';
+        }
+        const maxTitle = 500;
+        if (title.length > maxTitle) title = title.slice(0, maxTitle - 1) + '…';
+
+        const rawChunks = chunkText(text);
+        let chunks = rawChunks.filter((c) => wordCountKb(c) >= MIN_KB_CHUNK_WORDS);
+        if (!chunks.length && text.length > 20) {
+            const fallback = text.substring(0, 8000);
+            if (wordCountKb(fallback) >= 4) chunks = [fallback];
+        }
+        if (!chunks.length) {
+            return res.status(400).json({ error: 'Could not produce searchable segments from this PDF.' });
+        }
+
+        const baseSrc = 'manual-pdf://' + uuidv4();
+        const chunkTitles = chunks.map((_, i) =>
+            chunks.length > 1 ? `${title} (part ${i + 1}/${chunks.length})` : title
+        );
+        const embedInputs = chunkTitles.map((t, i) => t + '\n\n' + chunks[i]);
+        const embeddings = await generateEmbeddings(embedInputs);
+
+        const ids = [];
+        for (let i = 0; i < chunks.length; i++) {
+            const embeddingStr = '[' + embeddings[i].join(',') + ']';
+            const meta = {
+                manual: true,
+                pdf_upload: true,
+                original_filename: req.file.originalname || null,
+                chunk_index_display: i,
+                chunk_of: chunks.length
+            };
+            const result = await db.query(
+                `INSERT INTO documents (source_url, title, content, chunk_index, embedding, category, metadata)
+                 VALUES ($1, $2, $3, $4, $5::vector, $6, $7::jsonb)
+                 ON CONFLICT (source_url, chunk_index) DO UPDATE SET title = EXCLUDED.title, content = EXCLUDED.content,
+                   embedding = EXCLUDED.embedding, category = EXCLUDED.category, metadata = EXCLUDED.metadata, indexed_at = NOW()
+                 RETURNING id`,
+                [baseSrc, chunkTitles[i], chunks[i], i, embeddingStr, category, JSON.stringify(meta)]
+            );
+            ids.push(result.rows[0].id);
+        }
+
+        res.status(201).json({ inserted: ids.length, ids, title });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.get('/documents/:id', async (req, res, next) => {
     try {
         const r = await db.query(
@@ -617,7 +736,8 @@ router.put('/documents/:id', async (req, res, next) => {
         }
         const isManual =
             (meta && meta.manual === true) ||
-            (doc.source_url && String(doc.source_url).startsWith('manual://'));
+            (doc.source_url &&
+                (String(doc.source_url).startsWith('manual://') || String(doc.source_url).startsWith('manual-pdf://')));
         if (!isManual) return res.status(403).json({ error: 'Only manual knowledge entries can be edited here' });
         const newTitle = title != null ? title : doc.title;
         const newContent = content != null ? content : doc.content;

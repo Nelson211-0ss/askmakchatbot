@@ -371,41 +371,94 @@
     var main = document.getElementById('admin-main');
     adminFetch('/documents?limit=50').then(function(d) {
       var rows = d.documents || [];
-      var count = rows.length;
+      var totalKb = typeof d.total === 'number' ? d.total : rows.length;
+      var listLimit = typeof d.limit === 'number' ? d.limit : 50;
+      var tableCaption =
+        totalKb > rows.length
+          ? 'Showing ' + rows.length + ' of ' + totalKb + ' chunks'
+          : rows.length === 1
+            ? '1 chunk in the index'
+            : rows.length + ' chunks in the index';
 
-      var html = '<div class="admin-knowledge">';
-      html += '<div class="admin-knowledge-header">';
-      html += '<div><h2 class="admin-knowledge-title">Knowledge base</h2>';
-      html += '<p class="admin-knowledge-sub">Add FAQs or short articles here. Entries are chunked, embedded via OpenAI, and used when answering users.</p></div>';
-      html += '<span class="admin-knowledge-count">' + count + ' chunk' + (count === 1 ? '' : 's') + '</span></div>';
+      var html = '<div class="admin-kb">';
+      html += '<header class="admin-kb-hero">';
+      html += '<div class="admin-kb-hero__main">';
+      html += '<p class="admin-kb-eyebrow">Retrieval &amp; answers</p>';
+      html += '<h2 class="admin-kb-title">Knowledge base</h2>';
+      html +=
+        '<p class="admin-kb-lede">Add text entries or upload PDFs. Content is split into chunks, embedded with OpenAI, and matched when users ask questions.</p>';
+      html += '</div>';
+      html += '<div class="admin-kb-hero__stat" title="Total chunks in the database">';
+      html += '<span class="admin-kb-hero__stat-value">' + totalKb + '</span>';
+      html += '<span class="admin-kb-hero__stat-label">indexed chunk' + (totalKb === 1 ? '' : 's') + '</span>';
+      html += '</div></header>';
 
-      html += '<div class="admin-knowledge-top">';
-      html += '<section class="admin-knowledge-card">';
-      html += '<h3>New entry</h3>';
-      html += '<div class="admin-knowledge-field"><label for="doc-title">Title</label>';
-      html += '<input id="doc-title" type="text" autocomplete="off" placeholder="e.g. How do I defer a semester?" class="admin-knowledge-input"></div>';
-      html += '<div class="admin-knowledge-field"><label for="doc-body">Content</label>';
-      html += '<textarea id="doc-body" rows="6" placeholder="Full answer or article text …" class="admin-knowledge-textarea"></textarea></div>';
-      html += '<div class="admin-knowledge-field"><label for="doc-cat">Category</label>';
-      html += '<input id="doc-cat" type="text" autocomplete="off" placeholder="faq, admissions, fees, it … (default faq)" class="admin-knowledge-input"></div>';
-      html += '<button type="button" id="doc-save" class="admin-knowledge-submit">Save & embed</button></section>';
+      html += '<div class="admin-kb-panels">';
+      html += '<article class="admin-kb-panel admin-kb-panel--write">';
+      html += '<div class="admin-kb-panel__head">';
+      html +=
+        '<span class="admin-kb-panel__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h1.125c.621 0 1.125.504 1.125 1.125v3.375c0 .621-.504 1.125-1.125 1.125h-2.25c-.621 0-1.125-.504-1.125-1.125Zm-6.75 0v-2.625A3.375 3.375 0 0 0 9.375 8.25h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 1 3.375-3.375H9.75"/></svg></span>';
+      html += '<div><h3 class="admin-kb-panel__title">Manual entry</h3>';
+      html += '<p class="admin-kb-panel__desc">One title and body become one or more searchable chunks.</p></div></div>';
+      html += '<div class="admin-kb-panel__body">';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-title">Title</label>';
+      html +=
+        '<input id="doc-title" type="text" autocomplete="off" placeholder="e.g. How do I defer a semester?" class="admin-kb-input"></div>';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-body">Content</label>';
+      html +=
+        '<textarea id="doc-body" rows="6" placeholder="Full answer or article text…" class="admin-kb-textarea"></textarea></div>';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-cat">Category</label>';
+      html +=
+        '<input id="doc-cat" type="text" autocomplete="off" placeholder="faq, admissions, fees, it… (default faq)" class="admin-kb-input"></div>';
+      html += '</div>';
+      html += '<button type="button" id="doc-save" class="admin-kb-btn admin-kb-btn--primary">Save &amp; embed</button>';
+      html += '</article>';
 
-      html += '<aside class="admin-knowledge-aside">';
-      html += '<strong>Tips</strong><ul>';
-      html += '<li>Indexing can take several seconds per save; wait for confirmation.</li>';
-      html += '<li>Only chunks marked editable (manual) show an Edit button; ingested URLs stay compact in the grid.</li>';
-      html += '<li>Deleting removes one chunk row; run ingestion again if you need bulk refresh.</li>';
-      html += '</ul></aside></div>';
+      html += '<article class="admin-kb-panel admin-kb-panel--pdf">';
+      html += '<div class="admin-kb-panel__head">';
+      html +=
+        '<span class="admin-kb-panel__icon admin-kb-panel__icon--pdf" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h9.75A3.375 3.375 0 0 1 22.125 6v9.75a3.375 3.375 0 0 1-3.375 3.375h-9.75a3.375 3.375 0 0 1-3.375-3.375V6Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.875 6.75h4.875a1.875 1.875 0 0 1 1.875 1.875v9.75a1.875 1.875 0 0 1-1.875 1.875H4.875A1.875 1.875 0 0 1 3 18.375v-9.75A1.875 1.875 0 0 1 4.875 6.75Z"/></svg></span>';
+      html += '<div><h3 class="admin-kb-panel__title">Upload PDF</h3>';
+      html +=
+        '<p class="admin-kb-panel__desc">Text is extracted and split automatically. Image-only PDFs need OCR elsewhere first.</p></div></div>';
+      html += '<div class="admin-kb-panel__body">';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-file">PDF file</label>';
+      html += '<input id="doc-pdf-file" type="file" accept="application/pdf,.pdf" class="admin-kb-input admin-kb-input--file"></div>';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-title">Title <span class="admin-kb-optional">optional</span></label>';
+      html +=
+        '<input id="doc-pdf-title" type="text" autocomplete="off" placeholder="Uses PDF metadata or filename if empty" class="admin-kb-input"></div>';
+      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-cat">Category</label>';
+      html +=
+        '<input id="doc-pdf-cat" type="text" autocomplete="off" placeholder="default faq" class="admin-kb-input"></div>';
+      html += '</div>';
+      html += '<button type="button" id="doc-pdf-upload" class="admin-kb-btn admin-kb-btn--secondary">Upload PDF &amp; embed</button>';
+      html += '</article></div>';
 
-      html += '<div class="admin-knowledge-table-outer">';
-      html += '<table class="admin-knowledge-table"><thead><tr>';
-      html += '<th class="admin-knowledge-cell-title">Title</th>';
-      html += '<th class="admin-knowledge-cell-cat">Category</th>';
-      html += '<th class="admin-knowledge-cell-src">Source</th>';
-      html += '<th class="admin-knowledge-cell-actions"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
+      html += '<div class="admin-kb-tips" role="note">';
+      html += '<span class="admin-kb-tips__icon" aria-hidden="true">';
+      html +=
+        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>';
+      html += '</span>';
+      html += '<ul class="admin-kb-tips__list">';
+      html += '<li>Embedding can take a few seconds; wait for the confirmation toast.</li>';
+      html += '<li>Manual and PDF chunks show <strong>Edit</strong>; crawled pages are delete-only here.</li>';
+      html += '<li>Large PDFs create many rows—delete one part at a time, or rely on ingestion for bulk refresh.</li>';
+      html += '</ul></div>';
+
+      html += '<section class="admin-kb-index" aria-labelledby="admin-kb-index-heading">';
+      html += '<div class="admin-kb-index__head">';
+      html += '<div><h3 id="admin-kb-index-heading" class="admin-kb-index__title">Indexed chunks</h3>';
+      html += '<p class="admin-kb-index__meta">Up to ' + listLimit + ' newest · ' + Utils.escapeHtml(tableCaption) + '</p></div>';
+      html += '</div>';
+      html += '<div class="admin-kb-table-scroll">';
+      html += '<table class="admin-kb-table"><thead><tr>';
+      html += '<th class="admin-kb-th admin-kb-col-title">Title</th>';
+      html += '<th class="admin-kb-th admin-kb-col-cat">Category</th>';
+      html += '<th class="admin-kb-th admin-kb-col-src">Source</th>';
+      html += '<th class="admin-kb-th admin-kb-col-actions"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
 
       if (!rows.length) {
-        html += '<tr><td colspan="4"><div class="admin-knowledge-empty">No chunks yet. Add your first FAQ or article above.</div></td></tr>';
+        html += '<tr><td colspan="4"><div class="admin-kb-empty">No chunks yet. Add a manual entry or upload a PDF to get started.</div></td></tr>';
       } else {
         rows.forEach(function(r) {
           var rawTitle = String(r.title || '');
@@ -418,21 +471,32 @@
           var catAttr = catHtml.replace(/"/g, '&quot;');
           var srcAttr = srcHtml.replace(/"/g, '&quot;');
           var srcPlain = rawSrc;
-          var canEdit = (r.metadata && r.metadata.manual) || (rawSrc && srcPlain.indexOf('manual://') === 0);
-          html += '<tr>';
-          html += '<td class="admin-knowledge-cell-title"><span class="admin-knowledge-ellipsis" title="' + titleAttr + '">' + titleHtml + '</span></td>';
-          html += '<td class="admin-knowledge-cell-cat"><span class="admin-knowledge-badge" title="' + catAttr + '">' + (catHtml || '—') + '</span></td>';
-          html += '<td class="admin-knowledge-cell-src"><span class="admin-knowledge-ellipsis" title="' + srcAttr + '">' + srcHtml + '</span></td>';
-          html += '<td class="admin-knowledge-cell-actions"><div class="admin-knowledge-actions">';
+          var canEdit = (r.metadata && r.metadata.manual) ||
+            (rawSrc && (srcPlain.indexOf('manual://') === 0 || srcPlain.indexOf('manual-pdf://') === 0));
+          var isPdfChunk = r.metadata && r.metadata.pdf_upload;
+          html += '<tr class="admin-kb-tr' + (isPdfChunk ? ' admin-kb-tr--pdf' : '') + '">';
+          html += '<td class="admin-kb-td admin-kb-col-title"><span class="admin-kb-ellipsis" title="' + titleAttr + '">' + titleHtml + '</span></td>';
+          html +=
+            '<td class="admin-kb-td admin-kb-col-cat"><span class="admin-kb-pill" title="' + catAttr + '">' +
+            (catHtml || '—') +
+            '</span></td>';
+          html += '<td class="admin-kb-td admin-kb-col-src"><span class="admin-kb-ellipsis admin-kb-mono" title="' + srcAttr + '">' + srcHtml + '</span></td>';
+          html += '<td class="admin-kb-td admin-kb-col-actions"><div class="admin-kb-row-actions">';
           if (canEdit) {
-            html += '<button type="button" class="admin-knowledge-linkbtn admin-knowledge-linkbtn--edit admin-doc-edit" data-id="' + Utils.escapeHtml(String(r.id)) + '">Edit</button>';
+            html +=
+              '<button type="button" class="admin-kb-iconbtn admin-kb-iconbtn--edit admin-doc-edit" data-id="' +
+              Utils.escapeHtml(String(r.id)) +
+              '">Edit</button>';
           }
-          html += '<button type="button" class="admin-knowledge-linkbtn admin-knowledge-linkbtn--danger admin-doc-del" data-id="' + Utils.escapeHtml(String(r.id)) + '">Delete</button>';
+          html +=
+        '<button type="button" class="admin-kb-iconbtn admin-kb-iconbtn--danger admin-doc-del" data-id="' +
+            Utils.escapeHtml(String(r.id)) +
+            '">Delete</button>';
           html += '</div></td></tr>';
         });
       }
 
-      html += '</tbody></table></div></div>';
+      html += '</tbody></table></div></section></div>';
       main.innerHTML = html;
       document.getElementById('doc-save').addEventListener('click', function() {
         var title = document.getElementById('doc-title').value.trim();
@@ -444,19 +508,47 @@
           loadDocuments();
         }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
       });
+      document.getElementById('doc-pdf-upload').addEventListener('click', function() {
+        var fileInput = document.getElementById('doc-pdf-file');
+        var f = fileInput && fileInput.files && fileInput.files[0];
+        if (!f) { Utils.showToast('Choose a PDF file', 'error'); return; }
+        var fd = new FormData();
+        fd.append('file', f);
+        var pt = document.getElementById('doc-pdf-title').value.trim();
+        if (pt) fd.append('title', pt);
+        var pcat = document.getElementById('doc-pdf-cat').value.trim() || 'faq';
+        fd.append('category', pcat);
+        var btn = document.getElementById('doc-pdf-upload');
+        btn.disabled = true;
+        adminFetch('/documents/upload-pdf', { method: 'POST', body: fd }).then(function(j) {
+          Utils.showToast('Added ' + (j.inserted || 0) + ' chunk(s)', 'success');
+          fileInput.value = '';
+          loadDocuments();
+        }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); })
+          .finally(function() { btn.disabled = false; });
+      });
       main.querySelectorAll('.admin-doc-edit').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var id = btn.getAttribute('data-id');
           adminFetch('/documents/' + id).then(function(d) {
             var doc = d.document;
-            var mh = '<div class="admin-knowledge-form-stack text-sm">';
-            mh += '<div class="admin-knowledge-field"><label for="edit-doc-title">Title</label>';
-            mh += '<input id="edit-doc-title" type="text" class="admin-knowledge-input" value="' + Utils.escapeHtml(doc.title || '') + '"></div>';
-            mh += '<div class="admin-knowledge-field"><label for="edit-doc-cat">Category</label>';
-            mh += '<input id="edit-doc-cat" type="text" class="admin-knowledge-input" value="' + Utils.escapeHtml(doc.category || '') + '"></div>';
-            mh += '<div class="admin-knowledge-field"><label for="edit-doc-body">Content</label>';
-            mh += '<textarea id="edit-doc-body" rows="12" class="admin-knowledge-textarea">' + Utils.escapeHtml(doc.content || '') + '</textarea></div>';
-            mh += '<button type="button" id="edit-doc-save" class="admin-knowledge-submit">Save & re-embed</button></div>';
+            var mh = '<div class="admin-kb-form-stack text-sm">';
+            mh += '<div class="admin-kb-field"><label class="admin-kb-label" for="edit-doc-title">Title</label>';
+            mh +=
+              '<input id="edit-doc-title" type="text" class="admin-kb-input" value="' +
+              Utils.escapeHtml(doc.title || '') +
+              '"></div>';
+            mh += '<div class="admin-kb-field"><label class="admin-kb-label" for="edit-doc-cat">Category</label>';
+            mh +=
+              '<input id="edit-doc-cat" type="text" class="admin-kb-input" value="' +
+              Utils.escapeHtml(doc.category || '') +
+              '"></div>';
+            mh += '<div class="admin-kb-field"><label class="admin-kb-label" for="edit-doc-body">Content</label>';
+            mh +=
+              '<textarea id="edit-doc-body" rows="12" class="admin-kb-textarea">' +
+              Utils.escapeHtml(doc.content || '') +
+              '</textarea></div>';
+            mh += '<button type="button" id="edit-doc-save" class="admin-kb-btn admin-kb-btn--primary">Save &amp; re-embed</button></div>';
             openModal('Edit document', mh);
             document.getElementById('edit-doc-save').addEventListener('click', function() {
               var body = {
