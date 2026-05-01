@@ -1,16 +1,19 @@
-# VPS / Dockeruser policy stack (ports 4000–4999, external network, ~/docker-volumes).
-# Prerequisites (no sudo, user in docker group):
+# VPS / Dockeruser policy stack (external network, ~/docker-volumes).
+#
+# Host ports (keep in 4000–4999 to avoid clashes with other stacks):
+#   4500  app HTTP (127.0.0.1 — nginx proxies here)
+#   4520  Postgres
+#   4900  MinIO API
+#   4901  MinIO console
+#
+# Prerequisites:
 #   docker network create dockeruser_network
 #   mkdir -p "${HOME}/docker-volumes/askmak/pgdata" "${HOME}/docker-volumes/askmak/minio"
-# Run: docker compose -f docker-compose.dockeruser.yml up -d
+# Copy `.env` (JWT, OpenAI keys, TRUST_PROXY, CORS_ORIGIN, etc.).
+# Compose overrides DATABASE_URL and MINIO_ENDPOINT for the app container (@db:5432, http://minio:9000).
 #
-# Matching .env (host runs Node/npm):
-#   PORT=4500 (or any free port in 4000–4999 — avoid clashes with other apps)
-#   DATABASE_URL=postgresql://askmak:askmak_dev@127.0.0.1:4520/askmak
-#   MINIO_ENDPOINT=http://127.0.0.1:4900
-#   MINIO_CONSOLE_URL=http://127.0.0.1:4901
-#   CORS_ORIGIN=http://YOUR_PUBLIC_IP:4500
-# Open the same PORT in Oracle / cloud firewall if you expose the UI.
+# Run: docker compose -f docker-compose.dockeruser.yml up -d --build
+# Buckets (first deploy / empty MinIO): docker compose -f docker-compose.dockeruser.yml run --rm app npm run setup-minio
 
 services:
   db:
@@ -48,6 +51,27 @@ services:
       MINIO_ROOT_PASSWORD: askmak_minio_secret
     volumes:
       - ${HOME}/docker-volumes/askmak/minio:/data
+    networks:
+      - dockeruser_network
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4500:4500"
+    env_file:
+      - .env
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "4500"
+      NODE_ENV: production
+      DATABASE_URL: postgresql://askmak:askmak_dev@db:5432/askmak
+      MINIO_ENDPOINT: http://minio:9000
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
     networks:
       - dockeruser_network
 

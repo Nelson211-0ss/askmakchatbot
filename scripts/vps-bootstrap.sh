@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot VPS prep: external Docker network, volumes, Postgres + MinIO, bucket setup.
+# One-shot VPS prep: external Docker network, volumes, Postgres + MinIO + app, bucket setup.
 # Run from repo root as the user that owns Docker (e.g. dockeruser). Requires curl.
 set -euo pipefail
 
@@ -11,7 +11,7 @@ COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.dockeruser.yml}"
 docker network create dockeruser_network 2>/dev/null || true
 mkdir -p "${HOME}/docker-volumes/askmak/pgdata" "${HOME}/docker-volumes/askmak/minio"
 
-docker compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d --build
 
 echo "Waiting for PostgreSQL..."
 for i in $(seq 1 90); do
@@ -39,6 +39,6 @@ for i in $(seq 1 60); do
   sleep 1
 done
 
-npm run setup-minio
+docker compose -f "$COMPOSE_FILE" run --rm app npm run setup-minio
 
-echo "VPS bootstrap complete. Ensure .env matches this compose file (see .env.example), then: npm start"
+echo "VPS bootstrap complete. API: http://127.0.0.1:4500 — logs: docker compose -f $COMPOSE_FILE logs -f app"
