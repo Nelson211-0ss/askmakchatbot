@@ -2,23 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>AskMak - Chat</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#00a651">
+  <meta name="theme-color" content="#006B3C">
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script src="/js/tailwind-config.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="font-sans bg-white text-zinc-900 dark:bg-chat-canvas dark:text-zinc-100">
+<body class="font-sans bg-mak-mint/40 text-zinc-800 dark:bg-chat-canvas dark:text-zinc-100">
 
-<div class="flex h-screen overflow-hidden">
+<div class="flex min-h-0 h-[100dvh] max-h-[100dvh] overflow-hidden">
 
   <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/50 z-20 lg:hidden"></div>
 
-  <aside id="sidebar" class="relative isolate w-[min(100vw-1.25rem,292px)] sm:w-[300px] max-w-[min(100vw-1.25rem,300px)] flex flex-col shrink-0 z-30 fixed lg:static inset-y-0 left-0 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out overflow-hidden
+  <aside id="sidebar" aria-hidden="true"
+    class="flex-col hidden lg:flex shrink-0 isolate overflow-hidden z-30 lg:relative
+    w-[280px] sm:w-[300px] max-w-[300px] min-w-0
     bg-zinc-100 text-zinc-800 border-r border-zinc-200 shadow-[4px_0_24px_-14px_rgba(0,0,0,0.08)]
-    dark:bg-chat-sidebar dark:text-zinc-100 dark:border-chat-line dark:shadow-[6px_0_28px_-14px_rgba(0,0,0,0.42),0_0_48px_-20px_rgba(0,166,81,0.14)]">
+    dark:bg-chat-sidebar dark:text-zinc-100 dark:border-chat-line dark:shadow-[6px_0_28px_-14px_rgba(0,0,0,0.42),0_0_48px_-20px_rgba(0,166,81,0.14)]
+    max-lg:fixed max-lg:left-0 max-lg:top-[env(safe-area-inset-top,0px)] max-lg:bottom-[env(safe-area-inset-bottom,0px)] max-lg:z-50 max-lg:w-[min(100vw-0.75rem,300px)] max-lg:max-w-[min(100vw-0.75rem,300px)]
+    lg:static">
 
     <div class="relative z-10 flex flex-col flex-1 min-h-0">
       <div class="shrink-0 px-4 pt-4 pb-3 border-b border-zinc-200/90 dark:border-chat-line/50">
@@ -78,7 +82,7 @@
 
   <main id="chat-main" class="flex-1 flex flex-col min-w-0 relative bg-transparent overflow-hidden">
 
-    <div class="chat-canvas-bg" aria-hidden="true">
+    <div class="chat-canvas-bg askmak-chat-watermark" aria-hidden="true">
       <div class="chat-canvas-bg__base"></div>
       <div class="chat-canvas-bg__mesh"></div>
       <div class="chat-canvas-bg__grid"></div>
@@ -87,18 +91,44 @@
       <div class="chat-canvas-bg__shimmer"></div>
     </div>
 
-    <header id="chat-header" class="relative z-50 h-[56px] flex items-center justify-end shrink-0 px-4 sm:px-5 bg-transparent">
-        <button id="sidebar-toggle" type="button" class="absolute left-4 top-1/2 -translate-y-1/2 lg:hidden w-9 h-9 rounded-lg hover:bg-zinc-200/80 dark:hover:bg-mak-green/15 flex items-center justify-center text-zinc-500 dark:text-zinc-400 bg-transparent border-none cursor-pointer shrink-0" aria-label="Open menu">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-        </button>
+    <header id="chat-header" role="banner" class="relative z-50 shrink-0 flex items-center gap-2 lg:gap-4
+      bg-mak-green text-white shadow-[0_2px_12px_-2px_rgba(0,53,38,0.35)]
+      pl-[max(0.875rem,env(safe-area-inset-left,0px))] pr-[max(0.875rem,env(safe-area-inset-right,0px))]
+      pt-[max(0.625rem,env(safe-area-inset-top,0px))] pb-3 lg:pb-[0.8rem]
+      lg:border-b-0 lg:shadow-none lg:bg-transparent lg:pt-[max(0.5rem,env(safe-area-inset-top,0px))] lg:pb-2.5
+      max-lg:border-b max-lg:border-white/10">
 
-      <div class="relative">
-        <button id="user-menu-btn" class="flex items-center gap-2 bg-transparent border-none cursor-pointer p-0">
-          <div id="user-avatar" class="w-8 h-8 rounded-full bg-mak-green text-white flex items-center justify-center text-xs font-semibold">?</div>
+      <div class="flex min-w-0 flex-1 items-center gap-2 lg:hidden">
+        <button id="sidebar-toggle" type="button" class="w-11 h-11 min-w-[2.75rem] min-h-[2.75rem] shrink-0 rounded-full flex items-center justify-center bg-transparent hover:bg-white/10 active:bg-white/15 text-white border-none cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]" aria-label="Open menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
-        <div id="user-menu-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-chat-raised rounded-lg shadow-xl shadow-zinc-900/12 dark:shadow-black/40 dark:border dark:border-chat-line z-50 min-w-[200px] p-1">
-          <div id="user-menu-name" class="px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-0.5">Guest</div>
-          <p id="guest-menu-hint" class="px-3 pb-2 text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">Guest chats are not saved. Sign in to keep history.</p>
+        <img src="/assets/mak_logo.png" alt="" class="h-8 w-auto shrink-0 rounded-md bg-white/95 p-0.5" width="64" height="64" decoding="async" />
+        <div class="min-w-0 flex-1 text-left leading-tight">
+          <span class="block font-semibold text-[1rem] tracking-tight truncate">AskMak</span>
+          <span class="block text-[0.7rem] text-white/85 font-normal leading-snug truncate">Makerere Assistant</span>
+        </div>
+      </div>
+
+      <div class="hidden lg:flex lg:flex-1 lg:items-center lg:min-w-0 lg:pl-0.5">
+        <div class="min-w-0 text-left leading-tight">
+          <span class="block text-[0.9375rem] font-semibold text-zinc-800 dark:text-zinc-100 tracking-tight">AskMak</span>
+          <span class="block text-[0.6875rem] text-zinc-500 dark:text-zinc-400 font-medium leading-snug truncate">Makerere Assistant</span>
+        </div>
+      </div>
+
+      <div class="relative shrink-0 ml-auto">
+        <button id="user-menu-btn" type="button" aria-haspopup="true" aria-label="Account and settings" class="flex items-center justify-center w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-xl bg-white/10 hover:bg-white/20 lg:bg-zinc-200/90 lg:text-zinc-700 lg:hover:bg-zinc-200 lg:dark:bg-chat-raised lg:dark:text-zinc-200 lg:dark:hover:bg-chat-raised transition border-none cursor-pointer p-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="1.75"/><path d="M9 11h6"/><path d="M7 21v-5a5 5 0 0 1 10 0v5"/></svg>
+        </button>
+        <div id="user-menu-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white dark:bg-chat-raised rounded-lg shadow-xl shadow-zinc-900/12 dark:shadow-black/40 dark:border dark:border-chat-line z-50 w-[min(18rem,calc(100vw-1.5rem-env(safe-area-inset-left)-env(safe-area-inset-right)))] max-h-[min(70vh,22rem)] overflow-y-auto thin-scroll p-1 pt-0">
+          <div class="flex items-center gap-2.5 px-3 pt-3 pb-2 mb-1 border-b border-zinc-100 dark:border-chat-line">
+            <div id="user-avatar" class="w-9 h-9 min-w-[2.25rem] min-h-[2.25rem] rounded-full bg-mak-green text-white flex items-center justify-center text-xs font-semibold shrink-0" aria-hidden="true">G</div>
+            <div class="min-w-0 flex-1">
+              <div id="user-menu-name" class="text-sm font-medium text-zinc-800 dark:text-zinc-100 truncate leading-tight">Guest</div>
+              <div class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug truncate">Makerere Account</div>
+            </div>
+          </div>
+          <p id="guest-menu-hint" class="px-3 pb-2 pt-1 text-[11px] text-zinc-500 dark:text-zinc-400 leading-snug">Guest chats are not saved. Sign in to keep history.</p>
           <a id="guest-menu-signin" href="/login.html?next=%2Fchat.html" class="flex items-center gap-2 w-full px-3 py-2 text-sm rounded text-mak-green hover:bg-mak-green/10 font-medium no-underline">Sign in</a>
           <a id="guest-menu-signup" href="/signup.html?next=%2Fchat.html" class="flex items-center gap-2 w-full px-3 py-2 text-sm rounded text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-mak-green/10 no-underline">Create account</a>
           <button class="flex items-center gap-2 w-full px-3 py-2 text-sm rounded text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-mak-green/10 bg-transparent border-none cursor-pointer text-left transition" id="memories-btn" type="button">
@@ -117,34 +147,40 @@
       </div>
     </header>
 
-    <div id="offline-banner" class="hidden relative z-40 bg-mak-green/10 text-mak-green text-sm py-2 px-5 text-center shrink-0">
+    <div id="offline-banner" class="hidden relative z-40 bg-mak-green/10 text-mak-green text-sm py-2 px-[max(1.25rem,env(safe-area-inset-left))] text-center shrink-0">
       You're offline. Messages will be sent when you reconnect.
     </div>
 
-    <div id="chat-body" class="relative z-10 flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden bg-transparent">
+    <div id="chat-body" class="relative z-10 flex-1 flex flex-col items-stretch w-full min-h-0 overflow-hidden bg-transparent">
 
-      <div id="welcome-screen" class="relative z-[1] text-center px-5 animate-fade-in max-w-md mx-auto">
-        <h2 id="welcome-greeting" class="text-xl font-semibold text-zinc-800 dark:text-zinc-50 mb-1">How can I help you today?</h2>
-        <p class="text-sm text-zinc-500 dark:text-mak-green/80 mb-6">Ask anything about Makerere University</p>
-      </div>
-
-      <div id="chat-messages" class="hidden relative z-[1] w-full overflow-y-auto px-5 py-4 gap-1 thin-scroll min-h-0 dark:bg-transparent"></div>
-
-      <div id="typing-indicator" class="hidden relative z-[1] flex gap-3 max-w-3xl w-full mx-auto px-5 py-3 shrink-0">
-        <div class="w-8 h-8 rounded-full bg-mak-dark text-white flex items-center justify-center text-xs font-semibold shrink-0">M</div>
-        <div class="bg-zinc-200/90 dark:bg-chat-raised/95 dark:border dark:border-chat-line px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1.5 items-center">
-          <span class="w-1.5 h-1.5 bg-zinc-400 dark:bg-mak-green/55 rounded-full animate-typing-bounce"></span>
-          <span class="w-1.5 h-1.5 bg-zinc-400 dark:bg-mak-green/55 rounded-full animate-typing-bounce [animation-delay:0.2s]"></span>
-          <span class="w-1.5 h-1.5 bg-zinc-400 dark:bg-mak-green/55 rounded-full animate-typing-bounce [animation-delay:0.4s]"></span>
+      <div id="welcome-screen" class="relative z-[1] flex flex-1 min-h-0 flex-col items-center justify-center text-center px-4 sm:px-5 py-6 sm:py-14 animate-fade-in max-w-md mx-auto w-full">
+        <div class="w-full shrink-0 px-0.5">
+        <h2 id="welcome-greeting" class="text-[1.0625rem] sm:text-xl font-semibold text-zinc-800 dark:text-zinc-50 mb-1 leading-snug px-1">Hi, I&apos;m AskMak</h2>
+        <p id="welcome-lead" class="text-[0.9375rem] sm:text-base font-medium text-zinc-700 dark:text-zinc-200 mb-1 leading-snug px-1">How can I help you today?</p>
+        <p class="text-[0.8125rem] sm:text-sm text-zinc-500 dark:text-zinc-400 mb-0 sm:mb-5 leading-relaxed px-1 max-w-[22rem] mx-auto">Courses, admissions, fees, campus services—and student life at Makerere.</p>
         </div>
       </div>
 
-      <button id="scroll-bottom" class="hidden absolute bottom-24 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line shadow-md text-zinc-500 dark:text-zinc-400 items-center justify-center hover:bg-zinc-50 dark:hover:bg-mak-green/12 transition cursor-pointer z-10">
+      <div id="chat-messages" class="hidden relative z-[1] w-full min-w-0 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-2 sm:py-4 gap-1 thin-scroll min-h-0 dark:bg-transparent"></div>
+
+      <div id="typing-indicator" class="hidden relative z-[1] flex gap-2 sm:gap-3 max-w-3xl w-full mx-auto px-3 sm:px-5 py-2 sm:py-3 shrink-0" aria-live="polite" aria-label="AskMak is typing">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-mak-green text-white flex items-center justify-center text-[10px] sm:text-xs font-semibold shrink-0 ring-2 ring-mak-green/20">M</div>
+        <div class="bg-mak-mint/85 dark:bg-chat-raised/95 border-0 shadow-none px-4 py-3 rounded-3xl rounded-tl-lg flex gap-1.5 items-center">
+          <span class="typing-dot w-2 h-2 bg-mak-green rounded-full animate-typing-bounce"></span>
+          <span class="typing-dot w-2 h-2 bg-mak-green rounded-full animate-typing-bounce [animation-delay:0.18s]"></span>
+          <span class="typing-dot w-2 h-2 bg-mak-green rounded-full animate-typing-bounce [animation-delay:0.36s]"></span>
+        </div>
+      </div>
+
+      <button id="scroll-bottom" class="hidden absolute bottom-[max(6.25rem,calc(env(safe-area-inset-bottom,0px)+5.75rem))] left-1/2 -translate-x-1/2 w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line shadow-md text-zinc-500 dark:text-zinc-400 items-center justify-center hover:bg-zinc-50 dark:hover:bg-mak-green/12 transition cursor-pointer z-10 sm:bottom-[max(5.5rem,calc(env(safe-area-inset-bottom,0px)+5rem))]">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
       </button>
 
-      <div class="relative z-[1] w-full max-w-2xl px-5 pb-5 pt-3 shrink-0">
-        <div id="image-preview" class="hidden items-center gap-3 bg-zinc-200/50 dark:bg-chat-canvas border border-zinc-200 dark:border-chat-line rounded-lg p-2 mb-2">
+      <div id="composer-panel" class="relative z-[20] mt-auto w-full shrink-0 flex flex-col items-center
+        lg:bg-transparent lg:backdrop-blur-none lg:shadow-none lg:border-0 max-lg:bg-transparent max-lg:dark:bg-transparent max-lg:border-0 max-lg:shadow-none
+        lg:pb-[max(1rem,env(safe-area-inset-bottom,0px))] lg:pt-3 lg:px-6
+        pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 px-4 sm:px-6">
+        <div id="image-preview" class="hidden flex w-full max-w-2xl mx-auto items-center gap-3 bg-zinc-100/60 dark:bg-white/[0.06] border-0 rounded-lg p-2 mb-2">
           <img src="" alt="Preview" class="w-12 h-12 rounded object-cover">
           <div class="flex-1 min-w-0">
             <div class="preview-name text-xs font-medium truncate text-zinc-700 dark:text-zinc-200"></div>
@@ -155,41 +191,44 @@
           </button>
         </div>
 
-        <div id="upload-progress" class="hidden mb-2">
+        <div id="upload-progress" class="hidden mb-2 w-full max-w-2xl mx-auto">
           <div class="h-1 bg-zinc-200 dark:bg-chat-canvas rounded-full overflow-hidden">
             <div class="progress-bar h-full bg-mak-green dark:bg-mak-green/70 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
-        <div class="flex items-end gap-2 bg-white dark:bg-chat-raised border-[1.5px] border-zinc-200 dark:border-chat-line rounded-2xl px-4 py-2.5 transition-colors focus-within:border-mak-green focus-within:ring-2 focus-within:ring-mak-green/10 shadow-sm dark:focus-within:border-mak-green/55 dark:focus-within:ring-2 dark:focus-within:ring-mak-green/15">
-          <button class="attach-btn shrink-0 w-8 h-8 rounded-lg hover:bg-zinc-100 dark:hover:bg-mak-green/12 flex items-center justify-center text-zinc-400 dark:text-zinc-500 bg-transparent border-none cursor-pointer transition">
+        <div class="composer-input-row flex w-full max-w-2xl mx-auto items-end justify-center gap-1.5 sm:gap-2 border-0 shadow-none bg-transparent rounded-2xl px-0 py-1 sm:px-1">
+          <button class="attach-btn shrink-0 w-10 h-10 sm:w-8 sm:h-8 rounded-xl sm:rounded-lg hover:bg-zinc-100 dark:hover:bg-mak-green/12 flex items-center justify-center text-zinc-400 dark:text-zinc-500 bg-transparent border-none cursor-pointer transition touch-manipulation">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
-          <textarea id="message-input" placeholder="Ask anything about Makerere..." rows="1"
-            class="flex-1 resize-none border-none outline-none bg-transparent text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-mak-green/40 leading-relaxed py-1 max-h-32"></textarea>
-          <button id="send-btn" disabled class="shrink-0 w-8 h-8 rounded-full bg-mak-dark dark:bg-mak-green text-white flex items-center justify-center disabled:opacity-30 transition cursor-pointer border-none dark:shadow-[0_0_20px_-4px_rgba(0,166,81,0.45)]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+          <textarea id="message-input" placeholder="Ask about courses, fees, admissions…" rows="1"
+            class="flex-1 min-h-[44px] sm:min-h-0 resize-none border-none outline-none bg-transparent text-base sm:text-sm text-left text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 leading-relaxed py-2 sm:py-1 max-h-32"></textarea>
+          <button id="send-btn" type="button" disabled aria-label="Send message" class="shrink-0 w-11 h-11 sm:w-10 sm:h-10 min-w-[2.75rem] min-h-[2.75rem] sm:min-w-[2.5rem] sm:min-h-[2.5rem] rounded-xl sm:rounded-lg bg-mak-green text-white flex items-center justify-center disabled:opacity-35 transition cursor-pointer border-none touch-manipulation shadow-sm shadow-mak-green/25 dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="opacity-95" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
 
-        <div id="welcome-actions" class="flex flex-wrap gap-2 justify-center mt-3">
-          <button type="button" class="quick-action px-3.5 py-2 bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:border-mak-green hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer">What programs does Makerere offer?</button>
-          <button type="button" class="quick-action px-3.5 py-2 bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:border-mak-green hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer">How do I apply for admission?</button>
-          <button type="button" class="quick-action px-3.5 py-2 bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:border-mak-green hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer">What are the tuition fees?</button>
-          <button type="button" class="quick-action px-3.5 py-2 bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:border-mak-green hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer">Academic calendar</button>
-          <button type="button" class="quick-action px-3.5 py-2 bg-white dark:bg-chat-raised border border-zinc-200 dark:border-chat-line rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:border-mak-green hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer">Student life at Makerere</button>
+        <div id="welcome-quick-section" class="mt-3 w-full max-w-2xl mx-auto flex flex-col items-center">
+        <p class="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 text-center mb-2 w-full">Quick picks</p>
+        <div id="welcome-actions" class="flex flex-row flex-wrap justify-center gap-2 w-full pb-1 px-0.5 mt-1">
+          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What are the admissions requirements and deadlines at Makerere University?">Admissions</button>
+          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What undergraduate and postgraduate courses and programs does Makerere University offer?">Courses</button>
+          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="What is the fee structure and tuition at Makerere University?">Fees Structure</button>
+          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="Where can I find the academic calendar for Makerere University (semester dates and exams)?">Academic Calendar</button>
+          <button type="button" class="quick-action shrink-0 px-4 py-2.5 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 border-0 shadow-none bg-zinc-100/80 dark:bg-white/[0.06] hover:bg-zinc-200/85 dark:hover:bg-white/10 hover:text-mak-green dark:hover:text-mak-green transition cursor-pointer touch-manipulation text-center" data-send="Where can I find a campus map and main facilities at Makerere University?">Campus Map</button>
+        </div>
         </div>
 
-        <p class="text-[11px] text-zinc-500 dark:text-mak-green/55 text-center mt-2">AskMak can make mistakes. Verify important information.</p>
+        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mt-3 leading-relaxed px-1">AskMak can make mistakes—double-check deadlines and fees.<span class="block mt-1">Official records live on <a href="https://myportal.mak.ac.ug/" target="_blank" rel="noopener noreferrer" class="text-mak-green font-medium underline underline-offset-2 hover:text-mak-gold inline-flex items-center gap-0.5">MyPortal <span class="sr-only">(opens in new tab)</span><svg class="inline shrink-0 opacity-70" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 0 0 6"/><path d="M10 14 21 3"/></svg></a>.</span></p>
       </div>
     </div>
 
   </main>
 </div>
 
-<div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-5">
-  <div class="bg-white dark:bg-chat-raised rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line">
+<div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5 pb-[env(safe-area-inset-bottom,0px)] sm:pb-[env(safe-area-inset-bottom,0px)]">
+  <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line max-h-[min(85dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto thin-scroll mx-0 sm:mx-auto">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-chat-line">
       <h3 class="text-base font-semibold dark:text-zinc-100">Settings</h3>
       <button class="modal-close w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-gray-400 bg-transparent border-none cursor-pointer transition text-lg">&times;</button>
@@ -205,8 +244,8 @@
   </div>
 </div>
 
-<div id="memories-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-5">
-  <div class="bg-white dark:bg-chat-raised rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line">
+<div id="memories-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5 pb-[env(safe-area-inset-bottom,0px)] sm:pb-[env(safe-area-inset-bottom,0px)]">
+  <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line max-h-[min(85dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto thin-scroll mx-0 sm:mx-auto">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-chat-line">
       <h3 class="text-base font-semibold dark:text-zinc-100">Memories</h3>
       <button class="modal-close w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-gray-400 bg-transparent border-none cursor-pointer transition text-lg">&times;</button>

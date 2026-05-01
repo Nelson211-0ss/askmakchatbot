@@ -108,7 +108,8 @@ var Chat = {
 
     document.querySelectorAll('.quick-action').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        document.getElementById('message-input').value = btn.textContent;
+        var text = (btn.getAttribute('data-send') || '').trim() || btn.textContent.trim();
+        document.getElementById('message-input').value = text;
         document.getElementById('send-btn').disabled = false;
         self.sendMessage();
       });
@@ -125,11 +126,9 @@ var Chat = {
   switchToChat: function() {
     if (this.inChatMode) return;
     this.inChatMode = true;
-    var body = document.getElementById('chat-body');
-    body.classList.remove('justify-center');
     document.getElementById('welcome-screen').classList.add('hidden');
-    var actions = document.getElementById('welcome-actions');
-    if (actions) actions.classList.add('hidden');
+    var welcomeQuick = document.getElementById('welcome-quick-section');
+    if (welcomeQuick) welcomeQuick.classList.add('hidden');
     var msgs = document.getElementById('chat-messages');
     msgs.classList.remove('hidden');
     msgs.classList.add('flex', 'flex-col', 'flex-1');
@@ -137,11 +136,9 @@ var Chat = {
 
   switchToWelcome: function() {
     this.inChatMode = false;
-    var body = document.getElementById('chat-body');
-    body.classList.add('justify-center');
     document.getElementById('welcome-screen').classList.remove('hidden');
-    var actions = document.getElementById('welcome-actions');
-    if (actions) actions.classList.remove('hidden');
+    var welcomeQuick = document.getElementById('welcome-quick-section');
+    if (welcomeQuick) welcomeQuick.classList.remove('hidden');
     var msgs = document.getElementById('chat-messages');
     msgs.innerHTML = '';
     msgs.classList.add('hidden');
@@ -149,8 +146,15 @@ var Chat = {
   },
 
   renderWelcome: function() {
-    var name = Auth.user ? Auth.user.full_name.split(' ')[0] : 'there';
-    document.getElementById('welcome-greeting').textContent = 'Hi ' + name + ', how can I help you today?';
+    var greetEl = document.getElementById('welcome-greeting');
+    var leadEl = document.getElementById('welcome-lead');
+    var first = Auth.user ? Auth.user.full_name.split(' ')[0] : null;
+    if (greetEl) {
+      greetEl.textContent = first
+        ? 'Hi ' + first + '! I\'m AskMak'
+        : 'Hi, I\'m AskMak';
+    }
+    if (leadEl) leadEl.textContent = 'How can I help you today?';
     this.updateAccountChrome();
     this.switchToWelcome();
   },
@@ -258,7 +262,10 @@ var Chat = {
 
         if (data.type === 'error') {
           self.showTyping(false);
-          Utils.showToast(data.message || 'Something went wrong', 'error');
+          Utils.showToast(
+            data.message || 'Hmm, I didn\'t get that. Try asking about courses or fees.',
+            'error'
+          );
         }
       }
 
@@ -285,7 +292,7 @@ var Chat = {
 
     } catch (e) {
       if (e.name !== 'AbortError') {
-        Utils.showToast('Failed to send message. Please try again.', 'error');
+        Utils.showToast('Hmm, I couldn\'t send that. Check your connection, then try again.', 'error');
       }
     } finally {
       this.isStreaming = false;
@@ -299,27 +306,36 @@ var Chat = {
     var div = document.createElement('div');
     var isUser = msg.role === 'user';
 
-    div.className = 'flex gap-3 max-w-3xl w-full mx-auto py-3 animate-fade-in' + (isUser ? ' flex-row-reverse' : '');
+    div.className = 'flex gap-2 max-w-3xl w-full mx-auto py-2 sm:py-3 lg:gap-3 animate-fade-in' + (isUser ? ' flex-row-reverse' : '');
     if (msg.id) div.dataset.msgId = msg.id;
 
-    var avatarBg = isUser ? 'bg-mak-green text-white dark:bg-mak-green dark:text-white' : 'bg-mak-dark text-white';
+    var avatarBg = isUser
+      ? 'bg-mak-green text-white ring-2 ring-white/25 dark:ring-white/15'
+      : 'bg-mak-green text-white ring-2 ring-mak-green/20';
     var avatarText = isUser ? Utils.getInitials(Auth.user ? Auth.user.full_name : 'G') : 'M';
 
-    var html = '<div class="w-8 h-8 rounded-full ' + avatarBg + ' flex items-center justify-center text-xs font-semibold shrink-0">' + avatarText + '</div>';
+    var html =
+      '<div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs ' +
+      avatarBg +
+      ' flex items-center justify-center font-semibold shrink-0">' +
+      avatarText +
+      '</div>';
     html += '<div class="flex-1 min-w-0' + (isUser ? ' flex flex-col items-end' : '') + '">';
 
     if (isUser) {
-      html += '<div class="bg-mak-green text-white dark:bg-mak-green/35 dark:text-white dark:border dark:border-mak-green/40 px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-relaxed max-w-[85%] break-words">';
+      html +=
+        '<div class="bg-mak-green text-white px-3.5 sm:px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-relaxed max-w-[min(94%,26rem)] sm:max-w-[85%] break-words shadow-sm">';
       html += Utils.escapeHtml(msg.content || '');
       html += '</div>';
     } else {
-      html += '<div class="msg-content bg-transparent dark:bg-transparent px-0 py-1 text-sm leading-relaxed break-words prose prose-sm prose-sans dark:prose-invert prose-a:text-mak-green dark:prose-a:text-mak-green prose-headings:font-semibold dark:prose-headings:text-zinc-50 dark:prose-strong:text-white dark:prose-code:text-mak-green/95 dark:prose-pre:bg-chat-sidebar/80 dark:prose-pre:text-zinc-200 max-w-none">';
+      html +=
+        '<div class="msg-content rounded-2xl rounded-tl-sm border-0 shadow-none bg-transparent dark:bg-transparent px-0 sm:px-0.5 py-2 sm:py-2 text-[0.9375rem] sm:text-sm leading-relaxed break-words max-w-[min(94%,32rem)] sm:max-w-[90%] text-zinc-800 dark:text-zinc-100 prose prose-sm prose-zinc dark:prose-invert max-w-none prose-p:leading-relaxed prose-strong:text-zinc-900 dark:prose-strong:text-white prose-pre:overflow-x-auto prose-table:overflow-x-auto prose-table:block prose-table:max-w-full prose-img:rounded-lg prose-sans prose-a:text-mak-green dark:prose-a:text-mak-green prose-headings:font-semibold prose-headings:text-mak-green dark:prose-headings:text-zinc-50 dark:prose-code:text-mak-green/95 dark:prose-pre:bg-chat-sidebar/80 dark:prose-pre:text-zinc-200">';
       html += Utils.renderMarkdown(msg.content || '');
       html += '</div>';
     }
 
     if (msg.image_key) {
-      html += '<img src="/api/images/' + msg.image_key + '" alt="Attached image" class="mt-2 max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition" onclick="Utils.openLightbox(this.src)">';
+      html += '<img src="/api/images/' + msg.image_key + '" alt="Attached image" class="mt-2 w-full max-w-full sm:max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition" onclick="Utils.openLightbox(this.src)">';
     }
 
     html += '<div class="msg-meta flex flex-wrap items-center gap-2 mt-1.5">';

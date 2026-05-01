@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sign Up - AskMak</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#00a651">
@@ -10,62 +10,82 @@
   <script src="/js/tailwind-config.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="font-sans bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen flex items-center justify-center px-5">
+<body class="relative font-sans bg-transparent text-gray-900 dark:text-gray-100 min-h-dvh flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
 
-  <div class="w-full max-w-sm">
-    <div class="text-center mb-8">
-      <img src="/assets/mak_logo.png" alt="Makerere University" class="h-16 w-auto mx-auto mb-3">
-      <a href="/" class="text-2xl font-bold tracking-tight text-mak-dark dark:text-white inline-block mb-2">Ask<span class="text-mak-green">Mak</span></a>
-      <p class="text-sm text-gray-500 dark:text-gray-400">Create your account</p>
-    </div>
-
-    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-lg shadow-gray-900/8 dark:shadow-black/40">
-      <div id="alert" class="hidden"></div>
-
-      <form id="signup-form" class="space-y-4">
-        <div class="space-y-1">
-          <label for="full_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full name</label>
-          <input type="text" name="full_name" id="full_name" placeholder="Odoch Nelson Ochan" required
-            class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
-        </div>
-
-        <div class="space-y-1">
-          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
-          <input type="email" name="email" id="email" placeholder="you@example.com" required
-            class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
-          <p class="text-mak-red text-xs mt-1 hidden"></p>
-        </div>
-
-        <div class="space-y-1">
-          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-          <div class="relative">
-            <input type="password" name="password" id="password" placeholder="At least 8 characters" required
-              class="w-full px-3.5 py-2.5 pr-10 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
-            <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer bg-transparent border-none p-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-          <div class="h-1 rounded-full bg-gray-100 dark:bg-gray-800 mt-2 overflow-hidden">
-            <div id="strength-fill" class="h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm password</label>
-          <input type="password" name="confirm_password" id="confirm_password" placeholder="Re-enter password" required
-            class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
-        </div>
-
-        <button type="submit" class="w-full bg-mak-green text-white py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition cursor-pointer">
-          Create account
-        </button>
-      </form>
-    </div>
-
-    <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-5">
-      Already have an account? <a href="/login.html" class="text-mak-green font-medium hover:underline">Sign in</a>
-    </p>
+  <div class="home-chatbot-bg" aria-hidden="true">
+    <div class="home-chatbot-bg__mesh"></div>
+    <div class="home-chatbot-bg__grid"></div>
+    <div class="home-chatbot-bg__orb home-chatbot-bg__orb--1"></div>
+    <div class="home-chatbot-bg__orb home-chatbot-bg__orb--2"></div>
   </div>
+
+  <header class="relative z-10 shrink-0 pt-[max(0px,env(safe-area-inset-top,0px))]">
+    <div class="max-w-md mx-auto w-full px-4 sm:px-5 pt-4 sm:pt-5 flex items-center justify-between gap-3">
+      <a href="/" class="group inline-flex items-center gap-2 rounded-lg pl-1.5 pr-2.5 py-2 text-sm font-medium text-gray-600 hover:text-mak-dark dark:text-gray-400 dark:hover:text-white transition">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-gray-500 shadow-sm ring-1 ring-gray-200/80 group-hover:text-mak-green group-hover:ring-mak-green/30 dark:bg-gray-900/80 dark:text-gray-400 dark:ring-gray-700 dark:group-hover:text-mak-green transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </span>
+        <span>Home</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 sm:py-10">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-6 sm:mb-8">
+        <img src="/assets/mak_logo.png" alt="Makerere University" class="h-14 sm:h-16 w-auto mx-auto mb-3">
+        <a href="/" class="text-xl sm:text-2xl font-bold tracking-tight text-mak-dark dark:text-white inline-block mb-2">Ask<span class="text-mak-green">Mak</span></a>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Create your account</p>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200/90 dark:border-gray-600/70 bg-white/90 dark:bg-gray-900/85 backdrop-blur-xl shadow-xl shadow-gray-900/10 dark:shadow-black/50 p-5 sm:p-7 ring-1 ring-white/60 dark:ring-white/[0.06]">
+        <div id="alert" class="hidden"></div>
+
+        <form id="signup-form" class="space-y-4">
+          <div class="space-y-1">
+            <label for="full_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full name</label>
+            <input type="text" name="full_name" id="full_name" placeholder="Odoch Nelson Ochan" required
+              class="w-full px-3.5 py-3 min-h-[44px] border border-gray-200 dark:border-gray-700 rounded-xl text-[16px] sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
+          </div>
+
+          <div class="space-y-1">
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
+            <input type="email" name="email" id="email" placeholder="you@example.com" required
+              class="w-full px-3.5 py-3 min-h-[44px] border border-gray-200 dark:border-gray-700 rounded-xl text-[16px] sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
+            <p class="text-mak-red text-xs mt-1 hidden"></p>
+          </div>
+
+          <div class="space-y-1">
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+            <div class="relative">
+              <input type="password" name="password" id="password" placeholder="At least 8 characters" required
+                class="w-full px-3.5 py-3 min-h-[44px] pr-11 border border-gray-200 dark:border-gray-700 rounded-xl text-[16px] sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
+              <button type="button" class="toggle-password absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition cursor-pointer bg-transparent border-none rounded-lg touch-manipulation" aria-label="Show password">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="h-1 rounded-full bg-gray-100 dark:bg-gray-800 mt-2 overflow-hidden">
+              <div id="strength-fill" class="h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm password</label>
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Re-enter password" required
+              class="w-full px-3.5 py-3 min-h-[44px] border border-gray-200 dark:border-gray-700 rounded-xl text-[16px] sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-mak-green focus:ring-2 focus:ring-mak-green/10 transition">
+          </div>
+
+          <button type="submit" class="w-full min-h-[44px] bg-mak-green text-white py-3 rounded-xl text-sm font-semibold hover:opacity-90 active:scale-[0.99] transition cursor-pointer touch-manipulation shadow-lg shadow-mak-green/25">
+            Create account
+          </button>
+        </form>
+      </div>
+
+      <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6 pb-[env(safe-area-inset-bottom,0px)]">
+        Already have an account? <a href="/login.html" class="text-mak-green font-medium hover:underline">Sign in</a>
+      </p>
+    </div>
+  </main>
 
   <script src="/js/theme.js"></script>
   <script src="/js/api.js"></script>

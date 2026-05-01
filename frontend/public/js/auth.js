@@ -281,8 +281,8 @@ var Auth = {
   updateUI: function() {
     var nameEl = document.getElementById('user-menu-name');
     var avatarEl = document.getElementById('user-avatar');
-    if (this.user && nameEl) nameEl.textContent = this.user.full_name;
-    if (this.user && avatarEl) avatarEl.textContent = Utils.getInitials(this.user.full_name);
+    if (nameEl) nameEl.textContent = this.user ? this.user.full_name : 'Guest';
+    if (avatarEl) avatarEl.textContent = this.user ? Utils.getInitials(this.user.full_name) : 'G';
   },
 
   isAuthenticated: function() {

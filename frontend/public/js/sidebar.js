@@ -44,25 +44,72 @@ var Sidebar = {
     });
 
     this.load();
-  },
-
-  toggle: function() {
-    var s = document.getElementById('sidebar');
-    if (s.style.transform) {
-      this.close();
-    } else {
-      this.open();
+    this.applyResponsiveSidebar();
+    if (typeof window.matchMedia !== 'undefined') {
+      var mq = window.matchMedia('(min-width: 1024px)');
+      var onBreak = function() {
+        Sidebar.applyResponsiveSidebar();
+      };
+      if (typeof mq.addEventListener === 'function') {
+        mq.addEventListener('change', onBreak);
+      } else if (mq.addListener) {
+        mq.addListener(onBreak);
+      }
     }
   },
 
+  /** Below lg breakpoint: sidebar uses display toggle (hidden drawer); desktop always shows sidebar. */
+  isDrawerViewport: function() {
+    return typeof window.matchMedia !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches;
+  },
+
+  applyResponsiveSidebar: function() {
+    var s = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (!s || !overlay) return;
+    var wide = typeof window.matchMedia !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+    if (wide) {
+      s.classList.remove('hidden');
+      s.classList.remove('flex');
+      s.style.transform = '';
+      overlay.classList.add('hidden');
+      s.setAttribute('aria-hidden', 'false');
+      return;
+    }
+    overlay.classList.add('hidden');
+    s.classList.add('hidden');
+    s.classList.remove('flex');
+    s.style.transform = '';
+    s.setAttribute('aria-hidden', 'true');
+  },
+
+  toggle: function() {
+    if (!this.isDrawerViewport()) return;
+    var s = document.getElementById('sidebar');
+    if (!s.classList.contains('hidden')) this.close();
+    else this.open();
+  },
+
   open: function() {
-    document.getElementById('sidebar').style.transform = 'translateX(0)';
-    document.getElementById('sidebar-overlay').classList.remove('hidden');
+    if (!this.isDrawerViewport()) return;
+    var s = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    s.classList.remove('hidden');
+    s.classList.add('flex');
+    s.style.transform = '';
+    overlay.classList.remove('hidden');
+    s.setAttribute('aria-hidden', 'false');
   },
 
   close: function() {
-    document.getElementById('sidebar').style.transform = '';
-    document.getElementById('sidebar-overlay').classList.add('hidden');
+    if (!this.isDrawerViewport()) return;
+    var s = document.getElementById('sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    s.classList.add('hidden');
+    s.classList.remove('flex');
+    s.style.transform = '';
+    overlay.classList.add('hidden');
+    s.setAttribute('aria-hidden', 'true');
   },
 
   clearAllHistory: async function() {
