@@ -1828,6 +1828,21 @@ option {
   padding-left: 0;
 }
 
+/* Empty state: vertically center greeting + centered composer & quick picks; chatting: composer docked bottom */
+#chat-body.chat-body-welcome {
+  justify-content: center;
+  gap: 1.5rem;
+  padding-block: 0.5rem;
+}
+
+#chat-body.chat-body-chat {
+  justify-content: flex-start;
+}
+
+#chat-body.chat-body-chat #composer-panel {
+  margin-top: auto;
+}
+
 /* Mobile: prevent iOS automatic text zoom in form fields; improve chat readability */
 @media (max-width: 639px) {
   html {

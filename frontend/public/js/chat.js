@@ -124,14 +124,20 @@ var Chat = {
   },
 
   switchToChat: function() {
-    if (this.inChatMode) return;
-    this.inChatMode = true;
-    document.getElementById('welcome-screen').classList.add('hidden');
-    var welcomeQuick = document.getElementById('welcome-quick-section');
-    if (welcomeQuick) welcomeQuick.classList.add('hidden');
-    var msgs = document.getElementById('chat-messages');
-    msgs.classList.remove('hidden');
-    msgs.classList.add('flex', 'flex-col', 'flex-1');
+    if (!this.inChatMode) {
+      this.inChatMode = true;
+      document.getElementById('welcome-screen').classList.add('hidden');
+      var welcomeQuick = document.getElementById('welcome-quick-section');
+      if (welcomeQuick) welcomeQuick.classList.add('hidden');
+      var msgs = document.getElementById('chat-messages');
+      msgs.classList.remove('hidden');
+      msgs.classList.add('flex', 'flex-col', 'flex-1');
+    }
+    var chatBody = document.getElementById('chat-body');
+    if (chatBody) {
+      chatBody.classList.remove('chat-body-welcome');
+      chatBody.classList.add('chat-body-chat');
+    }
   },
 
   switchToWelcome: function() {
@@ -143,6 +149,11 @@ var Chat = {
     msgs.innerHTML = '';
     msgs.classList.add('hidden');
     msgs.classList.remove('flex', 'flex-col', 'flex-1');
+    var chatBody = document.getElementById('chat-body');
+    if (chatBody) {
+      chatBody.classList.add('chat-body-welcome');
+      chatBody.classList.remove('chat-body-chat');
+    }
   },
 
   renderWelcome: function() {
