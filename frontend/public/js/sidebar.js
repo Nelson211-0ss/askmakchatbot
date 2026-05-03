@@ -186,12 +186,33 @@ var Sidebar = {
     });
 
     if (!html) {
-      if (filter && this.chats.length) {
-        html = '<div class="text-center px-3 py-8">' +
-          '<p class="text-sm text-zinc-500 dark:text-white/55">No matching chats</p>' +
-          '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Try another title.</p></div>';
+      if (filter) {
+        if (this.chats.length) {
+          html =
+            '<div class="text-center px-3 py-8">' +
+            '<p class="text-sm text-zinc-500 dark:text-white/55">No matching chats</p>' +
+            '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Try another title.</p></div>';
+        } else if (Auth.isAuthenticated()) {
+          html =
+            '<div class="text-center px-3 py-8">' +
+            '<p class="text-sm text-zinc-500 dark:text-white/55">No chats to search</p>' +
+            '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Start a conversation first.</p></div>';
+        } else {
+          html =
+            '<div class="text-center px-3 py-10">' +
+            '<p class="text-sm text-zinc-500 dark:text-white/55">Guest chats are not saved</p>' +
+            '<p class="text-xs text-zinc-400 dark:text-white/35 mt-2">History only appears when you\'re signed in—search won\'t show past threads for guests.</p>' +
+            '</div>';
+        }
+      } else if (!Auth.isAuthenticated()) {
+        html =
+          '<div class="text-center px-3 py-10">' +
+          '<p class="text-sm text-zinc-500 dark:text-white/55">Guest chats are not saved</p>' +
+          '<p class="text-xs text-zinc-400 dark:text-white/35 mt-2">History is only stored for signed-in accounts. Questions you ask as a guest stay in this browser until you refresh or leave.</p>' +
+          '</div>';
       } else {
-        html = '<div class="text-center px-3 py-10">' +
+        html =
+          '<div class="text-center px-3 py-10">' +
           '<p class="text-sm text-zinc-500 dark:text-white/55">No conversations yet</p>' +
           '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Start with New Chat.</p></div>';
       }

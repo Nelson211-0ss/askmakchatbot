@@ -15,16 +15,13 @@ function start() {
     });
 
     cron.schedule('0 4 * * *', async () => {
-        console.log('[CRON] Purging old guest chats...');
+        console.log('[CRON] Purging guest-only chats (guest sessions must not persist).');
         try {
-            const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
             const images = await db.query(
-                `SELECT m.image_key FROM messages m
+                `SELECT DISTINCT m.image_key FROM messages m
                  JOIN chats c ON c.id = m.chat_id
                  WHERE c.guest_token IS NOT NULL AND c.user_id IS NULL
-                 AND c.updated_at < $1 AND m.image_key IS NOT NULL`,
-                [cutoff]
+                   AND m.image_key IS NOT NULL`
             );
 
             for (const row of images.rows) {
@@ -32,11 +29,10 @@ function start() {
             }
 
             const result = await db.query(
-                `DELETE FROM chats WHERE guest_token IS NOT NULL AND user_id IS NULL AND updated_at < $1`,
-                [cutoff]
+                `DELETE FROM chats WHERE guest_token IS NOT NULL AND user_id IS NULL`
             );
 
-            console.log(`[CRON] Purged ${result.rowCount} guest chats`);
+            console.log(`[CRON] Purged ${result.rowCount} guest-only chat rows`);
         } catch (err) {
             console.error('[CRON] Guest purge failed:', err.message);
         }

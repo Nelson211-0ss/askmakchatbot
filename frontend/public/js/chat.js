@@ -405,12 +405,13 @@ var Chat = {
 
     div.querySelectorAll('.copy-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        var content = div.querySelector('.msg-content');
-        if (content) {
-          navigator.clipboard.writeText(content.textContent).then(function() {
-            Utils.showToast('Copied to clipboard', 'success');
-          });
-        }
+        var bubble = div.querySelector('.msg-content');
+        var plain = bubble ? bubble.textContent || bubble.innerText || '' : '';
+        if (!plain.trim()) return;
+        Utils.copyTextToClipboard(plain.trim()).then(function(ok) {
+          if (ok) Utils.showToast('Copied to clipboard', 'success');
+          else Utils.showToast('Could not copy (try HTTPS or paste manually)', 'error');
+        });
       });
     });
 

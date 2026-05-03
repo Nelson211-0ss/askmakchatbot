@@ -48,6 +48,15 @@ function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+function smtpConfigured() {
+    return Boolean(process.env.SMTP_HOST && String(process.env.SMTP_HOST).trim());
+}
+
+/** When false (default except explicit "false"), do not skip sending if SMTP looks configured */
+function verificationEmailDisabled() {
+    return String(process.env.VERIFICATION_EMAIL || '').trim().toLowerCase() === 'false';
+}
+
 function signToken(user) {
     return jwt.sign(
         { id: user.id, email: user.email, role: user.role, full_name: user.full_name },
@@ -73,29 +82,52 @@ router.post('/signup', authLimiter, async (req, res, next) => {
         const existing = await db.query('SELECT id FROM users WHERE email = $1', [value.email]);
         if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
 
+        const wantsEmailVerify = smtpConfigured() && !verificationEmailDisabled();
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        if (isProduction && !wantsEmailVerify) {
+            return res.status(503).json({
+                error:
+                    'Registration unavailable: configure SMTP_HOST (and SMTP_FROM) on the server to send verification emails.'
+            });
+        }
+
         const passwordHash = await bcrypt.hash(value.password, 12);
         const code = generateCode();
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        await db.query(
+        const insertResult = await db.query(
             `INSERT INTO users (full_name, email, password_hash, verification_code, verification_expires_at)
-             VALUES ($1, $2, $3, $4, $5)`,
+             VALUES ($1, $2, $3, $4, $5) RETURNING id`,
             [value.full_name, value.email, passwordHash, code, expiresAt]
         );
+        const newUserId = insertResult.rows[0].id;
 
         const html = `<p>Hi ${value.full_name},</p><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`;
-        let emailSent = false;
-        if (process.env.VERIFICATION_EMAIL === 'true') {
-            emailSent = await sendVerificationMail(value.email, 'Verify your AskMak account', html);
-        }
-        if (!emailSent) {
-            console.log(`[AskMak] Verification code for ${value.email}: ${code}`);
+        if (wantsEmailVerify) {
+            const emailSent = await sendVerificationMail(value.email, 'Verify your AskMak account', html);
+            if (!emailSent) {
+                await db.query('DELETE FROM users WHERE id = $1', [newUserId]);
+                return res.status(503).json({
+                    error:
+                        'Could not send the verification email. Check SMTP settings, then try signing up again.'
+                });
+            }
+        } else {
+            console.warn(
+                `[AskMak DEV] Verification code for ${value.email}: ${code} (set SMTP_HOST in production to send mail)`
+            );
         }
 
-        const message = emailSent
-            ? 'Account created. Check your email for the verification code.'
-                + (process.env.SMTP_INBOX_URL ? ' Open ' + process.env.SMTP_INBOX_URL + ' to read it locally.' : '')
-            : 'Account created. Your verification code is printed in the server console (the terminal where AskMak is running). Enter it on the next screen.';
+        let message =
+            'Account created. Check your email for the verification code. Enter it on the next screen.';
+        if (!wantsEmailVerify) {
+            message =
+                'Account created. On this server SMTP is off (dev): the verification code was printed in the AskMak server logs.';
+        }
+        if (process.env.SMTP_INBOX_URL && wantsEmailVerify) {
+            message += ' Mailpit/UI: ' + process.env.SMTP_INBOX_URL;
+        }
 
         res.status(201).json({ message });
     } catch (err) {
@@ -109,7 +141,7 @@ router.post('/verify', authLimiter, async (req, res, next) => {
         if (!email || !code) return res.status(400).json({ error: 'Email and code required' });
 
         const result = await db.query(
-            `SELECT id, full_name, email, role, verification_code, verification_expires_at
+            `SELECT id, full_name, email, role, verification_code, verification_expires_at, email_verified
              FROM users WHERE email = $1`,
             [email]
         );
@@ -117,6 +149,8 @@ router.post('/verify', authLimiter, async (req, res, next) => {
         if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
 
         const user = result.rows[0];
+
+        if (user.email_verified) return res.status(400).json({ error: 'This email is already verified. Sign in instead.' });
 
         if (user.verification_code !== code) {
             return res.status(400).json({ error: 'Invalid verification code' });
@@ -146,30 +180,55 @@ router.post('/resend-verification', authLimiter, async (req, res, next) => {
         const { email } = req.body;
         if (!email) return res.status(400).json({ error: 'Email required' });
 
-        const result = await db.query('SELECT id, full_name, email_verified FROM users WHERE email = $1', [email]);
+        const wantsEmailVerify = smtpConfigured() && !verificationEmailDisabled();
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        const result = await db.query(
+            'SELECT id, full_name, email_verified, verification_code, verification_expires_at FROM users WHERE email = $1',
+            [email]
+        );
         if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
         if (result.rows[0].email_verified) return res.status(400).json({ error: 'Email already verified' });
+
+        if (isProduction && !wantsEmailVerify) {
+            return res.status(503).json({
+                error: 'Email resend unavailable: SMTP is not configured on the server.'
+            });
+        }
+
+        const prevCode = result.rows[0].verification_code;
+        const prevExp = result.rows[0].verification_expires_at;
 
         const code = generateCode();
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-        await db.query(
-            'UPDATE users SET verification_code = $1, verification_expires_at = $2 WHERE id = $3',
-            [code, expiresAt, result.rows[0].id]
-        );
+        await db.query('UPDATE users SET verification_code = $1, verification_expires_at = $2 WHERE id = $3', [
+            code,
+            expiresAt,
+            result.rows[0].id
+        ]);
 
         const html = `<p>Hi ${result.rows[0].full_name},</p><p>Your new verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`;
-        let emailSent = false;
-        if (process.env.VERIFICATION_EMAIL === 'true') {
-            emailSent = await sendVerificationMail(email, 'Verify your AskMak account', html);
-        }
-        if (!emailSent) {
-            console.log(`[AskMak] New verification code for ${email}: ${code}`);
+
+        if (wantsEmailVerify) {
+            const emailSent = await sendVerificationMail(email, 'Verify your AskMak account', html);
+            if (!emailSent) {
+                await db.query(
+                    'UPDATE users SET verification_code = $1, verification_expires_at = $2 WHERE id = $3',
+                    [prevCode, prevExp, result.rows[0].id]
+                );
+                return res.status(503).json({
+                    error: 'Could not send the verification email. Check SMTP settings and try again.'
+                });
+            }
+        } else {
+            console.warn(
+                `[AskMak DEV] New verification code for ${email}: ${code} (set SMTP_HOST in production to send mail)`
+            );
         }
 
-        const message = emailSent
-            ? 'Verification code sent' + (process.env.SMTP_INBOX_URL ? ' Open ' + process.env.SMTP_INBOX_URL + ' to read it locally.' : '')
-            : 'A new verification code is printed in the server console.';
+        let message = 'Verification code sent. Check your email.';
+        if (process.env.SMTP_INBOX_URL) message += ' ' + process.env.SMTP_INBOX_URL;
 
         res.json({ message });
     } catch (err) {

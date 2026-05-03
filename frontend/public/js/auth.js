@@ -109,7 +109,7 @@ var Auth = {
     }
   },
 
-  /** Admins default to dashboard; students default to chat. */
+  /** Admins always land in the admin app after login/verify unless `next` is an admin URL. Staff must open /chat.html manually if they need the assistant. Students never use admin-only `next`. */
   redirectAuthenticated: function(user, safeNext) {
     var admin =
       user &&
@@ -117,17 +117,16 @@ var Auth = {
         .trim()
         .toLowerCase() === 'admin';
     if (admin) {
-      if (
+      var wantsAdminUi =
         safeNext &&
-        (safeNext === '/chat.html' ||
-          safeNext.indexOf('/chat.html') === 0 ||
-          safeNext === '/admin.html' ||
-          safeNext.indexOf('/admin.html') === 0)
-      ) {
+        (safeNext === '/admin.html' ||
+          safeNext.indexOf('/admin.html') === 0 ||
+          safeNext.indexOf('/admin/') === 0);
+      if (wantsAdminUi) {
         window.location.href = safeNext;
-        return;
+      } else {
+        window.location.href = '/admin.html';
       }
-      window.location.href = '/admin.html';
       return;
     }
     if (safeNext && (safeNext.indexOf('/admin.html') === 0 || safeNext.indexOf('/admin/') === 0)) {

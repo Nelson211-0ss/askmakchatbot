@@ -73,6 +73,40 @@ var Utils = {
     return div.innerHTML;
   },
 
+  /** Clipboard API fails on insecure HTTP origins; textarea fallback avoids silent failure. Returns a promise that resolves true if copied. */
+  copyTextToClipboard: function(text) {
+    var t = String(text || '');
+    if (!t) return Promise.resolve(false);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function' && window.isSecureContext) {
+      return navigator.clipboard
+        .writeText(t)
+        .then(function() {
+          return true;
+        })
+        .catch(function() {
+          return Utils._copyTextToClipboardFallback(t);
+        });
+    }
+    return Promise.resolve(Utils._copyTextToClipboardFallback(t));
+  },
+
+  _copyTextToClipboardFallback: function(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    } catch (e) {
+      return false;
+    }
+  },
+
   getInitials: function(name) {
     if (!name) return '?';
     return name.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
