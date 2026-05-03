@@ -519,7 +519,14 @@
 
   function loadDocuments() {
     var main = document.getElementById('admin-main');
-    adminFetch('/documents?limit=50').then(function(d) {
+
+    function kbAttrQuotes(s) {
+      return Utils.escapeHtml(String(s)).replace(/"/g, '&quot;');
+    }
+
+    function loadKbWithQuery(searchQuery) {
+      var qTrim = typeof searchQuery === 'string' ? searchQuery.trim() : '';
+      adminFetch('/documents?limit=50&q=' + encodeURIComponent(qTrim)).then(function(d) {
       var rows = d.documents || [];
       var totalKb = typeof d.total === 'number' ? d.total : rows.length;
       var listLimit = typeof d.limit === 'number' ? d.limit : 50;
@@ -536,7 +543,7 @@
       html += '<p class="admin-kb-eyebrow">Retrieval &amp; answers</p>';
       html += '<h2 class="admin-kb-title">Knowledge base</h2>';
       html +=
-        '<p class="admin-kb-lede">Add text entries or upload PDFs. Content is split into chunks, embedded with OpenAI, and matched when users ask questions.</p>';
+        '<p class="admin-kb-lede">Add text entries or upload PDFs. Content is chunked, embedded with OpenAI, and matched when users ask questions.</p>';
       html += '</div>';
       html += '<div class="admin-kb-hero__stat" title="Total chunks in the database">';
       html += '<span class="admin-kb-hero__stat-value">' + totalKb + '</span>';
@@ -556,7 +563,7 @@
         '<input id="doc-title" type="text" autocomplete="off" placeholder="e.g. How do I defer a semester?" class="admin-kb-input"></div>';
       html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-body">Content</label>';
       html +=
-        '<textarea id="doc-body" rows="6" placeholder="Full answer or article text…" class="admin-kb-textarea"></textarea></div>';
+        '<textarea id="doc-body" rows="5" placeholder="Full answer or article text…" class="admin-kb-textarea"></textarea></div>';
       html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-cat">Category</label>';
       html +=
         '<input id="doc-cat" type="text" autocomplete="off" placeholder="faq, admissions, fees, it… (default faq)" class="admin-kb-input"></div>';
@@ -595,28 +602,44 @@
       html += '<li>Large PDFs create many rows—delete one part at a time, or rely on ingestion for bulk refresh.</li>';
       html += '</ul></div>';
 
-      html += '<section class="admin-kb-index" aria-labelledby="admin-kb-index-heading">';
+      html += '<section class="admin-kb-index admin-kb-section" aria-labelledby="admin-kb-index-heading">';
       html += '<div class="admin-kb-index__head">';
       html += '<div><h3 id="admin-kb-index-heading" class="admin-kb-index__title">Indexed chunks</h3>';
       html += '<p class="admin-kb-index__meta">Up to ' + listLimit + ' newest · ' + Utils.escapeHtml(tableCaption) + '</p></div>';
       html += '</div>';
-      html += '<div class="admin-kb-table-scroll">';
+      html += '<div class="admin-kb-index__toolbar" role="search">';
+      html += '<span id="admin-kb-search-desc" class="admin-kb-index__toolbar-label">Find in index</span>';
+      html += '<div class="admin-kb-search-field">';
+      html +=
+        '<input id="admin-kb-search" type="search" class="admin-kb-search-input" placeholder="Title or chunk text…" autocomplete="off" aria-describedby="admin-kb-search-desc" value="' +
+        kbAttrQuotes(qTrim) +
+        '"></div>';
+      html += '<button type="button" id="admin-kb-search-go" class="admin-kb-search-go">Search</button>';
+      html += '</div>';
+      html += '<div class="admin-kb-table-scroll thin-scroll">';
       html += '<table class="admin-kb-table"><thead><tr>';
       html += '<th class="admin-kb-th admin-kb-col-title">Title</th>';
+      html += '<th class="admin-kb-th admin-kb-col-preview">Preview</th>';
       html += '<th class="admin-kb-th admin-kb-col-cat">Category</th>';
       html += '<th class="admin-kb-th admin-kb-col-src">Source</th>';
       html += '<th class="admin-kb-th admin-kb-col-actions"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
 
       if (!rows.length) {
-        html += '<tr><td colspan="4"><div class="admin-kb-empty">No chunks yet. Add a manual entry or upload a PDF to get started.</div></td></tr>';
+        var emptyMsg =
+          qTrim
+            ? 'No chunks match your search. Try another keyword or clear the filter.'
+            : 'No chunks yet. Add a manual entry or upload a PDF to get started.';
+        html += '<tr><td colspan="5"><div class="admin-kb-empty">' + emptyMsg + '</div></td></tr>';
       } else {
         rows.forEach(function(r) {
           var rawTitle = String(r.title || '');
           var rawCat = String(r.category || '');
           var rawSrc = String(r.source_url || '');
+          var prev = String(r.content_preview || '').trim();
           var titleHtml = Utils.escapeHtml(rawTitle);
           var catHtml = Utils.escapeHtml(rawCat);
           var srcHtml = Utils.escapeHtml(rawSrc);
+          var previewHtml = prev ? Utils.escapeHtml(Utils.truncate(prev, 140)) : '<span class="admin-kb-preview-placeholder">—</span>';
           var titleAttr = titleHtml.replace(/"/g, '&quot;');
           var catAttr = catHtml.replace(/"/g, '&quot;');
           var srcAttr = srcHtml.replace(/"/g, '&quot;');
@@ -625,6 +648,12 @@
             (rawSrc && (srcPlain.indexOf('manual://') === 0 || srcPlain.indexOf('manual-pdf://') === 0));
           html += '<tr class="admin-kb-tr">';
           html += '<td class="admin-kb-td admin-kb-col-title"><span class="admin-kb-ellipsis" title="' + titleAttr + '">' + titleHtml + '</span></td>';
+          html +=
+            '<td class="admin-kb-td admin-kb-col-preview"><span class="admin-kb-preview-snippet admin-kb-ellipsis" title="' +
+            kbAttrQuotes(prev) +
+            '">' +
+            previewHtml +
+            '</span></td>';
           html +=
             '<td class="admin-kb-td admin-kb-col-cat"><span class="admin-kb-pill" title="' + catAttr + '">' +
             (catHtml || '—') +
@@ -647,6 +676,7 @@
 
       html += '</tbody></table></div></section></div>';
       main.innerHTML = html;
+
       document.getElementById('doc-save').addEventListener('click', function() {
         var title = document.getElementById('doc-title').value.trim();
         var content = document.getElementById('doc-body').value.trim();
@@ -676,6 +706,20 @@
         }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); })
           .finally(function() { btn.disabled = false; });
       });
+
+      function runKbSearch() {
+        var inp = document.getElementById('admin-kb-search');
+        loadKbWithQuery(inp ? inp.value : '');
+      }
+
+      document.getElementById('admin-kb-search-go').addEventListener('click', runKbSearch);
+      var searchEl = document.getElementById('admin-kb-search');
+      if (searchEl) {
+        searchEl.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') { e.preventDefault(); runKbSearch(); }
+        });
+      }
+
       main.querySelectorAll('.admin-doc-edit').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var id = btn.getAttribute('data-id');
@@ -718,10 +762,15 @@
       main.querySelectorAll('.admin-doc-del').forEach(function(btn) {
         btn.addEventListener('click', function() {
           if (!confirm('Delete this chunk?')) return;
-          adminFetch('/documents/' + btn.getAttribute('data-id'), { method: 'DELETE' }).then(function() { loadDocuments(); });
+          adminFetch('/documents/' + btn.getAttribute('data-id'), { method: 'DELETE' }).then(function() {
+            loadKbWithQuery(qTrim);
+          });
         });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+      }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }
+
+    loadKbWithQuery('');
   }
 
   function loadReference() {
@@ -796,19 +845,102 @@
 
   function loadIngest() {
     var main = document.getElementById('admin-main');
+
+    function statusClass(st) {
+      var s = String(st || '').toLowerCase();
+      if (s === 'completed' || s === 'complete' || s === 'done') return 'admin-ingest-status--done';
+      if (s === 'started' || s === 'running') return 'admin-ingest-status--run';
+      return 'admin-ingest-status--muted';
+    }
+
+    function formatStatsSnippet(stats) {
+      if (stats == null) return '';
+      var o = stats;
+      if (typeof stats === 'string') {
+        try { o = JSON.parse(stats); } catch (e) { return ''; }
+      }
+      if (typeof o !== 'object' || o === null) return '';
+      var parts = [];
+      if (o.chunksCreated != null) parts.push(Utils.escapeHtml(String(o.chunksCreated)) + ' chunks');
+      if (o.errors != null && Number(o.errors) > 0) parts.push(Utils.escapeHtml(String(o.errors)) + ' err.');
+      return parts.length ? '<span class="admin-ingest-dates">' + parts.join(' · ') + '</span>' : '';
+    }
+
     adminFetch('/ingest/status').then(function(d) {
-      var html = '<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Trigger a full scrape and embedding run. This can take several minutes and uses your OpenAI quota.</p>';
-      html += '<button type="button" id="btn-ingest" class="px-4 py-2 rounded-lg bg-mak-dark text-white text-sm font-medium mb-6">Start ingestion</button>';
-      html += '<h3 class="text-sm font-semibold mb-2">Recent runs</h3><ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">';
-      (d.runs || []).forEach(function(r) {
-        html += '<li>' + Utils.escapeHtml(r.source || '') + ' — ' + r.status + ' @ ' + Utils.formatTime(r.started_at) + '</li>';
-      });
-      html += '</ul><p class="mt-4 text-xs text-gray-500">Document chunks in DB: ' + (d.document_chunks || 0) + '</p>';
+      var chunks = d.document_chunks != null ? d.document_chunks : 0;
+      var runs = d.runs || [];
+
+      var html = '<div class="admin-ingest">';
+      html += '<header class="admin-ingest-hero">';
+      html += '<div class="admin-ingest-hero__main">';
+      html += '<p class="admin-ingest-kicker">Pipeline</p>';
+      html += '<h2 class="admin-ingest-title">Web &amp; file ingestion</h2>';
+      html +=
+        '<p class="admin-ingest-lede">Runs the full crawler and embedding script in the background. Expect several minutes and OpenAI embedding usage.</p>';
+      html += '</div>';
+      html += '<div class="admin-ingest-actions">';
+      html +=
+        '<div class="admin-ingest-stat-card" title="Document chunks stored for retrieval">';
+      html += '<span class="admin-ingest-stat-value">' + chunks + '</span>';
+      html += '<span class="admin-ingest-stat-label">chunks in DB</span></div>';
+      html += '</div>';
+      html += '</header>';
+
+      html += '<section class="admin-ingest-panel" aria-labelledby="admin-ingest-start-heading">';
+      html += '<h3 id="admin-ingest-start-heading" class="admin-ingest-panel-title">Bulk refresh</h3>';
+      html += '<p class="admin-ingest-panel-sub">Start a new run. Recent activity appears below.</p>';
+      html += '<div class="flex flex-wrap items-center gap-3">';
+      html += '<button type="button" id="btn-ingest" class="admin-ingest-btn">Start ingestion</button>';
+      html += '<span class="admin-ingest-hint">Uses ingest.js · status rows update after the script finishes.</span>';
+      html += '</div></section>';
+
+      html += '<section class="admin-ingest-panel" aria-labelledby="admin-ingest-runs-heading">';
+      html += '<h3 id="admin-ingest-runs-heading" class="admin-ingest-panel-title">Recent runs</h3>';
+      html += '<p class="admin-ingest-panel-sub">Newest first (last ' + Utils.escapeHtml(String(runs.length)) + ')</p>';
+
+      if (!runs.length) {
+        html += '<p class="admin-ingest-empty">No ingestion history yet.</p>';
+      } else {
+        html += '<div role="list">';
+        runs.forEach(function(r) {
+          var badgeClass = statusClass(r.status);
+          var src = Utils.escapeHtml(String(r.source || '—'));
+          var stDisp = Utils.escapeHtml(String(r.status || ''));
+          var started = Utils.formatDate(r.started_at);
+          var finished =
+            r.finished_at ?
+              Utils.formatDate(r.finished_at) :
+              null;
+          var timeLine =
+            Utils.escapeHtml(started) + (finished ? ' → ' + Utils.escapeHtml(finished) : '');
+          html += '<div class="admin-ingest-row" role="listitem">';
+          html += '<span class="admin-ingest-row-time">' + timeLine + '</span>';
+          html += '<span class="admin-ingest-status ' + badgeClass + '">' + stDisp + '</span>';
+          html += '<span class="admin-ingest-row-main">' + src + '</span>';
+          html += formatStatsSnippet(r.stats);
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</section></div>';
+
       main.innerHTML = html;
+
       document.getElementById('btn-ingest').addEventListener('click', function() {
-        adminFetch('/ingest', { method: 'POST', body: { source: 'all' } }).then(function() {
-          Utils.showToast('Ingestion started in background', 'success');
-        }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+        var b = document.getElementById('btn-ingest');
+        b.disabled = true;
+        adminFetch('/ingest', { method: 'POST', body: { source: 'all' } })
+          .then(function() {
+            Utils.showToast('Ingestion started in background', 'success');
+            loadIngest();
+          })
+          .catch(function(e) {
+            Utils.showToast(e.message || 'Failed', 'error');
+          })
+          .finally(function() {
+            var btn = document.getElementById('btn-ingest');
+            if (btn) btn.disabled = false;
+          });
       });
     }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
   }
