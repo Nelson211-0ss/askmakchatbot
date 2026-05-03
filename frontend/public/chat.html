@@ -6,6 +6,21 @@
   <title>AskMak - Chat</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#006B3C">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      try {
+        var k = localStorage.getItem('askmak-theme');
+        var dark =
+          k === 'dark'
+            ? true
+            : k === 'light'
+              ? false
+              : typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', !!dark);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="/css/chat-fonts.css">
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
@@ -93,17 +108,19 @@
       <div class="chat-canvas-bg__shimmer"></div>
     </div>
 
+    <div id="chat-top-bar" class="relative z-[55] shrink-0 max-lg:sticky max-lg:top-0 max-lg:flex max-lg:flex-col isolate">
     <header id="chat-header" role="banner" class="relative z-50 shrink-0 flex items-center gap-2 lg:gap-4
-      max-lg:bg-white/95 max-lg:dark:bg-chat-raised max-lg:shadow-[0_1px_10px_-2px_rgba(15,23,42,0.08)] dark:max-lg:shadow-[0_1px_14px_-4px_rgba(0,0,0,0.42)]
+      max-lg:bg-white/95 max-lg:dark:bg-chat-raised max-lg:backdrop-blur-md max-lg:shadow-[0_1px_10px_-2px_rgba(15,23,42,0.08)] dark:max-lg:shadow-[0_1px_14px_-4px_rgba(0,0,0,0.42)]
       pl-[max(0.875rem,env(safe-area-inset-left,0px))] pr-[max(0.875rem,env(safe-area-inset-right,0px))]
       pt-[max(0.625rem,env(safe-area-inset-top,0px))] pb-3 lg:pb-[0.8rem]
-      lg:shadow-none lg:bg-transparent lg:pt-[max(0.5rem,env(safe-area-inset-top,0px))] lg:pb-2.5">
+      lg:shadow-none lg:backdrop-blur-none lg:bg-transparent lg:pt-[max(0.5rem,env(safe-area-inset-top,0px))] lg:pb-2.5">
 
       <div class="flex min-w-0 flex-1 items-center gap-2 lg:hidden">
         <button id="sidebar-toggle" type="button" class="w-11 h-11 min-w-[2.75rem] min-h-[2.75rem] shrink-0 rounded-full flex items-center justify-center bg-transparent hover:bg-zinc-200/80 active:bg-zinc-200 dark:hover:bg-white/10 dark:active:bg-white/15 text-zinc-700 dark:text-zinc-100 border-none cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]" aria-label="Open menu">
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
         <img src="/assets/mak_logo.png" alt="" class="h-8 w-auto shrink-0 rounded-md bg-white/95 p-0.5" width="64" height="64" decoding="async" />
+        <span class="min-w-0 text-lg font-bold tracking-tight text-mak-dark dark:text-white truncate">Askmak</span>
       </div>
 
       <div class="flex items-center shrink-0 ml-auto gap-1 sm:gap-1.5">
@@ -150,8 +167,9 @@
       </div>
     </header>
 
-    <div id="offline-banner" class="hidden relative z-40 bg-mak-green/10 text-mak-green text-sm py-2 px-[max(1.25rem,env(safe-area-inset-left))] text-center shrink-0">
+    <div id="offline-banner" class="hidden relative z-40 max-lg:z-[45] bg-mak-green/10 text-mak-green text-sm py-2 px-[max(1.25rem,env(safe-area-inset-left))] text-center shrink-0 max-lg:backdrop-blur-md">
       You're offline. Messages will be sent when you reconnect.
+    </div>
     </div>
 
     <div id="chat-body" class="chat-body-welcome relative z-10 flex-1 flex flex-col items-stretch w-full min-h-0 overflow-hidden bg-transparent">

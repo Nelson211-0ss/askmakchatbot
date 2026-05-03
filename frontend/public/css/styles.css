@@ -1701,6 +1701,21 @@ option {
   background-image: none;
 }
 
+@media (max-width: 1023px) {
+  #chat-main {
+    overscroll-behavior-y: contain;
+  }
+
+  /*
+   * #chat-top-bar is sticky on small viewports so the header (and offline strip)
+   * stay pinned if the viewport or outer flex column scrolls; message thread still scrolls inside #chat-messages.
+   */
+  #chat-top-bar {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
 .dark #chat-main {
   background-color: transparent;
   background-image: none;
