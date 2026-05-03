@@ -122,6 +122,41 @@ router.get('/stats/categories', async (req, res, next) => {
     }
 });
 
+/** Operational mix for admin dashboard donut (weekly chat/message volume, not KB categories). */
+router.get('/stats/performance-overview', async (req, res, next) => {
+    try {
+        const chatMix = await db.query(
+            `SELECT
+                 COUNT(*) FILTER (WHERE user_id IS NOT NULL)::int AS reg_chats,
+                 COUNT(*) FILTER (WHERE user_id IS NULL)::int AS guest_chats
+             FROM chats
+             WHERE created_at >= NOW() - INTERVAL '7 days'`
+        );
+        const msgMix = await db.query(
+            `SELECT
+                 COUNT(*) FILTER (WHERE role = 'user')::int AS user_msgs,
+                 COUNT(*) FILTER (WHERE role = 'assistant')::int AS asst_msgs
+             FROM messages
+             WHERE created_at >= NOW() - INTERVAL '7 days'
+               AND role IN ('user', 'assistant')`
+        );
+
+        const r = chatMix.rows[0] || {};
+        const m = msgMix.rows[0] || {};
+
+        const segments = [
+            { label: 'Signed-in chats', value: r.reg_chats || 0 },
+            { label: 'Guest chats', value: r.guest_chats || 0 },
+            { label: 'User messages', value: m.user_msgs || 0 },
+            { label: 'Assistant replies', value: m.asst_msgs || 0 }
+        ];
+
+        res.json({ segments });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.get('/stats/tools', async (req, res, next) => {
     try {
         const tools = getToolSchemas().map(t => ({

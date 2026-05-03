@@ -330,12 +330,12 @@ var Chat = {
 
     if (isUser) {
       html +=
-        '<div class="bg-mak-green text-white px-3.5 sm:px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-relaxed max-w-[min(94%,26rem)] sm:max-w-[85%] break-words shadow-sm">';
+        '<div class="bg-mak-green text-white px-3.5 sm:px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-snug max-w-[min(94%,26rem)] sm:max-w-[85%] break-words shadow-sm">';
       html += Utils.escapeHtml(msg.content || '');
       html += '</div>';
     } else {
       html +=
-        '<div class="msg-content rounded-2xl rounded-tl-sm border-0 shadow-none bg-transparent dark:bg-transparent px-0 sm:px-0.5 py-2 sm:py-2 text-[0.9375rem] sm:text-sm leading-relaxed break-words max-w-[min(94%,32rem)] sm:max-w-[90%] text-zinc-800 dark:text-zinc-100 prose prose-sm prose-zinc dark:prose-invert max-w-none prose-p:leading-relaxed prose-strong:text-zinc-900 dark:prose-strong:text-white prose-pre:overflow-x-auto prose-table:overflow-x-auto prose-table:block prose-table:max-w-full prose-img:rounded-lg prose-sans prose-a:text-mak-green dark:prose-a:text-mak-green prose-headings:font-semibold prose-headings:text-mak-green dark:prose-headings:text-zinc-50 dark:prose-code:text-mak-green/95 dark:prose-pre:bg-chat-sidebar/80 dark:prose-pre:text-zinc-200">';
+        '<div class="msg-content rounded-2xl rounded-tl-sm border-0 shadow-none bg-transparent dark:bg-transparent px-0 sm:px-0.5 py-1.5 sm:py-1.5 text-[0.9375rem] sm:text-sm leading-snug break-words max-w-[min(94%,32rem)] sm:max-w-[90%] text-zinc-800 dark:text-zinc-100 prose prose-sm prose-zinc dark:prose-invert max-w-none prose-p:leading-snug prose-p:my-[0.35em] prose-strong:text-zinc-900 dark:prose-strong:text-white prose-pre:overflow-x-auto prose-table:overflow-x-auto prose-table:block prose-table:max-w-full prose-img:rounded-lg prose-sans prose-a:text-mak-green dark:prose-a:text-mak-green prose-headings:font-semibold prose-headings:text-mak-green dark:prose-headings:text-zinc-50 dark:prose-code:text-mak-green/95 dark:prose-pre:bg-chat-sidebar/80 dark:prose-pre:text-zinc-200">';
       html += Utils.renderMarkdown(msg.content || '');
       html += '</div>';
     }

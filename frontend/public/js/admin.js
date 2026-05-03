@@ -2,7 +2,14 @@
   var lastActivity = Date.now();
   var INACTIVITY_MS = 30 * 60 * 1000;
   var pollTimer = null;
-  var charts = { conv: null, cat: null, hour: null };
+  var charts = { conv: null, perf: null, hour: null };
+
+  var BAR_HOUR_PALETTE = [
+    '#00a651', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
+    '#059669', '#f97316', '#8b5cf6', '#0ea5e9', '#e11d48', '#64748b', '#84cc16'
+  ];
+
+  var PERF_DONUT_COLORS = ['#00a651', '#0f766e', '#d97706', '#6366f1', '#be123c', '#7c3aed', '#0891b2'];
 
   function touch() { lastActivity = Date.now(); }
 
@@ -29,7 +36,7 @@
   }
 
   function destroyCharts() {
-    ['conv', 'cat', 'hour'].forEach(function(k) {
+    ['conv', 'perf', 'hour'].forEach(function(k) {
       if (charts[k]) { charts[k].destroy(); charts[k] = null; }
     });
   }
@@ -69,13 +76,13 @@
     Promise.all([
       adminFetch('/stats'),
       adminFetch('/stats/timeseries?days=30'),
-      adminFetch('/stats/categories'),
+      adminFetch('/stats/performance-overview'),
       adminFetch('/stats/messages-by-hour'),
       adminFetch('/activity/recent?limit=20')
     ]).then(function(results) {
       var s = results[0];
       var ts = results[1].points || [];
-      var cats = results[2].categories || [];
+      var perfRaw = results[2].segments || [];
       var hours = results[3].hours || [];
       var activity = results[4].chats || [];
       escBadge(s.pending_escalations || 0);
@@ -102,11 +109,35 @@
         html += '<div class="admin-stat-value">' + Utils.escapeHtml(String(c.v)) + '</div></div>';
       });
       html += '</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">';
-      html += '<div class="admin-overview-panel"><canvas id="chart-conv" height="200"></canvas></div>';
-      html += '<div class="admin-overview-panel admin-overview-panel--accent"><canvas id="chart-cat" height="200"></canvas></div>';
-      html += '<div class="admin-overview-panel admin-overview-panel--neutral"><canvas id="chart-hour" height="200"></canvas></div>';
-      html += '</div><h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Recent activity</h2>';
-      html += '<div class="admin-overview-activity">';
+      html +=
+        '<div class="admin-overview-panel flex flex-col">' +
+          '<div class="admin-overview-chart-meta">' +
+            '<h3 class="admin-overview-chart-title">Chat volume</h3>' +
+            '<p class="admin-overview-chart-sub">New chats per day · trailing 30 days</p>' +
+          '</div>' +
+          '<div class="relative flex-1 min-h-[200px] lg:min-h-[220px]"><canvas id="chart-conv" aria-label="Chat volume chart"></canvas></div>' +
+        '</div>';
+
+      html +=
+        '<div class="admin-overview-panel admin-overview-panel--accent flex flex-col">' +
+          '<div class="admin-overview-chart-meta">' +
+            '<h3 class="admin-overview-chart-title">Operational mix</h3>' +
+            '<p class="admin-overview-chart-sub">Rolling 7 days · signed-in vs guest chats and message traffic</p>' +
+          '</div>' +
+          '<div class="relative flex-1 min-h-[210px] lg:min-h-[240px]"><canvas id="chart-perf" aria-label="Operations mix chart"></canvas></div>' +
+        '</div>';
+
+      html +=
+        '<div class="admin-overview-panel admin-overview-panel--neutral flex flex-col">' +
+          '<div class="admin-overview-chart-meta">' +
+            '<h3 class="admin-overview-chart-title">Demand by hour</h3>' +
+            '<p class="admin-overview-chart-sub">UTC · all messages aggregated over last 30 days</p>' +
+          '</div>' +
+          '<div class="relative flex-1 min-h-[200px] lg:min-h-[220px]"><canvas id="chart-hour" aria-label="Hourly demand chart"></canvas></div>' +
+        '</div>';
+      html +=
+        '</div><h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 shrink-0">Recent activity</h2>';
+      html += '<div class="admin-overview-activity thin-scroll admin-overview-activity--scroll">';
       if (!activity.length) html += '<div class="p-4 text-gray-500 text-sm admin-overview-activity-row">No chats yet</div>';
       activity.forEach(function(ch) {
         var who = ch.user_id ? (Utils.escapeHtml(ch.full_name || ch.email || 'User')) : 'Guest';
@@ -122,25 +153,144 @@
 
       var labels = ts.map(function(p) { return p.d; });
       var data = ts.map(function(p) { return p.c; });
+
       charts.conv = new Chart(document.getElementById('chart-conv'), {
         type: 'line',
-        data: { labels: labels, datasets: [{ label: 'Chats per day', data: data, borderColor: '#00a651', tension: 0.2 }] },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'New chats',
+              data: data,
+              borderColor: '#00a651',
+              backgroundColor: 'rgba(0,166,81,0.07)',
+              fill: true,
+              tension: 0.28,
+              pointRadius: 2,
+              pointHoverRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } },
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
       });
-      charts.cat = new Chart(document.getElementById('chart-cat'), {
+
+      var perfSlices = perfRaw.filter(function(seg) {
+        return (seg.value || 0) > 0;
+      });
+      var donutLabels = perfSlices.map(function(x) {
+        return x.label || '—';
+      });
+      var donutData = perfSlices.map(function(x) {
+        return x.value;
+      });
+      var donutBg = donutLabels.map(function(_, i) {
+        return PERF_DONUT_COLORS[i % PERF_DONUT_COLORS.length];
+      });
+      if (!donutData.length) {
+        donutLabels = ['No activity (last 7 days)'];
+        donutData = [1];
+        donutBg = ['#94a3b8'];
+      }
+
+      charts.perf = new Chart(document.getElementById('chart-perf'), {
         type: 'doughnut',
         data: {
-          labels: cats.map(function(c) { return c.category; }),
-          datasets: [{ data: cats.map(function(c) { return c.count; }), backgroundColor: ['#00a651', '#231F20', '#d2ab67', '#ed1c24', '#6b7280', '#9ca3af'] }]
+          labels: donutLabels,
+          datasets: [
+            {
+              data: donutData,
+              backgroundColor: donutBg,
+              borderWidth: 0,
+              hoverOffset: 8
+            }
+          ]
         },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '58%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 10,
+                usePointStyle: true,
+                pointStyle: 'circle',
+                boxWidth: 8,
+                font: { size: 11 }
+              }
+            }
+          }
+        }
       });
-      var hLabels = hours.map(function(h) { return h.h + ':00'; });
-      var hData = hours.map(function(h) { return h.c; });
+
+      var hLabels = hours.map(function(h) {
+        return String(h.h).padStart(2, '0') + ':00';
+      });
+      var hData = hours.map(function(h) {
+        return h.c;
+      });
+      var hColors = hData.map(function(_, i) {
+        return BAR_HOUR_PALETTE[i % BAR_HOUR_PALETTE.length];
+      });
+
       charts.hour = new Chart(document.getElementById('chart-hour'), {
         type: 'bar',
-        data: { labels: hLabels, datasets: [{ label: 'Messages by hour', data: hData, backgroundColor: '#231F20' }] },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        data: {
+          labels: hLabels,
+          datasets: [
+            {
+              label: 'Messages logged',
+              data: hData,
+              backgroundColor: hColors,
+              borderRadius: 5,
+              borderSkipped: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: { font: { size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  var v =
+                    ctx.parsed && typeof ctx.parsed.y === 'number'
+                      ? ctx.parsed.y
+                      : typeof ctx.raw === 'number'
+                        ? ctx.raw
+                        : ctx.formattedValue;
+                  return ' ' + v + ' messages';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
       });
 
       main.querySelectorAll('.admin-open-chat').forEach(function(btn) {
@@ -710,7 +860,10 @@
       html += '<section class="admin-settings-card admin-settings-card--full">';
       html += '<h3>Assistant persona</h3>';
       html += '<div class="admin-settings-field"><label for="set-prompt">System prompt</label>';
-      html += '<textarea id="set-prompt" class="admin-settings-textarea" rows="8">' + Utils.escapeHtml(prompt) + '</textarea>';
+      html +=
+        '<textarea id="set-prompt" class="admin-settings-textarea admin-settings-textarea--prompt" rows="6">' +
+        Utils.escapeHtml(prompt) +
+        '</textarea>';
       html += '<p class="admin-settings-hint">Base instructions injected for every AskMak reply. Tone, scope (Makerere-only), escalation rules, etc.</p></div></section>';
 
       html += '<section class="admin-settings-card">';
@@ -833,7 +986,7 @@
       document.querySelectorAll('.admin-nav').forEach(function(btn) {
         btn.addEventListener('click', function() { loadSection(btn.getAttribute('data-section')); });
       });
-      document.getElementById('admin-logout').addEventListener('click', function() {
+      document.getElementById('admin-logout-header').addEventListener('click', function() {
         fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(function() {
           window.location.href = '/';
         });
