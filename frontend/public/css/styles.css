@@ -19,6 +19,20 @@ option {
   font-family: var(--font-sans);
 }
 
+/* chat.html: thread, welcome, composer — Anthropic Serif (webfont in /css/chat-fonts.css) */
+#chat-body,
+#chat-body button,
+#chat-body input,
+#chat-body textarea,
+#chat-body select {
+  font-family: 'Anthropic Serif', Georgia, 'Times New Roman', serif;
+}
+
+#chat-messages .msg-content pre,
+#chat-messages .msg-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
 /* Landing page: slow animated brand-green wash (behind content) */
 @keyframes home-green-flow {
   0%,
@@ -1869,9 +1883,13 @@ option {
   padding-left: 0;
 }
 
-/* Assistant replies: tighter line height + paragraph rhythm than default prose-sm */
+/* Assistant replies: line height + paragraph rhythm (slightly roomier than default prose-sm) */
 #chat-messages .msg-content.prose {
-  line-height: 1.45;
+  line-height: 1.58;
+}
+
+#chat-messages .msg-user-bubble {
+  line-height: 1.58;
 }
 
 #chat-messages .msg-content.prose > :first-child {
@@ -1882,20 +1900,25 @@ option {
   margin-bottom: 0;
 }
 
+#chat-messages .msg-content.prose p {
+  margin-top: 0.55em;
+  margin-bottom: 0.55em;
+}
+
 #chat-messages .msg-content.prose ul,
 #chat-messages .msg-content.prose ol {
-  margin-top: 0.35em;
-  margin-bottom: 0.35em;
+  margin-top: 0.45em;
+  margin-bottom: 0.45em;
 }
 
 #chat-messages .msg-content.prose li {
-  margin-top: 0.18em;
-  margin-bottom: 0.18em;
+  margin-top: 0.28em;
+  margin-bottom: 0.28em;
 }
 
 #chat-messages .msg-content.prose li > p {
-  margin-top: 0.25em;
-  margin-bottom: 0.25em;
+  margin-top: 0.35em;
+  margin-bottom: 0.35em;
 }
 
 #chat-messages .msg-content.prose h2,

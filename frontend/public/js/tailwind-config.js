@@ -57,7 +57,7 @@ tailwind.config = {
     'dark:prose-pre:bg-chat-sidebar/80',
     'dark:bg-mak-green/[0.08]',
     'dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]',
-    'prose-sans',
+    'prose-serif',
     'prose-a:text-mak-green',
     'dark:prose-a:text-mak-green',
     'prose-headings:font-semibold',
@@ -71,8 +71,6 @@ tailwind.config = {
     'leading-snug',
     'prose-sm',
     'max-w-none',
-    'prose-p:leading-snug',
-    'prose-p:my-[0.35em]',
     'prose-pre:overflow-x-auto',
     'prose-table:overflow-x-auto',
     'prose-table:block',
@@ -105,6 +103,8 @@ tailwind.config = {
       fontFamily: {
         /* Matches :root --font-sans in css/styles.css */
         sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
+        /* Chat assistant prose + chat.html body (loaded with /css/chat-fonts.css) */
+        serif: ['"Anthropic Serif"', 'Georgia', 'Times New Roman', 'serif'],
       },
       animation: {
         'typing-bounce': 'typingBounce 1.4s infinite',
