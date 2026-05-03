@@ -1707,8 +1707,9 @@ option {
   }
 
   /*
-   * #chat-top-bar is sticky on small viewports so the header (and offline strip)
-   * stay pinned if the viewport or outer flex column scrolls; message thread still scrolls inside #chat-messages.
+   * #chat-top-bar is fixed on small viewports so the header stays put when the
+   * composer is focused and the virtual keyboard resizes / scroll-adjusts the page.
+   * #chat-body padding-top matches bar height via JS (ResizeObserver + resize).
    */
   #chat-top-bar {
     -webkit-backface-visibility: hidden;

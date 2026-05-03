@@ -6,6 +6,29 @@ var Chat = {
   /** In-memory turns for guests only (not sent to server except as prompt context). */
   guestTurns: [],
 
+  /** Mobile (<lg): fixed #chat-top-bar needs matching top padding on #chat-body */
+  mqMobileChat: typeof window.matchMedia !== 'undefined' ? window.matchMedia('(max-width: 1023px)') : null,
+
+  syncMobileHeaderInset: function() {
+    var bar = document.getElementById('chat-top-bar');
+    var bodyEl = document.getElementById('chat-body');
+    if (!bar || !bodyEl) return;
+    if (!Chat.mqMobileChat || !Chat.mqMobileChat.matches) {
+      bodyEl.style.paddingTop = '';
+      return;
+    }
+    bodyEl.style.paddingTop = bar.offsetHeight + 'px';
+  },
+
+  bindMobileHeaderInsetSync: function() {
+    var bar = document.getElementById('chat-top-bar');
+    if (!bar || typeof window.ResizeObserver === 'undefined') return;
+    var ro = new ResizeObserver(function() {
+      Chat.syncMobileHeaderInset();
+    });
+    ro.observe(bar);
+  },
+
   updateAccountChrome: function() {
     var signedIn = Auth.isAuthenticated();
     var gh = document.getElementById('guest-menu-hint');
@@ -116,10 +139,33 @@ var Chat = {
 
     window.addEventListener('online', function() {
       document.getElementById('offline-banner').classList.add('hidden');
+      self.syncMobileHeaderInset();
     });
     window.addEventListener('offline', function() {
       document.getElementById('offline-banner').classList.remove('hidden');
+      self.syncMobileHeaderInset();
     });
+
+    self.bindMobileHeaderInsetSync();
+    self.syncMobileHeaderInset();
+    window.addEventListener('resize', function() {
+      self.syncMobileHeaderInset();
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(function() {
+        self.syncMobileHeaderInset();
+      }, 250);
+    });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function() {
+        self.syncMobileHeaderInset();
+      });
+    }
+    if (Chat.mqMobileChat && typeof Chat.mqMobileChat.addEventListener === 'function') {
+      Chat.mqMobileChat.addEventListener('change', function() {
+        self.syncMobileHeaderInset();
+      });
+    }
   },
 
   switchToChat: function() {
