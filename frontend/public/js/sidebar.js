@@ -5,6 +5,16 @@ var Sidebar = {
   init: function() {
     var self = this;
 
+    self.applyDesktopCollapsedFromStorage();
+    var colBtn = document.getElementById('sidebar-collapse-toggle');
+    if (colBtn) {
+      colBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        self.toggleDesktopCollapsed();
+      });
+      self.syncCollapseToggleButton();
+    }
+
     document.getElementById('sidebar-toggle').addEventListener('click', function() { self.toggle(); });
     document.getElementById('sidebar-overlay').addEventListener('click', function() { self.close(); });
     document.getElementById('new-chat-btn').addEventListener('click', function() { Chat.newChat(); });
@@ -21,6 +31,9 @@ var Sidebar = {
     var searchPanel = document.getElementById('chat-search-panel');
     var searchInput = document.getElementById('chat-search');
     searchToggle.addEventListener('click', function() {
+      if (!self.isDrawerViewport() && self.isDesktopCollapsed()) {
+        self.setDesktopCollapsed(false);
+      }
       var opening = searchPanel.classList.contains('hidden');
       searchPanel.classList.toggle('hidden');
       searchToggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
@@ -56,6 +69,61 @@ var Sidebar = {
         mq.addListener(onBreak);
       }
     }
+  },
+
+  isDesktopCollapsed: function() {
+    var s = document.getElementById('sidebar');
+    return !!(s && s.classList.contains('is-collapsed'));
+  },
+
+  syncCollapseToggleButton: function() {
+    var btn = document.getElementById('sidebar-collapse-toggle');
+    if (!btn) return;
+    var collapsed = this.isDesktopCollapsed();
+    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    var expand = collapsed ? 'Expand sidebar (show labels)' : 'Collapse sidebar (icons only)';
+    btn.title = expand;
+    btn.setAttribute('aria-label', expand);
+  },
+
+  applyDesktopCollapsedFromStorage: function() {
+    try {
+      if (localStorage.getItem('askmak-sidebar-collapsed') !== '1') return;
+      var s = document.getElementById('sidebar');
+      if (!s) return;
+      s.classList.add('is-collapsed');
+      var searchPanel = document.getElementById('chat-search-panel');
+      var searchToggle = document.getElementById('search-chats-toggle');
+      if (searchPanel) searchPanel.classList.add('hidden');
+      if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+    } catch (e) {}
+  },
+
+  setDesktopCollapsed: function(collapsed) {
+    if (this.isDrawerViewport()) return;
+    var s = document.getElementById('sidebar');
+    if (!s) return;
+    s.classList.toggle('is-collapsed', !!collapsed);
+    try {
+      localStorage.setItem('askmak-sidebar-collapsed', collapsed ? '1' : '0');
+    } catch (e) {}
+    this.syncCollapseToggleButton();
+    if (collapsed) {
+      var searchPanel = document.getElementById('chat-search-panel');
+      var searchToggle = document.getElementById('search-chats-toggle');
+      var searchInput = document.getElementById('chat-search');
+      if (searchPanel) searchPanel.classList.add('hidden');
+      if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+      if (searchInput && searchInput.value) {
+        searchInput.value = '';
+        this.render();
+      }
+    }
+  },
+
+  toggleDesktopCollapsed: function() {
+    if (this.isDrawerViewport()) return;
+    this.setDesktopCollapsed(!this.isDesktopCollapsed());
   },
 
   /** Below lg breakpoint: sidebar uses display toggle (hidden drawer); desktop always shows sidebar. */
@@ -167,14 +235,15 @@ var Sidebar = {
       }
       if (!items.length) return;
 
-      html += '<div class="text-[10px] uppercase tracking-[0.12em] text-zinc-400 dark:text-white/30 px-2 pt-3 pb-1 mt-1 first:mt-0 first:pt-1 font-semibold select-none">' + labels[key] + '</div>';
+      html += '<div class="sidebar-chat-group text-[10px] uppercase tracking-[0.12em] text-zinc-400 dark:text-white/30 px-2 pt-3 pb-1 mt-1 first:mt-0 first:pt-1 font-semibold select-none">' + labels[key] + '</div>';
 
       items.forEach(function(chat) {
         var isActive = chat.id === self.activeId;
         var activeClass = isActive
           ? ' text-mak-dark dark:text-white bg-zinc-200/90 dark:bg-mak-green/[0.14]'
           : '';
-        html += '<div class="flex items-center gap-2 px-2 py-2 cursor-pointer text-[13px] text-zinc-600 hover:bg-zinc-200/50 hover:text-zinc-900 dark:text-white/65 dark:hover:bg-white/[0.04] dark:hover:text-white transition group relative' + activeClass + '" data-id="' + chat.id + '">';
+        var safeTitle = Utils.escapeHtml(chat.title || 'New chat').replace(/"/g, '&quot;');
+        html += '<div class="sidebar-chat-row flex items-center gap-2 px-2 py-2 cursor-pointer text-[13px] text-zinc-600 hover:bg-zinc-200/50 hover:text-zinc-900 dark:text-white/65 dark:hover:bg-white/[0.04] dark:hover:text-white transition group relative' + activeClass + '" data-id="' + chat.id + '" title="' + safeTitle + '">';
         html += '<span class="shrink-0 text-zinc-400 group-hover:text-zinc-600 dark:text-white/30 dark:group-hover:text-white/45" aria-hidden="true">';
         html += '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
         html += '</span>';
@@ -189,30 +258,30 @@ var Sidebar = {
       if (filter) {
         if (this.chats.length) {
           html =
-            '<div class="text-center px-3 py-8">' +
+            '<div class="sidebar-empty-block text-center px-3 py-8">' +
             '<p class="text-sm text-zinc-500 dark:text-white/55">No matching chats</p>' +
             '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Try another title.</p></div>';
         } else if (Auth.isAuthenticated()) {
           html =
-            '<div class="text-center px-3 py-8">' +
+            '<div class="sidebar-empty-block text-center px-3 py-8">' +
             '<p class="text-sm text-zinc-500 dark:text-white/55">No chats to search</p>' +
             '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Start a conversation first.</p></div>';
         } else {
           html =
-            '<div class="text-center px-3 py-10">' +
+            '<div class="sidebar-empty-block text-center px-3 py-10">' +
             '<p class="text-sm text-zinc-500 dark:text-white/55">Guest chats are not saved</p>' +
             '<p class="text-xs text-zinc-400 dark:text-white/35 mt-2">History only appears when you\'re signed in—search won\'t show past threads for guests.</p>' +
             '</div>';
         }
       } else if (!Auth.isAuthenticated()) {
         html =
-          '<div class="text-center px-3 py-10">' +
+          '<div class="sidebar-empty-block text-center px-3 py-10">' +
           '<p class="text-sm text-zinc-500 dark:text-white/55">Guest chats are not saved</p>' +
           '<p class="text-xs text-zinc-400 dark:text-white/35 mt-2">History is only stored for signed-in accounts. Questions you ask as a guest stay in this browser until you refresh or leave.</p>' +
           '</div>';
       } else {
         html =
-          '<div class="text-center px-3 py-10">' +
+          '<div class="sidebar-empty-block text-center px-3 py-10">' +
           '<p class="text-sm text-zinc-500 dark:text-white/55">No conversations yet</p>' +
           '<p class="text-xs text-zinc-400 dark:text-white/35 mt-1">Start with New Chat.</p></div>';
       }
