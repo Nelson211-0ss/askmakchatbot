@@ -71,6 +71,9 @@ tailwind.config = {
     'leading-snug',
     'prose-sm',
     'max-w-none',
+    'animate-assistant-in',
+    'animate-msg-user-in',
+    'msg-row-streaming',
     'prose-pre:overflow-x-auto',
     'prose-table:overflow-x-auto',
     'prose-table:block',
@@ -109,6 +112,8 @@ tailwind.config = {
       animation: {
         'typing-bounce': 'typingBounce 1.4s infinite',
         'fade-in': 'fadeIn 0.3s ease',
+        'assistant-in': 'assistantIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'msg-user-in': 'msgUserIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both',
         'toast-in': 'toastIn 0.3s ease',
         'modal-in': 'modalIn 0.2s ease',
         'hero-title': 'heroReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -127,6 +132,14 @@ tailwind.config = {
         fadeIn: {
           from: { opacity: '0', transform: 'translateY(6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        assistantIn: {
+          from: { opacity: '0', transform: 'translateY(12px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        msgUserIn: {
+          from: { opacity: '0', transform: 'translateY(8px) scale(0.985)' },
+          to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         toastIn: {
           from: { transform: 'translateX(100%)', opacity: '0' },
