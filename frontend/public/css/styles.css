@@ -736,6 +736,12 @@ option {
   background-color: rgba(6, 78, 59, 0.28);
 }
 
+/* Admin — main panel scrolls independently of fixed headers / overflow-hidden body */
+#admin-main {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* Admin — Knowledge base (documents section) */
 .admin-kb {
   max-width: 100%;
@@ -1251,18 +1257,13 @@ option {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow: auto;
-  max-height: min(28rem, 52dvh);
+  /* Horizontal scroll for wide table; vertical scroll uses #admin-main so the whole KB page scrolls */
+  overflow-x: auto;
+  overflow-y: visible;
   border-radius: 0.875rem;
   border: 1px solid rgba(226, 232, 240, 0.95);
   background: #ffffff;
   -webkit-overflow-scrolling: touch;
-}
-
-@media (min-width: 1024px) {
-  .admin-kb-table-scroll {
-    max-height: min(36rem, calc(100dvh - 15rem));
-  }
 }
 
 .dark .admin-kb-table-scroll {
