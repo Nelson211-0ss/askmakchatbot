@@ -4,6 +4,8 @@
   var pollTimer = null;
   var charts = { conv: null, perf: null, hour: null };
 
+  var adminUsersPager = { page: 1, limit: 100, q: '' };
+
   var BAR_HOUR_PALETTE = [
     '#00a651', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
     '#059669', '#f97316', '#8b5cf6', '#0ea5e9', '#e11d48', '#64748b', '#84cc16'
@@ -427,43 +429,304 @@
     }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
   }
 
+  function adminUsersBadgeRole(role) {
+    var r = String(role || 'student').toLowerCase();
+    if (r === 'admin') {
+      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-500/25">Admin</span>';
+    }
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-slate-500/10 text-slate-700 dark:text-slate-300 ring-1 ring-slate-500/15">Student</span>';
+  }
+
+  function adminUsersBadgeVerified(ok) {
+    if (ok) {
+      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/12 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
+    }
+    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/12 text-amber-900 dark:text-amber-200 ring-1 ring-amber-500/25">Pending</span>';
+  }
+
   function loadUsers() {
     var main = document.getElementById('admin-main');
-    adminFetch('/users?limit=100').then(function(d) {
-      var rows = d.users || [];
-      var html = '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
-      html += '<th class="p-3">Name</th><th class="p-3">Email</th><th class="p-3">Verified</th><th class="p-3">Chats</th><th class="p-3"></th></tr></thead><tbody>';
-      rows.forEach(function(u) {
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.escapeHtml(u.full_name) + '</td>';
-        html += '<td class="p-3">' + Utils.escapeHtml(u.email) + '</td>';
-        html += '<td class="p-3">' + (u.email_verified ? 'Yes' : 'No') + '</td>';
-        html += '<td class="p-3">' + (u.chat_count || 0) + '</td>';
-        html += '<td class="p-3"><button type="button" class="text-xs text-mak-green admin-user-open" data-id="' + u.id + '">View</button>';
-        if (u.role !== 'admin') html += ' <button type="button" class="text-xs text-mak-red admin-user-del" data-id="' + u.id + '">Delete</button>';
-        html += '</td></tr>';
-      });
-      html += '</tbody></table></div>';
-      main.innerHTML = html;
-      main.querySelectorAll('.admin-user-open').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          adminFetch('/users/' + btn.getAttribute('data-id')).then(function(ud) {
-            var u = ud.user;
-            var mh = '<p><strong>' + Utils.escapeHtml(u.full_name) + '</strong><br>' + Utils.escapeHtml(u.email) + '</p>';
-            mh += '<p class="text-xs text-gray-500">Memories: ' + (ud.memories || []).length + '</p>';
-            openModal('User', mh);
+    main.innerHTML =
+      '<div class="animate-pulse space-y-5">' +
+      '<div class="h-36 rounded-2xl bg-gradient-to-br from-emerald-100/50 to-transparent dark:from-mak-green/15 dark:to-transparent"></div>' +
+      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-gray-800/60"></div></div>';
+
+    var qs =
+      '?page=' +
+      adminUsersPager.page +
+      '&limit=' +
+      adminUsersPager.limit +
+      (adminUsersPager.q ? '&q=' + encodeURIComponent(adminUsersPager.q) : '');
+
+    adminFetch('/users' + qs)
+      .then(function(d) {
+        var rows = d.users || [];
+        var total = typeof d.total === 'number' ? d.total : 0;
+        var page = d.page || 1;
+        var limit = d.limit || adminUsersPager.limit;
+        var sum = d.summary || {};
+        var totalPages = Math.max(1, Math.ceil(total / limit));
+        var fromIx = total ? (page - 1) * limit + 1 : 0;
+        var toIx = Math.min(page * limit, total);
+
+        var html = '<div class="admin-users space-y-6">';
+
+        html += '<div class="relative overflow-hidden rounded-2xl border border-emerald-200/55 dark:border-mak-green/20 bg-gradient-to-br from-white via-emerald-50/40 to-white dark:from-gray-900 dark:via-mak-green/[0.07] dark:to-gray-950 shadow-lg shadow-emerald-900/[0.06]">';
+        html += '<div class="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-mak-green/10 blur-3xl pointer-events-none" aria-hidden="true"></div>';
+        html += '<div class="relative p-5 sm:p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">';
+        html += '<div class="min-w-0 flex-1">';
+        html +=
+          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-mak-green/90 mb-1">Directory</p>';
+        html += '<h2 class="text-xl sm:text-2xl font-bold text-mak-dark dark:text-white tracking-tight">Registered users</h2>';
+        html +=
+          '<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories. Totals below include every account in the database.</p>';
+        html += '</div>';
+        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end">';
+        html +=
+          '<span class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/[0.1] px-4 py-2.5 ring-1 ring-emerald-500/20"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
+          String(sum.total_registered != null ? sum.total_registered : total) +
+          '</span><span class="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 leading-tight">accounts</span></span>';
+        html += '</div></div>';
+
+        html += '<div class="relative grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 sm:px-6 pb-5 sm:pb-6">';
+        var statCards = [
+          { label: 'Verified email', val: sum.verified },
+          { label: 'Awaiting verify', val: sum.pending_verification },
+          { label: 'Administrators', val: sum.admins },
+          { label: 'This page', val: rows.length }
+        ];
+        statCards.forEach(function(sc, i) {
+          var muted = i === 3;
+          html +=
+            '<div class="rounded-xl border px-4 py-3 ' +
+            (muted
+              ? 'border-emerald-200/40 dark:border-mak-green/15 bg-emerald-50/30 dark:bg-mak-green/[0.04]'
+              : 'border-gray-200/80 dark:border-gray-700 bg-white/80 dark:bg-gray-900/50') +
+            '">';
+          html +=
+            '<p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">' +
+            Utils.escapeHtml(sc.label) +
+            '</p>';
+          html +=
+            '<p class="mt-1 text-lg font-semibold tabular-nums text-mak-dark dark:text-white">' +
+            Utils.escapeHtml(String(sc.val != null ? sc.val : '—')) +
+            '</p></div>';
+        });
+        html += '</div></div>';
+
+        html +=
+          '<div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-center sm:justify-between rounded-2xl border border-gray-200/90 dark:border-gray-700 bg-white/90 dark:bg-gray-900/70 px-4 py-3 shadow-sm">';
+        html += '<div class="flex flex-1 min-w-0 gap-2 items-center">';
+        html +=
+          '<label class="sr-only" for="admin-users-search">Search users</label><div class="relative flex-1 min-w-0 max-w-md">';
+        html +=
+          '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
+        html +=
+          '<input id="admin-users-search" type="search" autocomplete="off" placeholder="Search name or email…" value="' +
+          Utils.escapeHtml(adminUsersPager.q) +
+          '" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 py-2.5 pl-9 pr-3 text-sm text-mak-dark dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-mak-green/35 focus:border-mak-green/40"></div>';
+        html +=
+          '<button type="button" id="admin-users-search-btn" class="shrink-0 rounded-xl bg-mak-green hover:bg-[#009149] text-white text-sm font-semibold px-4 py-2.5 shadow-sm shadow-mak-green/25 transition border-none cursor-pointer">Search</button>';
+        html += '</div>';
+        html += '<div class="text-sm text-gray-600 dark:text-gray-400 tabular-nums">';
+        if (adminUsersPager.q) {
+          html +=
+            Utils.escapeHtml(String(total)) +
+            ' match' +
+            (total === 1 ? '' : 'es') +
+            (total ? ' · rows ' + fromIx + '–' + toIx : '');
+        } else {
+          html += total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' listed on this slice' : 'No accounts yet';
+        }
+        html += '</div></div>';
+
+        html +=
+          '<div class="overflow-x-auto rounded-2xl border border-gray-200/90 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md shadow-emerald-900/[0.04] ring-1 ring-black/[0.03] dark:ring-white/[0.04]">';
+        html +=
+          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-gray-800 bg-emerald-50/50 dark:bg-mak-green/[0.06] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
+        html +=
+          '<th class="px-4 py-3.5 whitespace-nowrap">Member</th><th class="px-4 py-3.5 whitespace-nowrap">Email</th><th class="px-4 py-3.5 whitespace-nowrap">Role</th><th class="px-4 py-3.5 whitespace-nowrap">Status</th><th class="px-4 py-3.5 whitespace-nowrap">Joined</th><th class="px-4 py-3.5 whitespace-nowrap">Last active</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Chats</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Actions</th></tr></thead><tbody>';
+
+        if (!rows.length) {
+          html +=
+            '<tr><td colspan="8" class="px-6 py-16 text-center text-gray-500 dark:text-gray-400">' +
+            (adminUsersPager.q
+              ? 'No users match <strong class="text-mak-dark dark:text-white">' +
+                Utils.escapeHtml(adminUsersPager.q) +
+                '</strong>. Try another search.'
+              : 'No registered users yet. New signups will appear here.') +
+            '</td></tr>';
+        } else {
+          rows.forEach(function(u) {
+            html +=
+              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-gray-800/90 last:border-0 hover:bg-emerald-50/40 dark:hover:bg-mak-green/[0.04] transition-colors">';
+            html += '<td class="px-4 py-3.5 font-medium text-mak-dark dark:text-white">' + Utils.escapeHtml(u.full_name || '—') + '</td>';
+            html +=
+              '<td class="px-4 py-3.5 text-gray-700 dark:text-gray-300 max-w-[14rem] truncate" title="' +
+              Utils.escapeHtml(u.email || '') +
+              '">' +
+              Utils.escapeHtml(u.email || '') +
+              '</td>';
+            html += '<td class="px-4 py-3.5">' + adminUsersBadgeRole(u.role) + '</td>';
+            html += '<td class="px-4 py-3.5">' + adminUsersBadgeVerified(u.email_verified) + '</td>';
+            html +=
+              '<td class="px-4 py-3.5 whitespace-nowrap text-gray-600 dark:text-gray-400 text-xs">' +
+              Utils.escapeHtml(Utils.formatTime(u.created_at)) +
+              '</td>';
+            html +=
+              '<td class="px-4 py-3.5 whitespace-nowrap text-gray-600 dark:text-gray-400 text-xs">' +
+              (u.last_active ? Utils.escapeHtml(Utils.formatTime(u.last_active)) : '—') +
+              '</td>';
+            html +=
+              '<td class="px-4 py-3.5 text-right tabular-nums font-medium text-mak-dark dark:text-white">' +
+              String(u.chat_count != null ? u.chat_count : 0) +
+              '</td>';
+            html += '<td class="px-4 py-3.5 text-right whitespace-nowrap space-x-2">';
+            html +=
+              '<button type="button" class="inline-flex items-center rounded-lg border border-emerald-200 dark:border-mak-green/30 bg-emerald-50/80 dark:bg-mak-green/10 px-2.5 py-1.5 text-xs font-semibold text-mak-green hover:bg-emerald-100 dark:hover:bg-mak-green/20 cursor-pointer admin-user-open" data-id="' +
+              u.id +
+              '">View</button>';
+            if (u.role !== 'admin') {
+              html +=
+                '<button type="button" class="inline-flex items-center rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 px-2.5 py-1.5 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50 cursor-pointer admin-user-del" data-id="' +
+                u.id +
+                '">Delete</button>';
+            }
+            html += '</td></tr>';
+          });
+        }
+        html += '</tbody></table></div>';
+
+        if (total > limit || page > 1) {
+          html += '<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">';
+          html +=
+            '<p class="text-xs text-gray-500 dark:text-gray-400 order-2 sm:order-1">Page <span class="font-semibold text-mak-dark dark:text-white">' +
+            page +
+            '</span> of <span class="font-semibold">' +
+            totalPages +
+            '</span></p>';
+          html += '<div class="flex gap-2 order-1 sm:order-2">';
+          html +=
+            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-emerald-50 dark:hover:bg-mak-green/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            (page <= 1 ? ' disabled' : '') +
+            '>Previous</button>';
+          html +=
+            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-emerald-50 dark:hover:bg-mak-green/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            (page >= totalPages ? ' disabled' : '') +
+            '>Next</button>';
+          html += '</div></div>';
+        }
+
+        html += '</div>';
+        main.innerHTML = html;
+
+        var searchIn = document.getElementById('admin-users-search');
+        function runSearch() {
+          adminUsersPager.q = searchIn ? String(searchIn.value || '').trim() : '';
+          adminUsersPager.page = 1;
+          loadUsers();
+        }
+        var sb = document.getElementById('admin-users-search-btn');
+        if (sb) sb.addEventListener('click', runSearch);
+        if (searchIn) {
+          searchIn.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Enter') {
+              ev.preventDefault();
+              runSearch();
+            }
+          });
+        }
+
+        var prev = document.getElementById('admin-users-prev');
+        if (prev)
+          prev.addEventListener('click', function() {
+            if (adminUsersPager.page > 1) {
+              adminUsersPager.page--;
+              loadUsers();
+            }
+          });
+        var next = document.getElementById('admin-users-next');
+        if (next)
+          next.addEventListener('click', function() {
+            adminUsersPager.page++;
+            loadUsers();
+          });
+
+        main.querySelectorAll('.admin-user-open').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            adminFetch('/users/' + btn.getAttribute('data-id')).then(function(ud) {
+              var u = ud.user;
+              var chats = ud.chats || [];
+              var memN = (ud.memories || []).length;
+              var fb = ud.feedback || {};
+              var mh = '<div class="space-y-4 text-mak-dark dark:text-gray-100">';
+              mh +=
+                '<div><p class="text-lg font-semibold">' +
+                Utils.escapeHtml(u.full_name || '') +
+                '</p><p class="text-sm text-mak-green font-medium">' +
+                Utils.escapeHtml(u.email || '') +
+                '</p></div>';
+              mh +=
+                '<div class="flex flex-wrap gap-2">' +
+                adminUsersBadgeRole(u.role) +
+                ' ' +
+                adminUsersBadgeVerified(u.email_verified) +
+                '</div>';
+              mh +=
+                '<dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50/80 dark:bg-gray-950/40">';
+              mh +=
+                '<div><dt class="text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Joined</dt><dd class="font-medium">' +
+                Utils.escapeHtml(Utils.formatTime(u.created_at)) +
+                '</dd></div>';
+              mh +=
+                '<div><dt class="text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Saved memories</dt><dd class="font-medium">' +
+                String(memN) +
+                '</dd></div>';
+              mh +=
+                '<div><dt class="text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Chats (loaded)</dt><dd class="font-medium">' +
+                String(chats.length) +
+                ' recent</dd></div>';
+              mh +=
+                '<div><dt class="text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Feedback</dt><dd class="font-medium">' +
+                (fb.up || 0) +
+                ' up · ' +
+                (fb.down || 0) +
+                ' down</dd></div></dl>';
+              if (chats.length) {
+                mh += '<div><p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Recent chats</p><ul class="space-y-1.5 max-h-40 overflow-y-auto thin-scroll text-xs">';
+                chats.slice(0, 12).forEach(function(ch) {
+                  mh +=
+                    '<li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-800 pb-1">' +
+                    '<span class="truncate">' +
+                    Utils.escapeHtml(ch.title || 'Chat') +
+                    '</span>' +
+                    '<span class="shrink-0 text-gray-400">' +
+                    Utils.escapeHtml(Utils.formatTime(ch.updated_at)) +
+                    '</span></li>';
+                });
+                mh += '</ul></div>';
+              }
+              mh += '</div>';
+              openModal('User profile', mh);
+            });
           });
         });
-      });
-      main.querySelectorAll('.admin-user-del').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          if (!confirm('Delete this user?')) return;
-          adminFetch('/users/' + btn.getAttribute('data-id'), { method: 'DELETE' }).then(function() {
-            Utils.showToast('Deleted', 'success');
-            loadUsers();
-          }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+        main.querySelectorAll('.admin-user-del').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            if (!confirm('Delete this user? This removes their chats and linked data.')) return;
+            adminFetch('/users/' + btn.getAttribute('data-id'), { method: 'DELETE' }).then(function() {
+              Utils.showToast('Deleted', 'success');
+              var tp = typeof total === 'number' ? total : 0;
+              if (tp > 1 && rows.length === 1 && adminUsersPager.page > 1) adminUsersPager.page--;
+              loadUsers();
+            }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+          });
         });
+      })
+      .catch(function() {
+        main.innerHTML =
+          '<p class="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/40 dark:border-red-900/40 p-6 text-red-800 dark:text-red-200 font-medium">Could not load users. Check network and permissions, then reopen this section.</p>';
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
   }
 
   function loadConversations() {

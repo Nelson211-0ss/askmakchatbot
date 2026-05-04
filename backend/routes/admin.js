@@ -405,7 +405,7 @@ router.get('/users', async (req, res, next) => {
     try {
         const q = req.query.q || '';
         const page = parseInt(req.query.page, 10) || 1;
-        const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+        const limit = Math.min(parseInt(req.query.limit, 10) || 50, 500);
         const offset = (page - 1) * limit;
         const params = [];
         let whereClause = '';
@@ -424,10 +424,24 @@ router.get('/users', async (req, res, next) => {
             ${whereClause}
             ORDER BY u.created_at DESC
             LIMIT $${lim} OFFSET $${off}`;
-        const list = await db.query(sql, params);
-        const countSql = `SELECT COUNT(*)::int AS c FROM users u ${whereClause}`;
-        const count = await db.query(countSql, q ? [params[0]] : []);
-        res.json({ users: list.rows, total: count.rows[0].c, page, limit });
+        const [list, count, summaryResult] = await Promise.all([
+            db.query(sql, params),
+            db.query(`SELECT COUNT(*)::int AS c FROM users u ${whereClause}`, q ? [params[0]] : []),
+            db.query(
+                `SELECT COUNT(*)::int AS total_registered,
+                        COUNT(*) FILTER (WHERE email_verified = TRUE)::int AS verified,
+                        COUNT(*) FILTER (WHERE email_verified = FALSE)::int AS pending_verification,
+                        COUNT(*) FILTER (WHERE role = 'admin')::int AS admins
+                 FROM users`
+            )
+        ]);
+        res.json({
+            users: list.rows,
+            total: count.rows[0].c,
+            page,
+            limit,
+            summary: summaryResult.rows[0]
+        });
     } catch (err) {
         next(err);
     }

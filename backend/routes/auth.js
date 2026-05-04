@@ -10,13 +10,19 @@ const { useSecureCookies } = require('../config/cookies');
 
 function getMailTransport() {
     if (!process.env.SMTP_HOST) return null;
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const secure = process.env.SMTP_SECURE === 'true';
     const opts = {
         host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587', 10),
-        secure: process.env.SMTP_SECURE === 'true'
+        port,
+        secure
     };
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
         opts.auth = { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
+    }
+    // Gmail and most providers use STARTTLS on 587 (not implicit TLS).
+    if (port === 587 && !secure) {
+        opts.requireTLS = true;
     }
     return nodemailer.createTransport(opts);
 }

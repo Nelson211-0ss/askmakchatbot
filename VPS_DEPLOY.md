@@ -43,6 +43,41 @@ nano .env              # set JWT, API keys, TRUST_PROXY, CORS_ORIGIN, etc.
 
 Ensure `.env` exists next to `docker-compose.dockeruser.yml`. The compose file loads it for the **app** service.
 
+#### Email signup verification (Gmail SMTP)
+
+Signup emails are optional in dev but **`NODE_ENV=production` requires SMTP** (`SMTP_HOST`, `SMTP_FROM`, etc.) or registration returns HTTP 503. Git never updates `.env` on the server — copy these from your trusted machine into the VPS file.
+
+1. SSH in and edit the repo `.env`:
+   ```bash
+   nano ~/askmakchatbot/.env
+   ```
+2. Set (use a **[Google App Password](https://myaccount.google.com/apppasswords)** — not your normal Gmail password; 2‑Step Verification must be on). Put the whole `From` value in **one** pair of quotes (Docker Compose chokes on `"Name" <a@b.com>` split across quotes):
+   ```env
+   NODE_ENV=production
+
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   SMTP_USER=youraccount@gmail.com
+   SMTP_PASS="xxxx xxxx xxxx xxxx"
+   SMTP_FROM="AskMak <youraccount@gmail.com>"
+   ```
+   Do **not** set `VERIFICATION_EMAIL=false` on production — that means “never send mail, log codes instead.” Omit that line entirely.
+3. Recreate only the **app** container so it picks up `.env`:
+   ```bash
+   cd ~/askmakchatbot
+   docker compose -f docker-compose.dockeruser.yml up -d --force-recreate app
+   ```
+   Check sends: `docker compose -f docker-compose.dockeruser.yml logs -f --tail=30 app`
+
+**Alternative:** copy your local `.env` fragment with `scp` (replace user/host/path):
+
+```bash
+scp .env dockeruser@YOUR_VPS_IP:~/askmakchatbot/.env
+```
+
+Prefer editing on the VPS so production keeps its own JWT/DB values and you only paste the SMTP lines.
+
 ### 5. First full stack start
 
 ```bash
