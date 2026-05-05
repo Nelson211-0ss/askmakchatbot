@@ -11,10 +11,10 @@
     '#059669', '#f97316', '#8b5cf6', '#0ea5e9', '#e11d48', '#64748b', '#84cc16'
   ];
 
-  var PERF_DONUT_COLORS = ['#00c853', '#a855f7', '#3b82f6', '#ea580c', '#9333ea', '#0d9488', '#ca8a04'];
+  var PERF_DONUT_COLORS = ['#006b3c', '#a855f7', '#3b82f6', '#ea580c', '#9333ea', '#0d9488', '#ca8a04'];
 
-  /** Line / accent green matching reference dashboard */
-  var DASH_ACCENT = '#00c853';
+  /** Line / accent — Makerere institutional green */
+  var DASH_ACCENT = '#006b3c';
 
   var SECTION_COPY = {
     overview: { title: 'Dashboard', subtitle: 'Overview of your assistant' },
@@ -684,14 +684,14 @@
   function adminUsersBadgeRole(role) {
     var r = String(role || 'student').toLowerCase();
     if (r === 'admin') {
-      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-[#00c853]/15 text-[#006636] dark:text-[#86efac] ring-1 ring-[#00c853]/22">Admin</span>';
+      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-[#006b3c]/15 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/22">Admin</span>';
     }
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-slate-500/10 text-slate-700 dark:text-slate-300 ring-1 ring-slate-500/15">Student</span>';
   }
 
   function adminUsersBadgeVerified(ok) {
     if (ok) {
-      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#00c853]/12 text-[#006636] dark:text-[#86efac] ring-1 ring-[#00c853]/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
+      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#006b3c]/12 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
     }
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/12 text-amber-900 dark:text-amber-200 ring-1 ring-amber-500/25">Pending</span>';
   }
@@ -699,9 +699,10 @@
   function loadUsers() {
     var main = document.getElementById('admin-main');
     main.innerHTML =
-      '<div class="animate-pulse space-y-5">' +
-      '<div class="h-36 rounded-2xl bg-gradient-to-br from-[#00c853]/15 to-transparent dark:from-[#00c853]/12 dark:to-transparent"></div>' +
-      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-[#161b22]/90"></div></div>';
+      '<div class="admin-users animate-pulse">' +
+      '<div class="h-28 rounded-xl bg-gray-200/60 dark:bg-white/[0.06]"></div>' +
+      '<div class="h-11 max-w-md rounded-xl bg-gray-200/50 dark:bg-white/[0.05]"></div>' +
+      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-[#161b22]/80"></div></div>';
 
     var qs =
       '?page=' +
@@ -721,11 +722,10 @@
         var fromIx = total ? (page - 1) * limit + 1 : 0;
         var toIx = Math.min(page * limit, total);
 
-        var html = '<div class="admin-users space-y-6">';
+        var html = '<div class="admin-users">';
 
-        html += '<div class="relative overflow-hidden rounded-2xl border border-[#00c853]/22 dark:border-[#00c853]/22 bg-gradient-to-br from-white via-[#00c853]/[0.06] to-white dark:from-[#161b22] dark:via-[#00c853]/[0.07] dark:to-[#0d1117] shadow-lg shadow-[#00c853]/[0.06]">';
-        html += '<div class="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[#00c853]/10 blur-3xl pointer-events-none" aria-hidden="true"></div>';
-        html += '<div class="relative p-5 sm:p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">';
+        html += '<div class="admin-users-hero">';
+        html += '<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-1">';
         html += '<div class="min-w-0 flex-1 flex gap-3 sm:gap-4 items-start">';
         html += '<span class="admin-page-section-icon admin-page-section-icon--hero shrink-0" aria-hidden="true">' + PAGE_ICONS.users + '</span>';
         html += '<div class="min-w-0 flex-1">';
@@ -735,14 +735,14 @@
         html +=
           '<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories. Totals below include every account in the database.</p>';
         html += '</div></div>';
-        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end">';
+        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end sm:shrink-0">';
         html +=
-          '<span class="inline-flex items-center gap-2 rounded-xl bg-[#00c853]/10 px-4 py-2.5 ring-1 ring-[#00c853]/22"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
+          '<span class="inline-flex items-center gap-2 rounded-xl bg-[#006b3c]/10 px-4 py-2.5 ring-1 ring-[#006b3c]/22"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
           String(sum.total_registered != null ? sum.total_registered : total) +
           '</span><span class="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 leading-tight">accounts</span></span>';
         html += '</div></div>';
 
-        html += '<div class="relative grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 sm:px-6 pb-5 sm:pb-6">';
+        html += '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">';
         var statCards = [
           { label: 'Verified email', val: sum.verified },
           { label: 'Awaiting verify', val: sum.pending_verification },
@@ -754,7 +754,7 @@
           html +=
             '<div class="rounded-xl border px-4 py-3 ' +
             (muted
-              ? 'border-[#00c853]/25 dark:border-[#00c853]/18 bg-[#00c853]/[0.06] dark:bg-[#00c853]/[0.06]'
+              ? 'border-[#006b3c]/25 dark:border-[#006b3c]/18 bg-[#006b3c]/[0.06] dark:bg-[#006b3c]/[0.06]'
               : 'border-gray-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#161b22]/75') +
             '">';
           html +=
@@ -768,36 +768,34 @@
         });
         html += '</div></div>';
 
+        html += '<div class="admin-users-search-row">';
+        html += '<label class="sr-only" for="admin-users-search">Search users</label>';
+        html += '<div class="relative admin-users-search-field">';
         html +=
-          '<div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-center sm:justify-between rounded-2xl border border-gray-200/90 dark:border-white/[0.08] bg-white/90 dark:bg-[#161b22] px-4 py-3 shadow-sm">';
-        html += '<div class="flex flex-1 min-w-0 gap-2 items-center">';
-        html +=
-          '<label class="sr-only" for="admin-users-search">Search users</label><div class="relative flex-1 min-w-0 max-w-md">';
-        html +=
-          '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
+          '<span class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-gray-400 dark:text-zinc-500" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
         html +=
           '<input id="admin-users-search" type="search" autocomplete="off" placeholder="Search name or email…" value="' +
           Utils.escapeHtml(adminUsersPager.q) +
-          '" class="w-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#0d1117] py-2.5 pl-9 pr-3 text-sm text-mak-dark dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00c853]/35 focus:border-[#00c853]/40"></div>';
-        html +=
-          '<button type="button" id="admin-users-search-btn" class="shrink-0 rounded-xl bg-[#00c853] hover:brightness-95 text-[#0b0e11] text-sm font-semibold px-4 py-2.5 shadow-sm shadow-[#00c853]/25 transition border-none cursor-pointer">Search</button>';
+          '" class="admin-users-input"></div>';
+        html += '<button type="button" id="admin-users-search-btn" class="admin-users-search-btn">Search</button>';
         html += '</div>';
-        html += '<div class="text-sm text-gray-600 dark:text-gray-400 tabular-nums">';
+
+        var tableBarMeta = '';
         if (adminUsersPager.q) {
-          html +=
+          tableBarMeta =
             Utils.escapeHtml(String(total)) +
             ' match' +
             (total === 1 ? '' : 'es') +
             (total ? ' · rows ' + fromIx + '–' + toIx : '');
         } else {
-          html += total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' listed on this slice' : 'No accounts yet';
+          tableBarMeta = total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' on file' : 'No accounts yet';
         }
-        html += '</div></div>';
+        html += '<p class="admin-users-range">' + tableBarMeta + '</p>';
 
+        html += '<div class="admin-users-table-shell">';
+        html += '<div class="overflow-x-auto">';
         html +=
-          '<div class="overflow-x-auto rounded-2xl border border-gray-200/90 dark:border-white/[0.06] bg-white dark:bg-[#161b22] shadow-md shadow-[#00c853]/[0.04] ring-1 ring-black/[0.03] dark:ring-white/[0.04]">';
-        html +=
-          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-white/[0.06] bg-[#00c853]/[0.08] dark:bg-[#00c853]/10 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
+          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-white/[0.06] bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/10 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
         html +=
           '<th class="px-4 py-3.5 whitespace-nowrap">Member</th><th class="px-4 py-3.5 whitespace-nowrap">Email</th><th class="px-4 py-3.5 whitespace-nowrap">Role</th><th class="px-4 py-3.5 whitespace-nowrap">Status</th><th class="px-4 py-3.5 whitespace-nowrap">Joined</th><th class="px-4 py-3.5 whitespace-nowrap">Last active</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Chats</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Actions</th></tr></thead><tbody>';
 
@@ -813,7 +811,7 @@
         } else {
           rows.forEach(function(u) {
             html +=
-              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-white/[0.06] last:border-0 hover:bg-[#00c853]/[0.06] dark:hover:bg-[#00c853]/[0.08] transition-colors">';
+              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-white/[0.06] last:border-0 hover:bg-[#006b3c]/[0.06] dark:hover:bg-[#006b3c]/[0.08] transition-colors">';
             html += '<td class="px-4 py-3.5 font-medium text-mak-dark dark:text-white">' + Utils.escapeHtml(u.full_name || '—') + '</td>';
             html +=
               '<td class="px-4 py-3.5 text-gray-700 dark:text-gray-300 max-w-[14rem] truncate" title="' +
@@ -837,7 +835,7 @@
               '</td>';
             html += '<td class="px-4 py-3.5 text-right whitespace-nowrap space-x-2">';
             html +=
-              '<button type="button" class="inline-flex items-center rounded-lg border border-[#00c853]/28 dark:border-[#00c853]/35 bg-[#00c853]/[0.08] dark:bg-[#00c853]/12 px-2.5 py-1.5 text-xs font-semibold text-[#008a45] dark:text-[#4ade80] hover:bg-[#00c853]/15 dark:hover:bg-[#00c853]/20 cursor-pointer admin-user-open" data-id="' +
+              '<button type="button" class="inline-flex items-center rounded-lg border border-[#006b3c]/28 dark:border-[#006b3c]/35 bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/12 px-2.5 py-1.5 text-xs font-semibold text-[#008a45] dark:text-[#4ade80] hover:bg-[#006b3c]/15 dark:hover:bg-[#006b3c]/20 cursor-pointer admin-user-open" data-id="' +
               u.id +
               '">View</button>';
             if (u.role !== 'admin') {
@@ -849,7 +847,7 @@
             html += '</td></tr>';
           });
         }
-        html += '</tbody></table></div>';
+        html += '</tbody></table></div></div>';
 
         if (total > limit || page > 1) {
           html += '<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">';
@@ -861,11 +859,11 @@
             '</span></p>';
           html += '<div class="flex gap-2 order-1 sm:order-2">';
           html +=
-            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#00c853]/10 dark:hover:bg-[#00c853]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
             (page <= 1 ? ' disabled' : '') +
             '>Previous</button>';
           html +=
-            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#00c853]/10 dark:hover:bg-[#00c853]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
             (page >= totalPages ? ' disabled' : '') +
             '>Next</button>';
           html += '</div></div>';
