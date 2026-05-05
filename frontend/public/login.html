@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sign In - AskMak</title>
   <link rel="icon" href="/favicon.png" type="image/png" sizes="any">
-  <meta name="theme-color" content="#00a651">
+  <meta name="theme-color" content="#00C853">
   <meta name="color-scheme" content="light dark">
   <script>
     (function () {
@@ -50,14 +50,12 @@
     <div class="w-full max-w-[17.75rem] sm:max-w-[18.25rem] animate-fade-in motion-reduce:animate-none">
       <div class="rounded-xl border border-gray-200/90 bg-white/90 backdrop-blur-xl shadow-lg shadow-gray-900/8 p-4 sm:p-5 ring-1 ring-white/60 dark:border-chat-line/70 dark:bg-chat-raised/95 dark:shadow-[0_12px_48px_-16px_rgba(0,0,0,0.55)] dark:ring-chat-line/20">
         <div class="mb-4 text-center">
-          <div class="flex items-center justify-center gap-2 mb-2">
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-mak-green/12 text-mak-green ring-1 ring-mak-green/20 dark:bg-mak-green/[0.12] dark:ring-mak-green/35">
-              <i data-feather="shield" width="16" height="16" stroke-width="2"></i>
-            </div>
-            <img src="/assets/mak_logo.png" alt="Makerere University" class="h-7 w-auto opacity-95 dark:opacity-90">
+          <div class="flex flex-col items-center gap-2 mb-1">
+            <img src="/assets/askmak%20logo%20lightmode.png" alt="AskMak" class="h-12 sm:h-14 w-auto max-w-[min(100%,14rem)] object-contain mx-auto dark:hidden" width="200" height="56" decoding="async" />
+            <img src="/assets/askmak%20logo%20darkmode.png" alt="AskMak" class="h-12 sm:h-14 w-auto max-w-[min(100%,14rem)] object-contain mx-auto hidden dark:block" width="200" height="56" decoding="async" />
+            <p class="text-[11px] sm:text-xs font-medium text-gray-500 dark:text-zinc-400 tracking-wide">Intelligent Campus Assistant</p>
           </div>
-          <a href="/" class="text-base sm:text-lg font-bold tracking-tight text-mak-dark dark:text-white inline-block leading-snug">Ask<span class="text-mak-green">Mak</span></a>
-          <p class="mt-1 text-[1.0625rem] sm:text-lg font-semibold tracking-tight text-gray-700 dark:text-zinc-100">Sign In</p>
+          <p class="mt-2 text-[1.0625rem] sm:text-lg font-semibold tracking-tight text-gray-800 dark:text-zinc-100">Sign In</p>
         </div>
 
         <div id="alert" class="hidden"></div>
