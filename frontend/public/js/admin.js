@@ -7,7 +7,7 @@
   var adminUsersPager = { page: 1, limit: 100, q: '' };
 
   var BAR_HOUR_PALETTE = [
-    '#00a651', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
+    '#006b3c', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
     '#059669', '#f97316', '#8b5cf6', '#0ea5e9', '#e11d48', '#64748b', '#84cc16'
   ];
 
@@ -427,7 +427,7 @@
               label: 'New chats',
               data: data,
               borderColor: DASH_ACCENT,
-              backgroundColor: 'rgba(0,200,83,0.14)',
+              backgroundColor: 'rgba(0,107,60,0.14)',
               fill: true,
               cubicInterpolationMode: 'monotone',
               tension: 0.45,
@@ -730,7 +730,7 @@
         html += '<span class="admin-page-section-icon admin-page-section-icon--hero shrink-0" aria-hidden="true">' + PAGE_ICONS.users + '</span>';
         html += '<div class="min-w-0 flex-1">';
         html +=
-          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-[#00a651] dark:text-[#4ade80] mb-1">Directory</p>';
+          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-[#006b3c] dark:text-[#86efac] mb-1">Directory</p>';
         html += '<h2 class="text-xl sm:text-2xl font-bold text-mak-dark dark:text-white tracking-tight">Registered users</h2>';
         html +=
           '<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories. Totals below include every account in the database.</p>';
