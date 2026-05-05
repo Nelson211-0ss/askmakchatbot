@@ -389,7 +389,7 @@ option {
 .admin-header-icon-btn {
   border-color: rgba(15, 23, 42, 0.12);
   background: rgba(255, 255, 255, 0.95);
-  color: #00a651;
+  color: #006b3c;
 }
 
 .dark .admin-header-icon-btn {
@@ -915,11 +915,11 @@ option {
 }
 
 .admin-dash-activity-card--recent .admin-dash-inset-title {
-  color: #00a651;
+  color: #006b3c;
 }
 
 .dark .admin-dash-activity-card--recent .admin-dash-inset-title {
-  color: #4ade80;
+  color: #86efac;
 }
 
 .admin-dash-quick .admin-dash-inset-head {
@@ -958,7 +958,7 @@ option {
 }
 
 .dark .admin-dash-link {
-  color: #006b3c;
+  color: #86efac;
 }
 
 .admin-dash-activity-card {
@@ -1035,13 +1035,13 @@ option {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  color: #00a651;
+  color: #006b3c;
   background: rgba(0, 107, 60, 0.12);
   border: 1px solid rgba(0, 107, 60, 0.22);
 }
 
 .dark .admin-page-section-icon {
-  color: #006b3c;
+  color: #86efac;
   background: rgba(0, 107, 60, 0.14);
   border-color: rgba(0, 107, 60, 0.28);
 }
@@ -1256,7 +1256,7 @@ option {
   padding: 0.45rem 0.85rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #00a651;
+  color: #006b3c;
   background: rgba(0, 107, 60, 0.1);
   border: 1px solid rgba(0, 107, 60, 0.22);
   border-radius: 0.65rem;
@@ -1290,7 +1290,7 @@ option {
 .admin-page-link {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #00a651;
+  color: #006b3c;
   background: none;
   border: none;
   padding: 0;
@@ -1302,7 +1302,7 @@ option {
 }
 
 .dark .admin-page-link {
-  color: #006b3c;
+  color: #86efac;
 }
 
 .admin-page-pill {
