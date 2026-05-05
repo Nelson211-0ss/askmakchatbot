@@ -9,6 +9,20 @@ var Chat = {
   /** Mobile (<lg): fixed #chat-top-bar needs matching top padding on #chat-body */
   mqMobileChat: typeof window.matchMedia !== 'undefined' ? window.matchMedia('(max-width: 1023px)') : null,
 
+  /** Keep fixed top bar aligned with the visual viewport when mobile browsers shift layout (e.g. keyboard). */
+  syncMobileTopBarVisualPosition: function() {
+    var bar = document.getElementById('chat-top-bar');
+    if (!bar) return;
+    if (!Chat.mqMobileChat || !Chat.mqMobileChat.matches) {
+      bar.style.transform = '';
+      return;
+    }
+    var vv = window.visualViewport;
+    if (!vv) return;
+    var y = vv.offsetTop;
+    bar.style.transform = y ? 'translate3d(0,' + y + 'px,0)' : '';
+  },
+
   syncMobileHeaderInset: function() {
     var bar = document.getElementById('chat-top-bar');
     var bodyEl = document.getElementById('chat-body');
@@ -20,11 +34,16 @@ var Chat = {
     bodyEl.style.paddingTop = bar.offsetHeight + 'px';
   },
 
+  applyMobileChatChrome: function() {
+    Chat.syncMobileHeaderInset();
+    Chat.syncMobileTopBarVisualPosition();
+  },
+
   bindMobileHeaderInsetSync: function() {
     var bar = document.getElementById('chat-top-bar');
     if (!bar || typeof window.ResizeObserver === 'undefined') return;
     var ro = new ResizeObserver(function() {
-      Chat.syncMobileHeaderInset();
+      Chat.applyMobileChatChrome();
     });
     ro.observe(bar);
   },
@@ -139,31 +158,33 @@ var Chat = {
 
     window.addEventListener('online', function() {
       document.getElementById('offline-banner').classList.add('hidden');
-      self.syncMobileHeaderInset();
+      self.applyMobileChatChrome();
     });
     window.addEventListener('offline', function() {
       document.getElementById('offline-banner').classList.remove('hidden');
-      self.syncMobileHeaderInset();
+      self.applyMobileChatChrome();
     });
 
     self.bindMobileHeaderInsetSync();
-    self.syncMobileHeaderInset();
+    self.applyMobileChatChrome();
     window.addEventListener('resize', function() {
-      self.syncMobileHeaderInset();
+      self.applyMobileChatChrome();
     });
     window.addEventListener('orientationchange', function() {
       setTimeout(function() {
-        self.syncMobileHeaderInset();
+        self.applyMobileChatChrome();
       }, 250);
     });
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', function() {
-        self.syncMobileHeaderInset();
-      });
+      var onVV = function() {
+        self.applyMobileChatChrome();
+      };
+      window.visualViewport.addEventListener('resize', onVV);
+      window.visualViewport.addEventListener('scroll', onVV);
     }
     if (Chat.mqMobileChat && typeof Chat.mqMobileChat.addEventListener === 'function') {
       Chat.mqMobileChat.addEventListener('change', function() {
-        self.syncMobileHeaderInset();
+        self.applyMobileChatChrome();
       });
     }
   },

@@ -2186,6 +2186,7 @@ option {
   #chat-top-bar {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    will-change: transform;
   }
 }
 
@@ -2242,6 +2243,16 @@ option {
     flex: 0 0 auto;
     justify-content: center;
     width: 100%;
+  }
+
+  /* Wide wordmark: show mostly the mark when the rail is icon-only */
+  #sidebar.is-collapsed .sidebar-brand-link .sidebar-brand-logo {
+    width: 3.5rem;
+    height: 3.5rem;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: left center;
   }
 
   #sidebar.is-collapsed .sidebar-nav-btn {
