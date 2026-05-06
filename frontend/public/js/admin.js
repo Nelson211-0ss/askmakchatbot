@@ -1340,6 +1340,188 @@
     }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
   }
 
+  function loadKb() {
+    var main = document.getElementById('admin-main');
+    main.innerHTML = 'Loading FAQ Entries…';
+    adminFetch('/kb?limit=100').then(function(d) {
+      var rows = d.entries || [];
+      var html = '<div class="flex justify-between items-center mb-4">';
+      html += '<h2 class="text-xl font-bold dark:text-white">FAQ Entries</h2>';
+      html += '<button type="button" id="kb-new-btn" class="bg-mak-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#009149] transition cursor-pointer border-none shadow-sm shadow-mak-green/25">Add Entry</button>';
+      html += '</div>';
+
+      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
+      html += '<th class="p-3">Category</th><th class="p-3">Title</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
+      rows.forEach(function(r) {
+        var status = r.is_published ? '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Published</span>' : '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">Draft</span>';
+        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
+        html += '<td class="p-3 font-medium">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + status + '</td>';
+        html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs mr-3 kb-edit-btn" data-id="' + r.id + '">Edit</button>';
+        html += '<button type="button" class="text-red-500 text-xs kb-delete-btn" data-id="' + r.id + '">Delete</button></td></tr>';
+      });
+      html += '</tbody></table></div>';
+      if (!rows.length) html += '<p class="text-gray-500 mt-4">No FAQ entries yet.</p>';
+      
+      main.innerHTML = html;
+
+      document.getElementById('kb-new-btn').addEventListener('click', function() { openKbModal(); });
+      
+      main.querySelectorAll('.kb-edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          adminFetch('/kb/' + btn.getAttribute('data-id')).then(function(res) {
+            openKbModal(res.entry);
+          });
+        });
+      });
+
+      main.querySelectorAll('.kb-delete-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          if (confirm('Delete this entry?')) {
+            adminFetch('/kb/' + btn.getAttribute('data-id'), { method: 'DELETE' }).then(function() {
+              Utils.showToast('Deleted', 'success');
+              loadKb();
+            });
+          }
+        });
+      });
+    }).catch(function() { main.innerHTML = '<p class="text-red-500">Failed to load KB entries</p>'; });
+  }
+
+  function openKbModal(entry = null) {
+    var isEdit = !!entry;
+    var html = '<form id="kb-form" class="space-y-4 text-sm">';
+    html += '<div><label class="block font-semibold mb-1">Category</label><input type="text" id="kbf-category" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.category : '') + '" required></div>';
+    html += '<div><label class="block font-semibold mb-1">Title / Question</label><input type="text" id="kbf-title" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.title : '') + '" required></div>';
+    html += '<div><label class="block font-semibold mb-1">Content / Answer</label><textarea id="kbf-content" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" required>' + Utils.escapeHtml(entry ? entry.content : '') + '</textarea></div>';
+    html += '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '> <span>Published (visible to students)</span></label>';
+    html += '<div class="pt-4 flex justify-end gap-2"><button type="button" class="px-4 py-2 border rounded" onclick="document.getElementById(\'modal-close\').click()">Cancel</button>';
+    html += '<button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none">Save</button></div></form>';
+    
+    openModal(isEdit ? 'Edit FAQ Entry' : 'New FAQ Entry', html);
+
+    document.getElementById('kb-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var payload = {
+        category: document.getElementById('kbf-category').value,
+        title: document.getElementById('kbf-title').value,
+        content: document.getElementById('kbf-content').value,
+        is_published: document.getElementById('kbf-published').checked
+      };
+      var path = isEdit ? '/kb/' + entry.id : '/kb';
+      var method = isEdit ? 'PUT' : 'POST';
+      
+      adminFetch(path, { method: method, body: payload }).then(function() {
+        Utils.showToast('Saved successfully', 'success');
+        closeModal();
+        loadKb();
+      }).catch(function(err) { Utils.showToast(err.message, 'error'); });
+    });
+  }
+
+  function loadKbTickets(statusFilter = '') {
+    var main = document.getElementById('admin-main');
+    main.innerHTML = 'Loading Tickets…';
+    var qs = '/kb-tickets?limit=50' + (statusFilter ? '&status=' + statusFilter : '');
+    
+    adminFetch(qs).then(function(d) {
+      var rows = d.tickets || [];
+      
+      // Update sidebar badge
+      var badge = document.getElementById('nav-ticket-count');
+      if (badge) {
+        if (d.pending_count > 0) { badge.textContent = d.pending_count; badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+      }
+
+      var html = '<div class="flex justify-between items-center mb-4">';
+      html += '<h2 class="text-xl font-bold dark:text-white">Support Tickets</h2>';
+      html += '<select id="kbt-filter" class="border rounded p-2 text-sm dark:bg-gray-800 dark:border-gray-700"><option value="">All tickets</option><option value="pending" ' + (statusFilter === 'pending' ? 'selected' : '') + '>Pending</option><option value="resolved" ' + (statusFilter === 'resolved' ? 'selected' : '') + '>Resolved</option></select>';
+      html += '</div>';
+
+      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
+      html += '<th class="p-3">Date</th><th class="p-3">Student</th><th class="p-3">Category</th><th class="p-3">Question</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
+      
+      rows.forEach(function(r) {
+        var statusHtml = r.status === 'pending' ? '<span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">Pending</span>' : '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-medium">Resolved</span>';
+        html += '<tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td class="p-3 whitespace-nowrap">' + Utils.formatTime(r.created_at) + '</td>';
+        html += '<td class="p-3">' + Utils.escapeHtml(r.student_email) + '</td><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
+        html += '<td class="p-3 font-medium truncate max-w-xs">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + statusHtml + '</td>';
+        html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs font-semibold kbt-view-btn border-none bg-transparent cursor-pointer" data-id="' + r.id + '">Review</button></td></tr>';
+      });
+      html += '</tbody></table></div>';
+      if (!rows.length) html += '<p class="text-gray-500 mt-4">No tickets found.</p>';
+      
+      main.innerHTML = html;
+
+      document.getElementById('kbt-filter').addEventListener('change', function(e) {
+        loadKbTickets(e.target.value);
+      });
+
+      main.querySelectorAll('.kbt-view-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          adminFetch('/kb-tickets/' + btn.getAttribute('data-id')).then(function(res) {
+            openTicketModal(res.ticket);
+          });
+        });
+      });
+    }).catch(function() { main.innerHTML = '<p class="text-red-500">Failed to load tickets</p>'; });
+  }
+
+  function openTicketModal(t) {
+    var isPending = t.status === 'pending';
+    var html = '<div class="space-y-4 text-sm">';
+    
+    html += '<div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">';
+    html += '<div><span class="block text-xs text-gray-500 uppercase font-semibold">Student</span><span class="font-medium">' + Utils.escapeHtml(t.student_email) + '</span></div>';
+    html += '<div><span class="block text-xs text-gray-500 uppercase font-semibold">Category</span><span class="font-medium">' + Utils.escapeHtml(t.category) + '</span></div>';
+    html += '<div class="col-span-2"><span class="block text-xs text-gray-500 uppercase font-semibold mb-1">Question</span><span class="font-semibold text-lg">' + Utils.escapeHtml(t.title) + '</span></div>';
+    html += '</div>';
+
+    if (isPending) {
+      html += '<form id="ticket-resolve-form" class="space-y-3 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">';
+      html += '<div><label class="block font-semibold mb-1">Your Answer</label><p class="text-xs text-gray-500 mb-2">This will be emailed to the student.</p>';
+      html += '<textarea id="kbt-response" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" placeholder="Type the answer here..." required></textarea></div>';
+      html += '<label class="flex items-center gap-2 cursor-pointer mt-2 bg-emerald-50 dark:bg-mak-green/10 p-3 rounded-lg border border-emerald-100 dark:border-mak-green/20"><input type="checkbox" id="kbt-save-kb" checked> <span class="font-medium text-emerald-800 dark:text-emerald-200">Also publish this answer to the public FAQ Knowledge Base</span></label>';
+      html += '<div class="pt-2 flex justify-end gap-2"><button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none flex items-center gap-2 shadow-sm shadow-mak-green/25"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Resolve & Email Student</button></div></form>';
+    } else {
+      html += '<div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">';
+      html += '<span class="block text-xs text-gray-500 uppercase font-semibold mb-2">Admin Answer (Sent to student)</span>';
+      html += '<div class="p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 whitespace-pre-wrap">' + Utils.escapeHtml(t.admin_response) + '</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    openModal('Ticket Details', html);
+
+    if (isPending) {
+      document.getElementById('ticket-resolve-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        var payload = {
+          admin_response: document.getElementById('kbt-response').value,
+          save_as_kb_entry: document.getElementById('kbt-save-kb').checked
+        };
+        
+        adminFetch('/kb-tickets/' + t.id, { method: 'PATCH', body: payload }).then(function(res) {
+          if (res.email_sent) Utils.showToast('Resolved and email sent to student', 'success');
+          else Utils.showToast('Resolved, but email delivery skipped/failed', 'warning');
+          
+          if (res.kb_entry_id) Utils.showToast('Added to public FAQ', 'success');
+          
+          closeModal();
+          loadKbTickets('pending');
+        }).catch(function(err) { 
+          Utils.showToast(err.message, 'error'); 
+          btn.disabled = false;
+          btn.textContent = 'Resolve & Email Student';
+        });
+      });
+    }
+  }
+
   function loadSection(name) {
     setActiveNav(name);
     destroyCharts();
@@ -1350,10 +1532,13 @@
     else if (name === 'conversations') loadConversations();
     else if (name === 'feedback') loadFeedback();
     else if (name === 'documents') loadDocuments();
+    else if (name === 'kb') loadKb();
+    else if (name === 'kb-tickets') loadKbTickets();
     else if (name === 'reference') loadReference();
     else if (name === 'ingest') loadIngest();
     else if (name === 'settings') loadSettings();
   }
+
 
   function poll() {
     adminFetch('/stats').then(function(s) { escBadge(s.pending_escalations || 0); }).catch(function() {});

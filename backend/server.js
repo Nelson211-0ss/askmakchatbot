@@ -20,6 +20,7 @@ const feedbackRoutes = require('./routes/feedback');
 const memoriesRoutes = require('./routes/memories');
 const healthRoutes = require('./routes/health');
 const adminRoutes = require('./routes/admin');
+const kbRoutes = require('./routes/kb');
 
 const cron = require('./services/cron');
 
@@ -107,6 +108,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/memories', memoriesRoutes);
 app.use('/api', healthRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/kb', kbRoutes);
 
 app.get('/{*splat}', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next();

@@ -188,13 +188,42 @@
 
     <div id="chat-body" class="chat-body-welcome relative z-10 flex-1 flex flex-col items-stretch w-full min-h-0 overflow-hidden bg-transparent">
 
-      <div id="welcome-screen" class="welcome-screen-block relative z-[1] shrink-0 flex flex-col items-center justify-center text-center px-4 sm:px-5 py-6 sm:py-10 animate-fade-in max-w-md mx-auto w-full">
+      <div id="welcome-screen" class="welcome-screen-block relative z-[1] shrink-0 flex flex-col items-center justify-center text-center px-4 sm:px-5 py-6 sm:py-10 animate-fade-in max-w-2xl mx-auto w-full">
         <div class="w-full shrink-0 px-0.5">
         <h2 id="welcome-greeting" class="text-[1.0625rem] sm:text-xl font-semibold text-zinc-800 dark:text-zinc-50 mb-1 leading-snug px-1">Hi, I&apos;m AskMak</h2>
         <p id="welcome-lead" class="text-[0.9375rem] sm:text-base font-medium text-zinc-700 dark:text-zinc-200 mb-1 leading-snug px-1">How can I help you today?</p>
         <p class="text-[0.8125rem] sm:text-sm text-zinc-500 dark:text-zinc-400 mb-0 sm:mb-5 leading-relaxed px-1 max-w-[22rem] mx-auto">Courses, admissions, fees, campus services—and student life at Makerere.</p>
         </div>
+
+        <!-- KB Category/Title drill-down section — shown only when authenticated -->
+        <div id="kb-section" class="hidden w-full mt-4 sm:mt-6">
+          <div id="kb-nav" class="flex items-center gap-2 mb-3 min-h-[1.5rem]">
+            <button type="button" id="kb-back-btn"
+              class="hidden items-center gap-1 text-xs text-mak-green font-medium hover:opacity-80 bg-transparent border-none cursor-pointer p-0 shrink-0"
+              aria-label="Back">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              Back
+            </button>
+            <span id="kb-breadcrumb" class="text-xs text-zinc-400 dark:text-zinc-500 font-medium truncate"></span>
+          </div>
+
+          <!-- Category buttons -->
+          <div id="kb-categories" class="flex flex-wrap gap-2 justify-center">
+            <span class="text-xs text-zinc-400 dark:text-zinc-500 animate-pulse">Loading topics…</span>
+          </div>
+
+          <!-- Title buttons (hidden initially) -->
+          <div id="kb-titles" class="hidden flex flex-col gap-2 w-full max-w-lg mx-auto"></div>
+
+          <div class="mt-4 border-t border-zinc-200 dark:border-white/[0.08] pt-4">
+            <button type="button" id="kb-ticket-btn"
+              class="text-xs text-zinc-500 dark:text-zinc-400 hover:text-mak-green dark:hover:text-mak-green transition bg-transparent border-none cursor-pointer underline underline-offset-2">
+              Can't find your answer? Submit a support ticket
+            </button>
+          </div>
+        </div>
       </div>
+
 
       <div id="chat-messages" class="hidden relative z-[1] w-full min-w-0 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-2 sm:py-4 gap-1 thin-scroll min-h-0 dark:bg-transparent"></div>
 
@@ -285,6 +314,48 @@
   </div>
 </div>
 
+<!-- KB Support Ticket Modal -->
+<div id="kb-ticket-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5 pb-[env(safe-area-inset-bottom,0px)] sm:pb-[env(safe-area-inset-bottom,0px)]">
+  <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto thin-scroll mx-0 sm:mx-auto">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-chat-line">
+      <div>
+        <h3 class="text-base font-semibold dark:text-zinc-100">Submit a Support Ticket</h3>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">We'll email you when your question is answered.</p>
+      </div>
+      <button id="kb-ticket-modal-close" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-gray-400 bg-transparent border-none cursor-pointer transition text-lg">&times;</button>
+    </div>
+    <form id="kb-ticket-form" class="p-5 space-y-4" novalidate>
+      <div>
+        <label for="kt-category" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Category</label>
+        <input id="kt-category" type="text" maxlength="100" placeholder="e.g. Admissions, Fees, Courses"
+          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+      </div>
+      <div>
+        <label for="kt-title" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Question / Title</label>
+        <input id="kt-title" type="text" maxlength="512" placeholder="What would you like to know?"
+          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+      </div>
+      <div>
+        <label for="kt-email" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Email <span class="text-zinc-400 font-normal">(for notification)</span></label>
+        <input id="kt-email" type="email" placeholder="your.email@students.mak.ac.ug"
+          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+      </div>
+      <p id="kb-ticket-error" class="hidden text-xs text-red-500 font-medium"></p>
+      <button type="submit" id="kb-ticket-submit"
+        class="w-full rounded-lg bg-mak-green hover:bg-[#009149] text-white text-sm font-semibold py-2.5 px-4 transition border-none cursor-pointer shadow-sm shadow-mak-green/25 disabled:opacity-50 disabled:pointer-events-none">
+        Submit Ticket
+      </button>
+    </form>
+    <div id="kb-ticket-success" class="hidden p-6 text-center">
+      <div class="w-12 h-12 rounded-full bg-mak-green/15 flex items-center justify-center mx-auto mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mak-green"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100 mb-1">Ticket submitted!</p>
+      <p class="text-xs text-zinc-500 dark:text-zinc-400">You'll receive an email once your question has been answered by the university team.</p>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
 <script src="/js/theme.js"></script>
@@ -293,6 +364,7 @@
 <script src="/js/upload.js"></script>
 <script src="/js/auth.js"></script>
 <script src="/js/sidebar.js"></script>
+<script src="/js/kb.js"></script>
 <script src="/js/chat.js"></script>
 </body>
 </html>
