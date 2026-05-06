@@ -7,11 +7,180 @@
   var adminUsersPager = { page: 1, limit: 100, q: '' };
 
   var BAR_HOUR_PALETTE = [
-    '#00a651', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
+    '#006b3c', '#0d9488', '#d97706', '#6366f1', '#db2777', '#0891b2', '#7c3aed', '#eab308',
     '#059669', '#f97316', '#8b5cf6', '#0ea5e9', '#e11d48', '#64748b', '#84cc16'
   ];
 
-  var PERF_DONUT_COLORS = ['#00a651', '#0f766e', '#d97706', '#6366f1', '#be123c', '#7c3aed', '#0891b2'];
+  var PERF_DONUT_COLORS = ['#006b3c', '#a855f7', '#3b82f6', '#ea580c', '#9333ea', '#0d9488', '#ca8a04'];
+
+  /** Line / accent — Makerere institutional green */
+  var DASH_ACCENT = '#006b3c';
+
+  var SECTION_COPY = {
+    overview: { title: 'Dashboard', subtitle: 'Overview of your assistant' },
+    escalations: { title: 'Escalations', subtitle: 'Review and resolve hand-offs from users' },
+    unresolved: { title: 'Unresolved', subtitle: 'Low-confidence replies to triage' },
+    users: { title: 'Users', subtitle: 'Accounts and activity' },
+    conversations: { title: 'Conversations', subtitle: 'Browse chat history' },
+    feedback: { title: 'Feedback', subtitle: 'Ratings and comments' },
+    documents: { title: 'Knowledge base', subtitle: 'Sources the assistant can cite' },
+    reference: { title: 'Reference images', subtitle: 'Images linked from documents' },
+    ingest: { title: 'Ingestion', subtitle: 'Import and index content' },
+    settings: { title: 'Settings', subtitle: 'Model limits and assistant behavior' }
+  };
+
+  var PAGE_ICONS = {
+    escalations:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z"/></svg>',
+    unresolved:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/></svg>',
+    conversations:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 12 21c0-3.314-2.686-6-6-6H4.5m15 0v.75c0 1.036-.84 1.875-1.875 1.875H15a3 3 0 0 1-3-3v-.75"/></svg>',
+    feedback:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.384a.563.563 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/></svg>',
+    reference:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3A1.5 1.5 0 0 0 1.5 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008H12V8.25Z"/></svg>',
+    users:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m0 0a9.05 9.05 0 0 1-5.69 0m5.69 0c1.093 0 2.06-.416 2.81-1.09M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-14 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>',
+    exportCsv:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>',
+    upload:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>'
+  };
+
+  function adminPageHead(sectionKey, iconSvg) {
+    var c = SECTION_COPY[sectionKey] || { title: '', subtitle: '' };
+    return (
+      '<div class="admin-page-section-head">' +
+      '<span class="admin-page-section-icon" aria-hidden="true">' +
+      iconSvg +
+      '</span>' +
+      '<div><h2 class="admin-page-section-title">' +
+      Utils.escapeHtml(c.title) +
+      '</h2>' +
+      '<p class="admin-page-section-sub">' +
+      Utils.escapeHtml(c.subtitle) +
+      '</p></div></div>'
+    );
+  }
+
+  function chartColors() {
+    var dark = document.documentElement.classList.contains('dark');
+    return {
+      tick: dark ? '#94a3b8' : '#64748b',
+      grid: dark ? 'rgba(148,163,184,0.14)' : 'rgba(100,116,139,0.12)',
+      legend: dark ? '#cbd5e1' : '#475569'
+    };
+  }
+
+  function formatDashInt(n) {
+    if (n == null || n === '' || isNaN(Number(n))) return '—';
+    return Number(n).toLocaleString();
+  }
+
+  function formatDashPct(n) {
+    if (n == null || isNaN(Number(n))) return '—';
+    return Number(n).toFixed(1) + '%';
+  }
+
+  function formatTrendPct(pct) {
+    if (pct === null || pct === undefined) return { cls: 'up', text: 'New' };
+    if (pct === 0) return { cls: 'neutral', text: '0%' };
+    return { cls: pct >= 0 ? 'up' : 'down', text: (pct > 0 ? '+' : '') + pct + '%' };
+  }
+
+  function formatTrendPts(pts) {
+    if (pts === null || pts === undefined) return { cls: 'neutral', text: '—' };
+    if (pts === 0) return { cls: 'neutral', text: '0 pts' };
+    return { cls: pts >= 0 ? 'up' : 'down', text: (pts > 0 ? '+' : '') + pts + ' pts' };
+  }
+
+  /** Timeseries `d` may be YYYY-MM-DD or ISO datetime from JSON; parse at local noon to avoid TZ off-by-one. */
+  function parseOverviewDay(dayVal) {
+    if (dayVal == null || dayVal === '') return null;
+    if (Object.prototype.toString.call(dayVal) === '[object Date]' && !isNaN(dayVal.getTime())) {
+      return dayVal;
+    }
+    var s = String(dayVal).trim();
+    var ymd = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (ymd) {
+      var y = parseInt(ymd[1], 10);
+      var mo = parseInt(ymd[2], 10) - 1;
+      var da = parseInt(ymd[3], 10);
+      return new Date(y, mo, da, 12, 0, 0, 0);
+    }
+    var d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function overviewDayKey(dayVal) {
+    var d = parseOverviewDay(dayVal);
+    if (!d) {
+      var m = String(dayVal != null ? dayVal : '').match(/^(\d{4}-\d{2}-\d{2})/);
+      return m ? m[1] : String(dayVal || '');
+    }
+    var y = d.getFullYear();
+    var mo = d.getMonth() + 1;
+    var da = d.getDate();
+    return y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (da < 10 ? '0' : '') + da;
+  }
+
+  function formatDashboardDateRange(tsPoints, windowDays) {
+    var days = windowDays || 30;
+    var opts = { month: 'short', day: 'numeric', year: 'numeric' };
+    var end = new Date();
+    end.setHours(12, 0, 0, 0);
+    var start = new Date(end.getTime());
+    start.setDate(start.getDate() - (days - 1));
+    var fallback = function() {
+      return start.toLocaleDateString(undefined, opts) + ' – ' + end.toLocaleDateString(undefined, opts);
+    };
+    if (!tsPoints || tsPoints.length === 0) return fallback();
+    var a = parseOverviewDay(tsPoints[0].d);
+    var b = parseOverviewDay(tsPoints[tsPoints.length - 1].d);
+    if (!a || !b) return fallback();
+    return a.toLocaleDateString(undefined, opts) + ' – ' + b.toLocaleDateString(undefined, opts);
+  }
+
+  function trendArrowSvg(cls) {
+    if (cls === 'neutral') return '';
+    if (cls === 'up') {
+      return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/></svg>';
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>';
+  }
+
+  function renderTrend(t) {
+    return (
+      '<span class="admin-dash-kpi-trend admin-dash-kpi-trend--' +
+      t.cls +
+      '" title="Compared with the prior 7-day period">' +
+      trendArrowSvg(t.cls) +
+      Utils.escapeHtml(t.text) +
+      '</span>'
+    );
+  }
+
+  function kpiBlock(label, value, trend, iconSvg) {
+    var trendHtml = trend ? renderTrend(trend) : '';
+    return (
+      '<div class="admin-dash-kpi">' +
+      '<div class="admin-dash-kpi-top">' +
+      '<div class="min-w-0 flex-1">' +
+      '<div class="admin-dash-kpi-label">' +
+      Utils.escapeHtml(label) +
+      '</div>' +
+      '<div class="admin-dash-kpi-value">' +
+      Utils.escapeHtml(String(value)) +
+      '</div>' +
+      trendHtml +
+      '</div>' +
+      '<div class="admin-dash-kpi-icon" aria-hidden="true">' +
+      iconSvg +
+      '</div>' +
+      '</div></div>'
+    );
+  }
 
   function touch() { lastActivity = Date.now(); }
 
@@ -48,10 +217,15 @@
       btn.removeAttribute('data-active');
       if (btn.getAttribute('data-section') === section) btn.setAttribute('data-active', 'true');
     });
-    document.getElementById('section-title').textContent =
-      { overview: 'Overview', escalations: 'Escalations', unresolved: 'Unresolved', users: 'Users',
-        conversations: 'Conversations', feedback: 'Feedback', documents: 'Knowledge base',
-        reference: 'Reference images', ingest: 'Ingestion', settings: 'Settings' }[section] || section;
+    var copy = SECTION_COPY[section] || { title: section, subtitle: '' };
+    document.getElementById('section-title').textContent = copy.title;
+    var sub = document.getElementById('section-subtitle');
+    if (sub) sub.textContent = copy.subtitle;
+    var dateWrap = document.getElementById('admin-date-range-wrap');
+    if (dateWrap) {
+      if (section === 'overview') dateWrap.classList.remove('hidden');
+      else dateWrap.classList.add('hidden');
+    }
   }
 
   function openModal(title, html) {
@@ -74,87 +248,175 @@
   function loadOverview() {
     destroyCharts();
     var main = document.getElementById('admin-main');
-    main.innerHTML = '<div class="text-gray-500">Loading…</div>';
+    var cc = chartColors();
+    main.innerHTML = '<div class="text-slate-500 dark:text-slate-400 text-sm py-8 text-center">Loading…</div>';
     Promise.all([
       adminFetch('/stats'),
       adminFetch('/stats/timeseries?days=30'),
-      adminFetch('/stats/performance-overview'),
-      adminFetch('/stats/messages-by-hour'),
+      adminFetch('/stats/topics?days=90'),
       adminFetch('/activity/recent?limit=20')
     ]).then(function(results) {
       var s = results[0];
       var ts = results[1].points || [];
       var perfRaw = results[2].segments || [];
-      var hours = results[3].hours || [];
-      var activity = results[4].chats || [];
+      var topicsDays = results[2].days != null ? results[2].days : 90;
+      var activity = results[3].chats || [];
+      var trends = s.trends || {};
+
       escBadge(s.pending_escalations || 0);
 
-      var cards = [
-        { label: 'Chats today', v: s.conversations_today, tone: 'emerald' },
-        { label: 'Chats (7d)', v: s.conversations_week, tone: 'teal' },
-        { label: 'Chats (30d)', v: s.conversations_month, tone: 'cyan' },
-        { label: 'Active users (7d)', v: s.active_users_7d, tone: 'amber' },
-        { label: 'Guest sessions (7d)', v: s.guest_sessions_week, tone: 'violet' },
-        {
-          label: 'Pending escalations',
-          v: s.pending_escalations,
-          tone: (s.pending_escalations || 0) > 0 ? 'danger' : 'clear'
-        },
-        { label: 'Avg confidence today', v: s.avg_confidence_today != null ? s.avg_confidence_today.toFixed(3) : '—', tone: 'sky' },
-        { label: 'Est. API cost (month)', v: '$' + (s.estimated_api_cost_month_usd || 0), tone: 'slate' }
-      ];
+      var dateEl = document.getElementById('admin-date-range-text');
+      if (dateEl) {
+        dateEl.textContent = formatDashboardDateRange(ts, 30);
+      }
 
-      var html = '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">';
-      cards.forEach(function(c) {
-        html += '<div class="admin-stat-card" data-tone="' + Utils.escapeHtml(c.tone) + '">';
-        html += '<div class="admin-stat-label">' + Utils.escapeHtml(c.label) + '</div>';
-        html += '<div class="admin-stat-value">' + Utils.escapeHtml(String(c.v)) + '</div></div>';
+      var iconChat =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.343.027-.698.036-1.052.063-.523.049-1.048.098-1.573.098H4.28c-.525 0-1.049-.049-1.573-.098a63.698 63.698 0 01-1.052-.063 2.052 2.052 0 01-1.593-2.086V6.852c0-.97.617-1.813 1.5-2.097V4.511a2.25 2.25 0 012.092-2.245 48.733 48.733 0 017.924 0c.982.058 1.754.849 1.754 1.834V4.393l.087.087"/></svg>';
+      var iconUsers =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.675 0-5.216-.584-7.499-1.632Z"/></svg>';
+      var iconDoc =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125V7.875a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>';
+      var iconHeart =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>';
+
+      var satVal = s.satisfaction_pct != null ? formatDashPct(s.satisfaction_pct) : '—';
+      var satTrend = formatTrendPts(trends.satisfaction_pts_delta);
+
+      var html = '<div class="admin-dash admin-dash-one-screen">';
+      html += '<div class="admin-dash-kpi-grid">';
+      html += kpiBlock('Total conversations', formatDashInt(s.conversations_total), null, iconChat);
+      html += kpiBlock(
+        'Active users (7d)',
+        formatDashInt(s.active_users_7d),
+        formatTrendPct(trends.active_users_7d_pct),
+        iconUsers
+      );
+      html += kpiBlock(
+        'Knowledge sources',
+        formatDashInt(s.documents_sources != null ? s.documents_sources : '—'),
+        formatTrendPct(trends.documents_indexed_week_pct),
+        iconDoc
+      );
+      html += kpiBlock('Satisfaction rate', satVal, satTrend, iconHeart);
+      html += '</div>';
+
+      html += '<div class="admin-dash-charts-row">';
+      html +=
+        '<div class="admin-dash-chart-panel flex flex-col">' +
+        '<div class="admin-overview-chart-meta">' +
+        '<h3 class="admin-overview-chart-title">Conversations over time</h3>' +
+        '<p class="admin-overview-chart-sub">New chats per day · trailing 30 days</p></div>' +
+        '<div class="admin-dash-chart-canvas"><canvas id="chart-conv" aria-label="Chat volume chart"></canvas></div></div>';
+
+      html +=
+        '<div class="admin-dash-chart-panel flex flex-col">' +
+        '<div class="admin-overview-chart-meta">' +
+        '<h3 class="admin-overview-chart-title">Top Topics</h3>' +
+        '<p class="admin-overview-chart-sub">Requested by users · last ' +
+        topicsDays +
+        ' days</p></div>' +
+        '<div class="admin-dash-chart-canvas"><canvas id="chart-perf" aria-label="Top topics chart"></canvas></div></div>';
+      html += '</div>';
+
+      html += '<div class="admin-dash-bottom-row">';
+      html += '<div class="admin-dash-side">';
+      html += '<div class="admin-dash-activity-card admin-dash-activity-card--recent">';
+      html += '<div class="admin-dash-inset-head">';
+      html += '<h3 class="admin-dash-inset-title">Recent conversations</h3>';
+      html +=
+        '<button type="button" class="admin-dash-link" id="dash-view-conv">View all</button>';
+      html += '</div>';
+      html +=
+        '<div class="admin-overview-activity thin-scroll admin-overview-activity--in-card">';
+      if (!activity.length) {
+        html +=
+          '<div class="px-3 py-3 text-slate-500 text-sm admin-overview-activity-row">No chats yet</div>';
+      }
+      activity.slice(0, 3).forEach(function(ch, idx) {
+        var whoRaw = ch.user_id ? ch.full_name || ch.email || 'User' : 'Guest';
+        var initial = String(whoRaw).trim().charAt(0) || '?';
+        if (whoRaw === 'Guest') initial = 'G';
+        initial = initial.toUpperCase();
+        var tone = idx % 4;
+        var line = Utils.truncate(ch.first_message || ch.title || 'New chat', 96);
+        var badge = ch.escalated
+          ? '<span class="ml-2 shrink-0 text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Escalated</span>'
+          : '';
+        html +=
+          '<button type="button" class="admin-overview-activity-row w-full text-left py-2.5 px-3 flex gap-3 items-center admin-open-chat" data-id="' +
+          ch.id +
+          '">';
+        html +=
+          '<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white avatar-tone-' +
+          tone +
+          '">';
+        html += Utils.escapeHtml(initial) + '</div>';
+        html += '<div class="flex-1 min-w-0">';
+        html +=
+          '<div class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug flex flex-wrap items-baseline gap-x-1">';
+        html += '<span>' + Utils.escapeHtml(line) + '</span>' + badge + '</div>';
+        html +=
+          '<div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">' +
+          Utils.formatTime(ch.updated_at) +
+          '</div>';
+        html += '</div></button>';
       });
-      html += '</div><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">';
-      html +=
-        '<div class="admin-overview-panel flex flex-col">' +
-          '<div class="admin-overview-chart-meta">' +
-            '<h3 class="admin-overview-chart-title">Chat volume</h3>' +
-            '<p class="admin-overview-chart-sub">New chats per day · trailing 30 days</p>' +
-          '</div>' +
-          '<div class="relative flex-1 min-h-[200px] lg:min-h-[220px]"><canvas id="chart-conv" aria-label="Chat volume chart"></canvas></div>' +
-        '</div>';
+      html += '</div></div></div>';
 
+      html += '<div class="admin-dash-side">';
+      var qaIconDoc =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="admin-dash-quick-icon shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125V7.875a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>';
+      var qaIconUsers =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="admin-dash-quick-icon shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.646-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.253v13m0-13V9.75A3.75 3.75 0 1112 6.253"/></svg>';
+      var qaIconChart =
+        '<svg xmlns="http://www.w3.org/2000/svg" class="admin-dash-quick-icon shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>';
+      var qaChevron =
+        '<svg class="admin-dash-quick-chevron shrink-0 opacity-45" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>';
+      html += '<div class="admin-dash-quick">';
+      html += '<div class="admin-dash-inset-head admin-dash-inset-head--quick">';
+      html += '<h3 class="admin-dash-inset-title">Quick actions</h3>';
+      html += '</div>';
       html +=
-        '<div class="admin-overview-panel admin-overview-panel--accent flex flex-col">' +
-          '<div class="admin-overview-chart-meta">' +
-            '<h3 class="admin-overview-chart-title">Operational mix</h3>' +
-            '<p class="admin-overview-chart-sub">Rolling 7 days · signed-in vs guest chats and message traffic</p>' +
-          '</div>' +
-          '<div class="relative flex-1 min-h-[210px] lg:min-h-[240px]"><canvas id="chart-perf" aria-label="Operations mix chart"></canvas></div>' +
-        '</div>';
+        '<button type="button" data-quick-section="documents"><span class="admin-dash-quick-label">' +
+        qaIconDoc +
+        '<span>Add document</span></span>' +
+        qaChevron +
+        '</button>';
+      html +=
+        '<button type="button" data-quick-section="users"><span class="admin-dash-quick-label">' +
+        qaIconUsers +
+        '<span>Manage users</span></span>' +
+        qaChevron +
+        '</button>';
+      html +=
+        '<button type="button" data-quick-section="conversations"><span class="admin-dash-quick-label">' +
+        qaIconChart +
+        '<span>View analytics</span></span>' +
+        qaChevron +
+        '</button>';
+      html += '</div></div></div>';
 
-      html +=
-        '<div class="admin-overview-panel admin-overview-panel--neutral flex flex-col">' +
-          '<div class="admin-overview-chart-meta">' +
-            '<h3 class="admin-overview-chart-title">Demand by hour</h3>' +
-            '<p class="admin-overview-chart-sub">UTC · all messages aggregated over last 30 days</p>' +
-          '</div>' +
-          '<div class="relative flex-1 min-h-[200px] lg:min-h-[220px]"><canvas id="chart-hour" aria-label="Hourly demand chart"></canvas></div>' +
-        '</div>';
-      html +=
-        '</div><h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 shrink-0">Recent activity</h2>';
-      html += '<div class="admin-overview-activity thin-scroll admin-overview-activity--scroll">';
-      if (!activity.length) html += '<div class="p-4 text-gray-500 text-sm admin-overview-activity-row">No chats yet</div>';
-      activity.forEach(function(ch) {
-        var who = ch.user_id ? (Utils.escapeHtml(ch.full_name || ch.email || 'User')) : 'Guest';
-        var badge = ch.escalated ? '<span class="text-xs bg-mak-red/15 text-mak-red px-2 py-0.5 rounded">Escalated</span>' : '<span class="text-xs bg-mak-green/15 text-mak-green px-2 py-0.5 rounded">Active</span>';
-        var prev = Utils.truncate(ch.first_message || '', 80);
-        html += '<button type="button" class="admin-overview-activity-row w-full text-left p-3 flex gap-3 items-start admin-open-chat" data-id="' + ch.id + '">';
-        html += '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-0.5"><span class="font-medium text-sm">' + Utils.escapeHtml(ch.title || 'Chat') + '</span>' + badge + '</div>';
-        html += '<div class="text-xs text-gray-500">' + who + ' · ' + Utils.formatTime(ch.updated_at) + '</div>';
-        html += '<div class="text-xs text-gray-600 dark:text-gray-400 mt-1">' + Utils.escapeHtml(prev) + '</div></div></button>';
-      });
       html += '</div>';
       main.innerHTML = html;
 
-      var labels = ts.map(function(p) { return p.d; });
-      var data = ts.map(function(p) { return p.c; });
+      var viewAll = document.getElementById('dash-view-conv');
+      if (viewAll) {
+        viewAll.addEventListener('click', function() {
+          loadSection('conversations');
+        });
+      }
+      main.querySelectorAll('[data-quick-section]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          loadSection(btn.getAttribute('data-quick-section'));
+        });
+      });
+
+      var labels = ts.map(function(p) {
+        return overviewDayKey(p.d);
+      });
+      var data = ts.map(function(p) {
+        return p.c;
+      });
 
       charts.conv = new Chart(document.getElementById('chart-conv'), {
         type: 'line',
@@ -164,12 +426,14 @@
             {
               label: 'New chats',
               data: data,
-              borderColor: '#00a651',
-              backgroundColor: 'rgba(0,166,81,0.07)',
+              borderColor: DASH_ACCENT,
+              backgroundColor: 'rgba(0,107,60,0.14)',
               fill: true,
-              tension: 0.28,
-              pointRadius: 2,
-              pointHoverRadius: 4
+              cubicInterpolationMode: 'monotone',
+              tension: 0.45,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              borderWidth: 2
             }
           ]
         },
@@ -179,8 +443,15 @@
           interaction: { mode: 'index', intersect: false },
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true } },
-            y: { beginAtZero: true, ticks: { precision: 0 } }
+            x: {
+              grid: { display: false },
+              ticks: { maxRotation: 0, autoSkip: true, color: cc.tick }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0, color: cc.tick },
+              grid: { color: cc.grid }
+            }
           }
         }
       });
@@ -198,7 +469,7 @@
         return PERF_DONUT_COLORS[i % PERF_DONUT_COLORS.length];
       });
       if (!donutData.length) {
-        donutLabels = ['No activity (last 7 days)'];
+        donutLabels = ['No user questions in window'];
         donutData = [1];
         donutBg = ['#94a3b8'];
       }
@@ -219,86 +490,33 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          cutout: '58%',
+          cutout: '62%',
           plugins: {
             legend: {
-              position: 'bottom',
+              position: 'right',
               labels: {
                 padding: 10,
                 usePointStyle: true,
                 pointStyle: 'circle',
                 boxWidth: 8,
-                font: { size: 11 }
+                font: { size: 10 },
+                color: cc.legend
               }
-            }
-          }
-        }
-      });
-
-      var hLabels = hours.map(function(h) {
-        return String(h.h).padStart(2, '0') + ':00';
-      });
-      var hData = hours.map(function(h) {
-        return h.c;
-      });
-      var hColors = hData.map(function(_, i) {
-        return BAR_HOUR_PALETTE[i % BAR_HOUR_PALETTE.length];
-      });
-
-      charts.hour = new Chart(document.getElementById('chart-hour'), {
-        type: 'bar',
-        data: {
-          labels: hLabels,
-          datasets: [
-            {
-              label: 'Messages logged',
-              data: hData,
-              backgroundColor: hColors,
-              borderRadius: 5,
-              borderSkipped: false
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top',
-              labels: { font: { size: 11 } }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  var v =
-                    ctx.parsed && typeof ctx.parsed.y === 'number'
-                      ? ctx.parsed.y
-                      : typeof ctx.raw === 'number'
-                        ? ctx.raw
-                        : ctx.formattedValue;
-                  return ' ' + v + ' messages';
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } }
-            },
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 }
             }
           }
         }
       });
 
       main.querySelectorAll('.admin-open-chat').forEach(function(btn) {
-        btn.addEventListener('click', function() { openConversationModal(btn.getAttribute('data-id')); });
+        btn.addEventListener('click', function() {
+          openConversationModal(btn.getAttribute('data-id'));
+        });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed to load overview</p>'; });
+    }).catch(function() {
+      if (main) main.classList.remove('admin-main--dashboard');
+      main.innerHTML =
+        '<p class="text-red-600 dark:text-red-400 font-medium">Failed to load overview</p>';
+    });
   }
 
   function openConversationModal(id) {
@@ -325,24 +543,37 @@
     if (statusFilter) qs += '&status=' + encodeURIComponent(statusFilter);
     adminFetch(qs).then(function(d) {
       var rows = d.escalations || [];
-      var html = '<div class="flex flex-wrap gap-2 mb-4"><select id="esc-filter" class="border rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('escalations', PAGE_ICONS.escalations);
+      html += '<div class="admin-page-card"><div class="admin-page-toolbar">';
+      html += '<label class="sr-only" for="esc-filter">Filter by status</label>';
+      html += '<select id="esc-filter" class="admin-page-select">';
       ['', 'pending', 'in_progress', 'resolved', 'dismissed'].forEach(function(s) {
         var sel = statusFilter === s ? ' selected' : '';
         html += '<option value="' + s + '"' + sel + '>' + (s || 'All statuses') + '</option>';
       });
-      html += '</select></div><div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-gray-800 text-left text-gray-500">';
-      html += '<th class="p-3">Date</th><th class="p-3">User</th><th class="p-3">Preview</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
-      rows.forEach(function(e) {
-        var who = e.user_name || (e.user_email ? e.user_email : 'Guest');
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">';
-        html += '<td class="p-3 whitespace-nowrap">' + Utils.formatTime(e.created_at) + '</td>';
-        html += '<td class="p-3">' + Utils.escapeHtml(who) + '</td>';
-        html += '<td class="p-3 max-w-xs truncate">' + Utils.escapeHtml(Utils.truncate(e.message_content || '', 60)) + '</td>';
-        html += '<td class="p-3"><span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800">' + e.status + '</span></td>';
-        html += '<td class="p-3"><button type="button" class="text-mak-green text-xs font-medium admin-esc-open" data-id="' + e.id + '">View</button></td></tr>';
-      });
-      html += '</tbody></table></div>';
-      if (!rows.length) html = '<p class="text-gray-500">No escalations</p>';
+      html += '</select></div>';
+      if (!rows.length) {
+        html += '<p class="admin-page-empty">No escalations for this filter.</p>';
+      } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html +=
+          '<th class="admin-page-th">Date</th><th class="admin-page-th">User</th><th class="admin-page-th">Preview</th><th class="admin-page-th">Status</th><th class="admin-page-th"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
+        rows.forEach(function(e) {
+          var who = e.user_name || (e.user_email ? e.user_email : 'Guest');
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(e.created_at) + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(who) + '</td>';
+          html += '<td class="admin-page-td max-w-xs truncate">' + Utils.escapeHtml(Utils.truncate(e.message_content || '', 60)) + '</td>';
+          html +=
+            '<td class="admin-page-td"><span class="admin-page-pill">' + Utils.escapeHtml(String(e.status || '')) + '</span></td>';
+          html +=
+            '<td class="admin-page-td"><button type="button" class="admin-page-link admin-esc-open" data-id="' +
+            e.id +
+            '">View</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
       var selEl = document.getElementById('esc-filter');
       if (selEl) selEl.addEventListener('change', function() { loadEscalations(selEl.value || null); });
@@ -392,38 +623,59 @@
     var main = document.getElementById('admin-main');
     adminFetch('/unresolved?limit=100').then(function(d) {
       var items = d.items || [];
-      var html = '<p class="text-sm text-gray-500 mb-4">Assistant messages with low confidence or hedge phrases.</p>';
-      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500"><th class="p-3">When</th><th class="p-3">User</th><th class="p-3">Excerpt</th><th class="p-3">Conf</th><th class="p-3"></th></tr></thead><tbody>';
-      items.forEach(function(m) {
-        var who = m.full_name || m.email || 'Guest';
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3 whitespace-nowrap">' + Utils.formatTime(m.created_at) + '</td>';
-        html += '<td class="p-3">' + Utils.escapeHtml(who) + '</td>';
-        html += '<td class="p-3 max-w-md truncate">' + Utils.escapeHtml(Utils.truncate(m.content || '', 100)) + '</td>';
-        html += '<td class="p-3">' + (m.confidence_score != null ? m.confidence_score.toFixed(2) : '—') + '</td>';
-        html += '<td class="p-3 space-x-2 whitespace-nowrap"><button type="button" class="text-mak-green text-xs admin-open-chat" data-id="' + m.chat_id + '">Chat</button>';
-        html += '<button type="button" class="text-xs text-gray-600 dark:text-gray-400 admin-unres-dismiss" data-mid="' + m.id + '">Dismiss</button>';
-        html += '<button type="button" class="text-xs text-mak-red admin-unres-esc" data-mid="' + m.id + '">Escalate</button></td></tr>';
-      });
-      html += '</tbody></table></div>';
-      if (!items.length) html = '<p class="text-gray-500">No unresolved items detected</p>';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('unresolved', PAGE_ICONS.unresolved);
+      html += '<div class="admin-page-card"><p class="admin-page-hint">Assistant messages with low confidence or hedge phrases.</p>';
+      if (!items.length) {
+        html += '<p class="admin-page-empty">No unresolved items detected.</p>';
+      } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html +=
+          '<th class="admin-page-th">When</th><th class="admin-page-th">User</th><th class="admin-page-th">Excerpt</th><th class="admin-page-th">Conf</th><th class="admin-page-th">Actions</th></tr></thead><tbody>';
+        items.forEach(function(m) {
+          var who = m.full_name || m.email || 'Guest';
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(m.created_at) + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(who) + '</td>';
+          html +=
+            '<td class="admin-page-td max-w-md truncate">' + Utils.escapeHtml(Utils.truncate(m.content || '', 100)) + '</td>';
+          html += '<td class="admin-page-td">' + (m.confidence_score != null ? m.confidence_score.toFixed(2) : '—') + '</td>';
+          html += '<td class="admin-page-td space-x-2 whitespace-nowrap">';
+          html +=
+            '<button type="button" class="admin-page-link admin-open-chat" data-id="' + m.chat_id + '">Chat</button>';
+          html +=
+            '<button type="button" class="text-xs text-gray-600 dark:text-gray-400 admin-unres-dismiss" data-mid="' +
+            m.id +
+            '">Dismiss</button>';
+          html +=
+            '<button type="button" class="text-xs text-mak-red admin-unres-esc" data-mid="' +
+            m.id +
+            '">Escalate</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
       main.querySelectorAll('.admin-open-chat').forEach(function(btn) {
         btn.addEventListener('click', function() { openConversationModal(btn.getAttribute('data-id')); });
       });
       main.querySelectorAll('.admin-unres-dismiss').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          adminFetch('/unresolved/' + btn.getAttribute('data-mid'), { method: 'PATCH', body: { action: 'dismiss' } }).then(function() {
-            Utils.showToast('Dismissed', 'success');
-            loadUnresolved();
-          }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+          adminFetch('/unresolved/' + btn.getAttribute('data-mid'), { method: 'PATCH', body: { action: 'dismiss' } }).then(
+            function() {
+              Utils.showToast('Dismissed', 'success');
+              loadUnresolved();
+            }
+          ).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
         });
       });
       main.querySelectorAll('.admin-unres-esc').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          adminFetch('/unresolved/' + btn.getAttribute('data-mid'), { method: 'PATCH', body: { action: 'escalate' } }).then(function() {
-            Utils.showToast('Escalation created', 'success');
-            loadUnresolved();
-          }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+          adminFetch('/unresolved/' + btn.getAttribute('data-mid'), { method: 'PATCH', body: { action: 'escalate' } }).then(
+            function() {
+              Utils.showToast('Escalation created', 'success');
+              loadUnresolved();
+            }
+          ).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
         });
       });
     }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
@@ -432,14 +684,14 @@
   function adminUsersBadgeRole(role) {
     var r = String(role || 'student').toLowerCase();
     if (r === 'admin') {
-      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 ring-1 ring-emerald-500/25">Admin</span>';
+      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-[#006b3c]/15 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/22">Admin</span>';
     }
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-slate-500/10 text-slate-700 dark:text-slate-300 ring-1 ring-slate-500/15">Student</span>';
   }
 
   function adminUsersBadgeVerified(ok) {
     if (ok) {
-      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/12 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
+      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#006b3c]/12 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
     }
     return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/12 text-amber-900 dark:text-amber-200 ring-1 ring-amber-500/25">Pending</span>';
   }
@@ -447,9 +699,10 @@
   function loadUsers() {
     var main = document.getElementById('admin-main');
     main.innerHTML =
-      '<div class="animate-pulse space-y-5">' +
-      '<div class="h-36 rounded-2xl bg-gradient-to-br from-emerald-100/50 to-transparent dark:from-mak-green/15 dark:to-transparent"></div>' +
-      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-gray-800/60"></div></div>';
+      '<div class="admin-users animate-pulse">' +
+      '<div class="h-28 rounded-xl bg-gray-200/60 dark:bg-white/[0.06]"></div>' +
+      '<div class="h-11 max-w-md rounded-xl bg-gray-200/50 dark:bg-white/[0.05]"></div>' +
+      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-[#161b22]/80"></div></div>';
 
     var qs =
       '?page=' +
@@ -469,26 +722,27 @@
         var fromIx = total ? (page - 1) * limit + 1 : 0;
         var toIx = Math.min(page * limit, total);
 
-        var html = '<div class="admin-users space-y-6">';
+        var html = '<div class="admin-users">';
 
-        html += '<div class="relative overflow-hidden rounded-2xl border border-emerald-200/55 dark:border-mak-green/20 bg-gradient-to-br from-white via-emerald-50/40 to-white dark:from-gray-900 dark:via-mak-green/[0.07] dark:to-gray-950 shadow-lg shadow-emerald-900/[0.06]">';
-        html += '<div class="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-mak-green/10 blur-3xl pointer-events-none" aria-hidden="true"></div>';
-        html += '<div class="relative p-5 sm:p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">';
+        html += '<div class="admin-users-hero">';
+        html += '<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-1">';
+        html += '<div class="min-w-0 flex-1 flex gap-3 sm:gap-4 items-start">';
+        html += '<span class="admin-page-section-icon admin-page-section-icon--hero shrink-0" aria-hidden="true">' + PAGE_ICONS.users + '</span>';
         html += '<div class="min-w-0 flex-1">';
         html +=
-          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-mak-green/90 mb-1">Directory</p>';
+          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-[#006b3c] dark:text-[#86efac] mb-1">Directory</p>';
         html += '<h2 class="text-xl sm:text-2xl font-bold text-mak-dark dark:text-white tracking-tight">Registered users</h2>';
         html +=
           '<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories. Totals below include every account in the database.</p>';
-        html += '</div>';
-        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end">';
+        html += '</div></div>';
+        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end sm:shrink-0">';
         html +=
-          '<span class="inline-flex items-center gap-2 rounded-xl bg-emerald-500/[0.1] px-4 py-2.5 ring-1 ring-emerald-500/20"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
+          '<span class="inline-flex items-center gap-2 rounded-xl bg-[#006b3c]/10 px-4 py-2.5 ring-1 ring-[#006b3c]/22"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
           String(sum.total_registered != null ? sum.total_registered : total) +
           '</span><span class="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 leading-tight">accounts</span></span>';
         html += '</div></div>';
 
-        html += '<div class="relative grid grid-cols-2 lg:grid-cols-4 gap-3 px-5 sm:px-6 pb-5 sm:pb-6">';
+        html += '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">';
         var statCards = [
           { label: 'Verified email', val: sum.verified },
           { label: 'Awaiting verify', val: sum.pending_verification },
@@ -500,8 +754,8 @@
           html +=
             '<div class="rounded-xl border px-4 py-3 ' +
             (muted
-              ? 'border-emerald-200/40 dark:border-mak-green/15 bg-emerald-50/30 dark:bg-mak-green/[0.04]'
-              : 'border-gray-200/80 dark:border-gray-700 bg-white/80 dark:bg-gray-900/50') +
+              ? 'border-[#006b3c]/25 dark:border-[#006b3c]/18 bg-[#006b3c]/[0.06] dark:bg-[#006b3c]/[0.06]'
+              : 'border-gray-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#161b22]/75') +
             '">';
           html +=
             '<p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">' +
@@ -514,36 +768,34 @@
         });
         html += '</div></div>';
 
+        html += '<div class="admin-users-search-row">';
+        html += '<label class="sr-only" for="admin-users-search">Search users</label>';
+        html += '<div class="relative admin-users-search-field">';
         html +=
-          '<div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-center sm:justify-between rounded-2xl border border-gray-200/90 dark:border-gray-700 bg-white/90 dark:bg-gray-900/70 px-4 py-3 shadow-sm">';
-        html += '<div class="flex flex-1 min-w-0 gap-2 items-center">';
-        html +=
-          '<label class="sr-only" for="admin-users-search">Search users</label><div class="relative flex-1 min-w-0 max-w-md">';
-        html +=
-          '<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
+          '<span class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-gray-400 dark:text-zinc-500" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
         html +=
           '<input id="admin-users-search" type="search" autocomplete="off" placeholder="Search name or email…" value="' +
           Utils.escapeHtml(adminUsersPager.q) +
-          '" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 py-2.5 pl-9 pr-3 text-sm text-mak-dark dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-mak-green/35 focus:border-mak-green/40"></div>';
-        html +=
-          '<button type="button" id="admin-users-search-btn" class="shrink-0 rounded-xl bg-mak-green hover:bg-[#009149] text-white text-sm font-semibold px-4 py-2.5 shadow-sm shadow-mak-green/25 transition border-none cursor-pointer">Search</button>';
+          '" class="admin-users-input"></div>';
+        html += '<button type="button" id="admin-users-search-btn" class="admin-users-search-btn">Search</button>';
         html += '</div>';
-        html += '<div class="text-sm text-gray-600 dark:text-gray-400 tabular-nums">';
+
+        var tableBarMeta = '';
         if (adminUsersPager.q) {
-          html +=
+          tableBarMeta =
             Utils.escapeHtml(String(total)) +
             ' match' +
             (total === 1 ? '' : 'es') +
             (total ? ' · rows ' + fromIx + '–' + toIx : '');
         } else {
-          html += total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' listed on this slice' : 'No accounts yet';
+          tableBarMeta = total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' on file' : 'No accounts yet';
         }
-        html += '</div></div>';
+        html += '<p class="admin-users-range">' + tableBarMeta + '</p>';
 
+        html += '<div class="admin-users-table-shell">';
+        html += '<div class="overflow-x-auto">';
         html +=
-          '<div class="overflow-x-auto rounded-2xl border border-gray-200/90 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md shadow-emerald-900/[0.04] ring-1 ring-black/[0.03] dark:ring-white/[0.04]">';
-        html +=
-          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-gray-800 bg-emerald-50/50 dark:bg-mak-green/[0.06] text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
+          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-white/[0.06] bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/10 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
         html +=
           '<th class="px-4 py-3.5 whitespace-nowrap">Member</th><th class="px-4 py-3.5 whitespace-nowrap">Email</th><th class="px-4 py-3.5 whitespace-nowrap">Role</th><th class="px-4 py-3.5 whitespace-nowrap">Status</th><th class="px-4 py-3.5 whitespace-nowrap">Joined</th><th class="px-4 py-3.5 whitespace-nowrap">Last active</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Chats</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Actions</th></tr></thead><tbody>';
 
@@ -559,7 +811,7 @@
         } else {
           rows.forEach(function(u) {
             html +=
-              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-gray-800/90 last:border-0 hover:bg-emerald-50/40 dark:hover:bg-mak-green/[0.04] transition-colors">';
+              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-white/[0.06] last:border-0 hover:bg-[#006b3c]/[0.06] dark:hover:bg-[#006b3c]/[0.08] transition-colors">';
             html += '<td class="px-4 py-3.5 font-medium text-mak-dark dark:text-white">' + Utils.escapeHtml(u.full_name || '—') + '</td>';
             html +=
               '<td class="px-4 py-3.5 text-gray-700 dark:text-gray-300 max-w-[14rem] truncate" title="' +
@@ -583,7 +835,7 @@
               '</td>';
             html += '<td class="px-4 py-3.5 text-right whitespace-nowrap space-x-2">';
             html +=
-              '<button type="button" class="inline-flex items-center rounded-lg border border-emerald-200 dark:border-mak-green/30 bg-emerald-50/80 dark:bg-mak-green/10 px-2.5 py-1.5 text-xs font-semibold text-mak-green hover:bg-emerald-100 dark:hover:bg-mak-green/20 cursor-pointer admin-user-open" data-id="' +
+              '<button type="button" class="inline-flex items-center rounded-lg border border-[#006b3c]/28 dark:border-[#006b3c]/35 bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/12 px-2.5 py-1.5 text-xs font-semibold text-[#008a45] dark:text-[#4ade80] hover:bg-[#006b3c]/15 dark:hover:bg-[#006b3c]/20 cursor-pointer admin-user-open" data-id="' +
               u.id +
               '">View</button>';
             if (u.role !== 'admin') {
@@ -595,7 +847,7 @@
             html += '</td></tr>';
           });
         }
-        html += '</tbody></table></div>';
+        html += '</tbody></table></div></div>';
 
         if (total > limit || page > 1) {
           html += '<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">';
@@ -607,11 +859,11 @@
             '</span></p>';
           html += '<div class="flex gap-2 order-1 sm:order-2">';
           html +=
-            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-emerald-50 dark:hover:bg-mak-green/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
             (page <= 1 ? ' disabled' : '') +
             '>Previous</button>';
           html +=
-            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-emerald-50 dark:hover:bg-mak-green/10 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
             (page >= totalPages ? ' disabled' : '') +
             '>Next</button>';
           html += '</div></div>';
@@ -733,16 +985,29 @@
     var main = document.getElementById('admin-main');
     adminFetch('/conversations?limit=50').then(function(d) {
       var rows = d.conversations || [];
-      var html = '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
-      html += '<th class="p-3">Updated</th><th class="p-3">Title</th><th class="p-3">Who</th><th class="p-3">Msgs</th><th class="p-3"></th></tr></thead><tbody>';
-      rows.forEach(function(c) {
-        var who = c.user_id ? (c.full_name || c.email || 'User') : 'Guest';
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3 whitespace-nowrap">' + Utils.formatTime(c.updated_at) + '</td>';
-        html += '<td class="p-3">' + Utils.escapeHtml(c.title || '') + '</td><td class="p-3">' + Utils.escapeHtml(who) + '</td>';
-        html += '<td class="p-3">' + (c.message_count || 0) + '</td>';
-        html += '<td class="p-3"><button type="button" class="text-mak-green text-xs admin-open-chat" data-id="' + c.id + '">View</button></td></tr>';
-      });
-      html += '</tbody></table></div>';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('conversations', PAGE_ICONS.conversations);
+      html += '<div class="admin-page-card">';
+      if (!rows.length) {
+        html += '<p class="admin-page-empty">No conversations yet.</p>';
+      } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html +=
+          '<th class="admin-page-th">Updated</th><th class="admin-page-th">Title</th><th class="admin-page-th">Who</th><th class="admin-page-th">Msgs</th><th class="admin-page-th"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
+        rows.forEach(function(c) {
+          var who = c.user_id ? (c.full_name || c.email || 'User') : 'Guest';
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(c.updated_at) + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(c.title || '') + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(who) + '</td>';
+          html += '<td class="admin-page-td">' + (c.message_count || 0) + '</td>';
+          html +=
+            '<td class="admin-page-td"><button type="button" class="admin-page-link admin-open-chat" data-id="' +
+            c.id +
+            '">View</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
       main.querySelectorAll('.admin-open-chat').forEach(function(btn) {
         btn.addEventListener('click', function() { openConversationModal(btn.getAttribute('data-id')); });
@@ -754,15 +1019,33 @@
     var main = document.getElementById('admin-main');
     adminFetch('/feedback?limit=100').then(function(d) {
       var rows = d.feedback || [];
-      var html = '<button type="button" id="fb-export" class="inline-block mb-4 text-sm text-mak-green font-medium hover:underline bg-transparent border-none cursor-pointer p-0">Download CSV</button>';
-      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
-      html += '<th class="p-3">Date</th><th class="p-3">Rating</th><th class="p-3">Preview</th></tr></thead><tbody>';
-      rows.forEach(function(f) {
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.formatTime(f.created_at) + '</td>';
-        html += '<td class="p-3">' + (f.rating ? 'Up' : 'Down') + '</td>';
-        html += '<td class="p-3 truncate max-w-md">' + Utils.escapeHtml(Utils.truncate(f.message_preview || '', 80)) + '</td></tr>';
-      });
-      html += '</tbody></table></div>';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('feedback', PAGE_ICONS.feedback);
+      html += '<div class="admin-page-card"><div class="admin-page-toolbar admin-page-toolbar--end">';
+      html +=
+        '<button type="button" id="fb-export" class="admin-page-btn-icon">' +
+        PAGE_ICONS.exportCsv +
+        'Download CSV</button></div>';
+      if (!rows.length) {
+        html += '<p class="admin-page-empty">No feedback recorded yet.</p>';
+      } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html +=
+          '<th class="admin-page-th">Date</th><th class="admin-page-th">Rating</th><th class="admin-page-th">Preview</th></tr></thead><tbody>';
+        rows.forEach(function(f) {
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(f.created_at) + '</td>';
+          html +=
+            '<td class="admin-page-td">' +
+            (f.rating ? 'Up' : 'Down') +
+            '</td>';
+          html +=
+            '<td class="admin-page-td truncate max-w-md">' +
+            Utils.escapeHtml(Utils.truncate(f.message_preview || '', 80)) +
+            '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
       var ex = document.getElementById('fb-export');
       if (ex) ex.addEventListener('click', function() {
@@ -1040,21 +1323,46 @@
     var main = document.getElementById('admin-main');
     adminFetch('/reference-images').then(function(d) {
       var imgs = d.images || [];
-      var html = '<form id="ref-form" class="mb-6 flex flex-wrap gap-2 items-end rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">';
-      html += '<div><label class="text-xs text-gray-500">Image</label><input type="file" name="image" accept="image/*" required class="block text-sm"></div>';
-      html += '<div><label class="text-xs text-gray-500">Category</label><input name="category" value="maps" class="border rounded px-2 py-1 text-sm w-28 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"></div>';
-      html += '<div><label class="text-xs text-gray-500">Name</label><input name="name" placeholder="campus_map" class="border rounded px-2 py-1 text-sm w-36 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"></div>';
-      html += '<button type="submit" class="px-4 py-2 rounded-lg bg-mak-green text-white text-sm">Upload</button></form>';
-      html += '<div class="grid grid-cols-2 md:grid-cols-4 gap-3">';
-      imgs.forEach(function(im) {
-        html += '<div class="rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">';
-        if (im.url) html += '<img src="' + Utils.escapeHtml(im.url) + '" class="w-full h-28 object-cover cursor-pointer" onclick="Utils.openLightbox(this.src)">';
-        html += '<div class="p-2 text-xs flex flex-col gap-1"><span class="truncate text-gray-600 dark:text-gray-400" title="' + Utils.escapeHtml(im.key) + '">' + Utils.escapeHtml(im.display_name || im.key) + '</span>';
-        html += '<div class="flex justify-end gap-2"><button type="button" class="text-mak-green shrink-0 admin-ref-edit" data-key="' + Utils.escapeHtml(im.key) + '">Edit meta</button>';
-        html += '<button type="button" class="text-mak-red shrink-0 admin-ref-del" data-key="' + Utils.escapeHtml(im.key) + '">×</button></div></div></div>';
-      });
-      html += '</div>';
-      if (!imgs.length) html += '<p class="text-gray-500 text-sm">No reference images yet</p>';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('reference', PAGE_ICONS.reference);
+      html += '<div class="admin-page-card">';
+      html += '<form id="ref-form" class="admin-ref-form">';
+      html +=
+        '<div class="admin-ref-field"><label for="ref-file-in">Image</label><input id="ref-file-in" type="file" name="image" accept="image/*" required class="block text-sm max-w-[14rem]"></div>';
+      html +=
+        '<div class="admin-ref-field"><label for="ref-cat-in">Category</label><input id="ref-cat-in" name="category" value="maps" class="w-28"></div>';
+      html +=
+        '<div class="admin-ref-field"><label for="ref-name-in">Name</label><input id="ref-name-in" name="name" placeholder="campus_map" class="w-36"></div>';
+      html += '<button type="submit" class="admin-ref-submit">' + PAGE_ICONS.upload + 'Upload</button></form>';
+      if (!imgs.length) {
+        html += '<p class="admin-page-empty">No reference images yet.</p>';
+      } else {
+        html += '<div class="admin-ref-grid">';
+        imgs.forEach(function(im) {
+          html += '<article class="admin-ref-tile">';
+          if (im.url) {
+            html +=
+              '<img src="' +
+              Utils.escapeHtml(im.url) +
+              '" alt="" class="w-full h-28 object-cover cursor-pointer" onclick="Utils.openLightbox(this.src)">';
+          }
+          html +=
+            '<div class="p-2 text-xs flex flex-col gap-1"><span class="truncate text-gray-600 dark:text-gray-300" title="' +
+            Utils.escapeHtml(im.key) +
+            '">' +
+            Utils.escapeHtml(im.display_name || im.key) +
+            '</span>';
+          html +=
+            '<div class="flex justify-end gap-2"><button type="button" class="admin-page-link shrink-0 admin-ref-edit" data-key="' +
+            Utils.escapeHtml(im.key) +
+            '">Edit meta</button>';
+          html +=
+            '<button type="button" class="text-mak-red shrink-0 text-xs font-semibold admin-ref-del" data-key="' +
+            Utils.escapeHtml(im.key) +
+            '">Delete</button></div></div></article>';
+        });
+        html += '</div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
       var form = document.getElementById('ref-form');
       if (form) form.addEventListener('submit', function(ev) {
@@ -1525,6 +1833,11 @@
   function loadSection(name) {
     setActiveNav(name);
     destroyCharts();
+    var mainEl = document.getElementById('admin-main');
+    if (mainEl) {
+      if (name === 'overview') mainEl.classList.add('admin-main--dashboard');
+      else mainEl.classList.remove('admin-main--dashboard');
+    }
     if (name === 'overview') loadOverview();
     else if (name === 'escalations') loadEscalations(null);
     else if (name === 'unresolved') loadUnresolved();
@@ -1566,11 +1879,14 @@
       document.querySelectorAll('.admin-nav').forEach(function(btn) {
         btn.addEventListener('click', function() { loadSection(btn.getAttribute('data-section')); });
       });
-      document.getElementById('admin-logout-header').addEventListener('click', function() {
-        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(function() {
-          window.location.href = '/';
+      var loSide = document.getElementById('admin-logout-sidebar');
+      if (loSide) {
+        loSide.addEventListener('click', function() {
+          fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(function() {
+            window.location.href = '/';
+          });
         });
-      });
+      }
       document.getElementById('modal-close').addEventListener('click', closeModal);
       document.getElementById('admin-modal').addEventListener('click', function(e) { if (e.target.id === 'admin-modal') closeModal(); });
       document.getElementById('sidebar-open').addEventListener('click', function() {
