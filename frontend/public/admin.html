@@ -11,10 +11,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="font-sans min-h-dvh h-dvh max-h-dvh flex flex-col overflow-hidden bg-[#eceeed] text-gray-900 dark:bg-[#0b0e11] dark:text-gray-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] box-border">
+<body class="admin-app font-admin min-h-dvh h-dvh max-h-dvh flex flex-col overflow-hidden bg-[#eceeed] text-gray-900 dark:bg-[#0b0e11] dark:text-gray-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] box-border antialiased">
 
 <div id="admin-root" class="flex flex-1 min-h-0 h-full overflow-hidden">
-  <aside id="admin-sidebar" class="admin-sidebar-shell w-[min(calc(100vw-2rem),292px)] max-w-[calc(100vw-1.5rem)] sm:w-[292px] flex flex-col shrink-0 z-40 fixed lg:static inset-y-0 left-0 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out text-white border-r border-white/[0.04]">
+  <aside id="admin-sidebar" aria-hidden="true" class="admin-sidebar-shell admin-sidebar-mobile-hidden w-[min(calc(100vw-2rem),292px)] max-w-[calc(100vw-1.5rem)] sm:w-[292px] flex flex-col shrink-0 z-40 fixed lg:static inset-y-0 left-0 transition-transform duration-300 ease-out text-white border-r border-white/[0.04]">
 
     <div class="px-4 pt-4 pb-2 flex items-start justify-between gap-2 shrink-0">
       <a href="/admin.html" class="flex flex-col gap-1.5 min-w-0 flex-1" title="AskMak Admin">
@@ -52,7 +52,7 @@
 
       <button type="button" data-section="users" class="admin-nav flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all duration-150 text-white/65 hover:bg-white/[0.06] hover:text-white data-[active=true]:bg-mak-green data-[active=true]:text-white data-[active=true]:shadow-[0_2px_14px_-4px_rgba(0,107,60,0.5)] data-[active=true]:font-semibold">
         <span class="admin-sidebar-nav-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.646-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.253v13m0-13a3.75 3.75 0 1 1 0 7.51m3.75-9.51a6 6 0 1 0-8.527 8.527"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
         </span>
         <span class="font-medium truncate">Users</span>
       </button>
@@ -109,7 +109,7 @@
 
       <button type="button" data-section="settings" class="admin-nav flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all duration-150 text-white/65 hover:bg-white/[0.06] hover:text-white data-[active=true]:bg-mak-green data-[active=true]:text-white data-[active=true]:shadow-[0_2px_14px_-4px_rgba(0,107,60,0.5)] data-[active=true]:font-semibold">
         <span class="admin-sidebar-nav-icon" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.391.992a12.035 12.035 0 0 1 0 .255c-.048.379.097.752.392.99l1.004.827c.424.35.534.954.26 1.431l-1.298 2.247a1.125 1.125 0 0 1-1.37.491l-1.217-.456c-.355-.134-.75-.072-1.076.124a7.852 7.852 0 0 1-.22.127c-.332.182-.582.493-.647.867l-.213 1.28c-.09.543-.56.942-1.11.943h-2.594c-.55 0-1.019-.398-1.11-.943l-.213-1.281c-.062-.373-.311-.684-.643-.867a8.088 8.088 0 0 1-.22-.126c-.327-.169-.725-.098-1.076.126l-1.218.457a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .261-1.431l1.004-.827c.292-.24.438-.613.389-.992-.005-.069-.013-.139-.024-.219-.053-.446.085-.892.389-1.09l1.004-.827a1.125 1.125 0 0 1-.26-1.431l1.297-2.247a1.125 1.125 0 0 1 1.369-.491l1.218.457c.35.169.746.097 1.076-.126.072-.048.146-.086.221-.129.331-.182.579-.491.629-.867l.213-1.281Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/></svg>
         </span>
         <span class="font-medium truncate">Settings</span>
       </button>

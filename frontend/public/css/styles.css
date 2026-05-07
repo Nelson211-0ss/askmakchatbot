@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 /* App-wide sans stack (form controls and UI chrome don’t always inherit from body) */
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  /* Admin dashboard: clean geometric sans (scoped via body.admin-app) */
+  --font-admin: 'Plus Jakarta Sans', var(--font-sans);
 }
 
 html,
@@ -31,6 +33,17 @@ option {
 #chat-messages .msg-content pre,
 #chat-messages .msg-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* admin.html — clean sans for dashboard chrome and form fields */
+body.admin-app,
+body.admin-app button,
+body.admin-app input,
+body.admin-app textarea,
+body.admin-app select,
+body.admin-app optgroup,
+body.admin-app option {
+  font-family: var(--font-admin);
 }
 
 /* Landing page: slow animated brand-green wash (behind content) */
@@ -349,6 +362,16 @@ option {
 .admin-sidebar-shell {
   background: linear-gradient(180deg, #161616 0%, #101010 55%, #0c0c0c 100%);
   box-shadow: 6px 0 28px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* Below lg: drawer open/close is toggled via JS (.admin-sidebar-mobile-hidden).
+ * Plain CSS avoids relying on Tailwind transform utilities surviving CDN JIT once
+ * `-translate-x-full` is stripped from the element after opening the menu. */
+@media (max-width: 1023px) {
+  #admin-sidebar.admin-sidebar-mobile-hidden {
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
 }
 
 .dark .admin-sidebar-shell {

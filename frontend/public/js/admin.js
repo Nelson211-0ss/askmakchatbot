@@ -1830,7 +1830,41 @@
     }
   }
 
+  /** Collapse fixed admin nav when a section is chosen on narrow viewports (lg breakpoint). */
+  function closeMobileAdminSidebar() {
+    if (
+      typeof window.matchMedia === 'undefined' ||
+      !window.matchMedia('(max-width: 1023px)').matches
+    ) {
+      return;
+    }
+    var sidebar = document.getElementById('admin-sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) {
+      sidebar.classList.add('admin-sidebar-mobile-hidden');
+      sidebar.setAttribute('aria-hidden', 'true');
+    }
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  function openMobileAdminSidebar() {
+    if (
+      typeof window.matchMedia !== 'undefined' &&
+      !window.matchMedia('(max-width: 1023px)').matches
+    ) {
+      return;
+    }
+    var sidebar = document.getElementById('admin-sidebar');
+    var overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) {
+      sidebar.classList.remove('admin-sidebar-mobile-hidden');
+      sidebar.setAttribute('aria-hidden', 'false');
+    }
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
   function loadSection(name) {
+    closeMobileAdminSidebar();
     setActiveNav(name);
     destroyCharts();
     var mainEl = document.getElementById('admin-main');
@@ -1876,6 +1910,14 @@
       document.getElementById('admin-user-label').textContent = displayName;
       var av = document.getElementById('admin-user-avatar');
       if (av) av.textContent = (displayName.trim().charAt(0) || '?').toUpperCase();
+      var asideEl = document.getElementById('admin-sidebar');
+      if (
+        asideEl &&
+        typeof window.matchMedia !== 'undefined' &&
+        window.matchMedia('(min-width: 1024px)').matches
+      ) {
+        asideEl.setAttribute('aria-hidden', 'false');
+      }
       document.querySelectorAll('.admin-nav').forEach(function(btn) {
         btn.addEventListener('click', function() { loadSection(btn.getAttribute('data-section')); });
       });
@@ -1889,18 +1931,9 @@
       }
       document.getElementById('modal-close').addEventListener('click', closeModal);
       document.getElementById('admin-modal').addEventListener('click', function(e) { if (e.target.id === 'admin-modal') closeModal(); });
-      document.getElementById('sidebar-open').addEventListener('click', function() {
-        document.getElementById('admin-sidebar').classList.remove('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.remove('hidden');
-      });
-      document.getElementById('sidebar-close').addEventListener('click', function() {
-        document.getElementById('admin-sidebar').classList.add('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.add('hidden');
-      });
-      document.getElementById('sidebar-overlay').addEventListener('click', function() {
-        document.getElementById('admin-sidebar').classList.add('-translate-x-full');
-        document.getElementById('sidebar-overlay').classList.add('hidden');
-      });
+      document.getElementById('sidebar-open').addEventListener('click', openMobileAdminSidebar);
+      document.getElementById('sidebar-close').addEventListener('click', closeMobileAdminSidebar);
+      document.getElementById('sidebar-overlay').addEventListener('click', closeMobileAdminSidebar);
       var tt = document.getElementById('theme-toggle-admin');
       if (tt) tt.addEventListener('click', function() { Theme.toggle(); });
       ['mousemove', 'keydown', 'click'].forEach(function(ev) {
