@@ -1238,9 +1238,13 @@ router.get('/kb/categories', async (req, res, next) => {
     } catch (err) { next(err); }
 });
 
-/** GET /api/admin/kb/:id — single KB entry (full content) */
+/** GET /api/admin/kb/:id — single KB entry (full content).
+ *  Keep /kb/categories registered above this route so "categories" is not parsed as :id. */
 router.get('/kb/:id', async (req, res, next) => {
     try {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.params.id)) {
+            return res.status(404).json({ error: 'Not found' });
+        }
         const r = await db.query(`SELECT * FROM kb_entries WHERE id = $1`, [req.params.id]);
         if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
         res.json({ entry: r.rows[0] });
@@ -1266,6 +1270,9 @@ router.post('/kb', async (req, res, next) => {
 /** PUT /api/admin/kb/:id — update a KB entry */
 router.put('/kb/:id', async (req, res, next) => {
     try {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.params.id)) {
+            return res.status(404).json({ error: 'Not found' });
+        }
         const { category, title, content, is_published } = req.body;
         const cur = await db.query(`SELECT id FROM kb_entries WHERE id = $1`, [req.params.id]);
         if (!cur.rows.length) return res.status(404).json({ error: 'Not found' });
@@ -1286,6 +1293,9 @@ router.put('/kb/:id', async (req, res, next) => {
 /** DELETE /api/admin/kb/:id */
 router.delete('/kb/:id', async (req, res, next) => {
     try {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.params.id)) {
+            return res.status(404).json({ error: 'Not found' });
+        }
         const r = await db.query(`DELETE FROM kb_entries WHERE id = $1 RETURNING id`, [req.params.id]);
         if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
         res.json({ ok: true });

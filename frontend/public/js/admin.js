@@ -23,6 +23,7 @@
     users: { title: 'Users', subtitle: 'Accounts and activity' },
     conversations: { title: 'Conversations', subtitle: 'Browse chat history' },
     feedback: { title: 'Feedback', subtitle: 'Ratings and comments' },
+    kb: { title: 'Knowledge Base', subtitle: 'Curated FAQs, PDF uploads, and assistant search index' },
     documents: { title: 'Knowledge base', subtitle: 'Sources the assistant can cite' },
     reference: { title: 'Reference images', subtitle: 'Images linked from documents' },
     ingest: { title: 'Ingestion', subtitle: 'Import and index content' },
@@ -203,6 +204,97 @@
       });
       if (!res.ok) throw new Error('Request failed');
       return res.text();
+    });
+  }
+
+  /**
+   * Manual text + PDF → POST /documents and /documents/upload-pdf (vector index for the assistant).
+   * @param {string} idPrefix Unique prefix for DOM ids (e.g. kbidx-, docidx-).
+   */
+  function semanticIndexIngestPanelsHtml(idPrefix) {
+    var px = idPrefix;
+    var h = '<div class="admin-kb-panels">';
+    h += '<article class="admin-kb-panel">';
+    h += '<div class="admin-kb-panel__head">';
+    h +=
+      '<span class="admin-kb-panel__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h1.125c.621 0 1.125.504 1.125 1.125v3.375c0 .621-.504 1.125-1.125 1.125h-2.25c-.621 0-1.125-.504-1.125-1.125Zm-6.75 0v-2.625A3.375 3.375 0 0 0 9.375 8.25h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 1 3.375-3.375H9.75"/></svg></span>';
+    h += '<div><h3 class="admin-kb-panel__title">Text for search index</h3>';
+    h += '<p class="admin-kb-panel__desc">Embed title and body into the assistant\'s retrieval index (semantic search).</p></div></div>';
+    h += '<div class="admin-kb-panel__body">';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-title">Title</label>';
+    h +=
+      '<input id="' + px + 'doc-title" type="text" autocomplete="off" placeholder="e.g. Tuition payment deadlines" class="admin-kb-input"></div>';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-body">Content</label>';
+    h +=
+      '<textarea id="' + px + 'doc-body" rows="5" placeholder="Full text students might ask about…" class="admin-kb-textarea"></textarea></div>';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-cat">Category tag</label>';
+    h +=
+      '<input id="' + px + 'doc-cat" type="text" autocomplete="off" placeholder="faq, admissions… (default faq)" class="admin-kb-input"></div>';
+    h += '</div>';
+    h += '<button type="button" id="' + px + 'doc-save" class="admin-kb-btn admin-kb-btn--primary">Save &amp; embed</button>';
+    h += '</article>';
+
+    h += '<article class="admin-kb-panel">';
+    h += '<div class="admin-kb-panel__head">';
+    h +=
+      '<span class="admin-kb-panel__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h9.75A3.375 3.375 0 0 1 22.125 6v9.75a3.375 3.375 0 0 1-3.375 3.375h-9.75a3.375 3.375 0 0 1-3.375-3.375V6Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.875 6.75h4.875a1.875 1.875 0 0 1 1.875 1.875v9.75a1.875 1.875 0 0 1-1.875 1.875H4.875A1.875 1.875 0 0 1 3 18.375v-9.75A1.875 1.875 0 0 1 4.875 6.75Z"/></svg></span>';
+    h += '<div><h3 class="admin-kb-panel__title">Upload PDF</h3>';
+    h +=
+      '<p class="admin-kb-panel__desc">Text is extracted and chunked automatically. Scan-only PDFs need OCR outside AskMak first.</p></div></div>';
+    h += '<div class="admin-kb-panel__body">';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-pdf-file">PDF file</label>';
+    h += '<input id="' + px + 'doc-pdf-file" type="file" accept="application/pdf,.pdf" class="admin-kb-input admin-kb-input--file"></div>';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-pdf-title">Title <span class="admin-kb-optional">optional</span></label>';
+    h +=
+      '<input id="' + px + 'doc-pdf-title" type="text" autocomplete="off" placeholder="Uses PDF metadata or filename if empty" class="admin-kb-input"></div>';
+    h += '<div class="admin-kb-field"><label class="admin-kb-label" for="' + px + 'doc-pdf-cat">Category tag</label>';
+    h +=
+      '<input id="' + px + 'doc-pdf-cat" type="text" autocomplete="off" placeholder="default faq" class="admin-kb-input"></div>';
+    h += '</div>';
+    h +=
+      '<button type="button" id="' +
+      px +
+      'doc-pdf-upload" class="admin-kb-btn admin-kb-btn--secondary">Upload PDF &amp; embed</button>';
+    h += '</article></div>';
+    return h;
+  }
+
+  function bindSemanticIndexIngest(prefix, onDone) {
+    document.getElementById(prefix + 'doc-save').addEventListener('click', function() {
+      var title = document.getElementById(prefix + 'doc-title').value.trim();
+      var content = document.getElementById(prefix + 'doc-body').value.trim();
+      var category = document.getElementById(prefix + 'doc-cat').value.trim() || 'faq';
+      if (!title || !content) { Utils.showToast('Title and content required', 'error'); return; }
+      adminFetch('/documents', { method: 'POST', body: { title: title, content: content, category: category } })
+        .then(function() {
+          Utils.showToast('Saved to search index', 'success');
+          document.getElementById(prefix + 'doc-title').value = '';
+          document.getElementById(prefix + 'doc-body').value = '';
+          if (typeof onDone === 'function') onDone();
+        })
+        .catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
+    });
+    document.getElementById(prefix + 'doc-pdf-upload').addEventListener('click', function() {
+      var fileInput = document.getElementById(prefix + 'doc-pdf-file');
+      var f = fileInput && fileInput.files && fileInput.files[0];
+      if (!f) { Utils.showToast('Choose a PDF file', 'error'); return; }
+      var fd = new FormData();
+      fd.append('file', f);
+      var pt = document.getElementById(prefix + 'doc-pdf-title').value.trim();
+      if (pt) fd.append('title', pt);
+      var pcat = document.getElementById(prefix + 'doc-pdf-cat').value.trim() || 'faq';
+      fd.append('category', pcat);
+      var btn = document.getElementById(prefix + 'doc-pdf-upload');
+      btn.disabled = true;
+      adminFetch('/documents/upload-pdf', { method: 'POST', body: fd })
+        .then(function(j) {
+          Utils.showToast('Added ' + (j.inserted || 0) + ' indexed chunk(s)', 'success');
+          fileInput.value = '';
+          document.getElementById(prefix + 'doc-pdf-title').value = '';
+          if (typeof onDone === 'function') onDone();
+        })
+        .catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); })
+        .finally(function() { btn.disabled = false; });
     });
   }
 
@@ -1096,46 +1188,7 @@
       html += '<span class="admin-kb-hero__stat-label">indexed chunk' + (totalKb === 1 ? '' : 's') + '</span>';
       html += '</div></header>';
 
-      html += '<div class="admin-kb-panels">';
-      html += '<article class="admin-kb-panel">';
-      html += '<div class="admin-kb-panel__head">';
-      html +=
-        '<span class="admin-kb-panel__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h1.125c.621 0 1.125.504 1.125 1.125v3.375c0 .621-.504 1.125-1.125 1.125h-2.25c-.621 0-1.125-.504-1.125-1.125Zm-6.75 0v-2.625A3.375 3.375 0 0 0 9.375 8.25h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 1 3.375-3.375H9.75"/></svg></span>';
-      html += '<div><h3 class="admin-kb-panel__title">Manual entry</h3>';
-      html += '<p class="admin-kb-panel__desc">One title and body become one or more searchable chunks.</p></div></div>';
-      html += '<div class="admin-kb-panel__body">';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-title">Title</label>';
-      html +=
-        '<input id="doc-title" type="text" autocomplete="off" placeholder="e.g. How do I defer a semester?" class="admin-kb-input"></div>';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-body">Content</label>';
-      html +=
-        '<textarea id="doc-body" rows="5" placeholder="Full answer or article text…" class="admin-kb-textarea"></textarea></div>';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-cat">Category</label>';
-      html +=
-        '<input id="doc-cat" type="text" autocomplete="off" placeholder="faq, admissions, fees, it… (default faq)" class="admin-kb-input"></div>';
-      html += '</div>';
-      html += '<button type="button" id="doc-save" class="admin-kb-btn admin-kb-btn--primary">Save &amp; embed</button>';
-      html += '</article>';
-
-      html += '<article class="admin-kb-panel">';
-      html += '<div class="admin-kb-panel__head">';
-      html +=
-        '<span class="admin-kb-panel__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.875v-1.5a3.375 3.375 0 0 1 3.375-3.375h9.75A3.375 3.375 0 0 1 22.125 6v9.75a3.375 3.375 0 0 1-3.375 3.375h-9.75a3.375 3.375 0 0 1-3.375-3.375V6Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.875 6.75h4.875a1.875 1.875 0 0 1 1.875 1.875v9.75a1.875 1.875 0 0 1-1.875 1.875H4.875A1.875 1.875 0 0 1 3 18.375v-9.75A1.875 1.875 0 0 1 4.875 6.75Z"/></svg></span>';
-      html += '<div><h3 class="admin-kb-panel__title">Upload PDF</h3>';
-      html +=
-        '<p class="admin-kb-panel__desc">Text is extracted and split automatically. Image-only PDFs need OCR elsewhere first.</p></div></div>';
-      html += '<div class="admin-kb-panel__body">';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-file">PDF file</label>';
-      html += '<input id="doc-pdf-file" type="file" accept="application/pdf,.pdf" class="admin-kb-input admin-kb-input--file"></div>';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-title">Title <span class="admin-kb-optional">optional</span></label>';
-      html +=
-        '<input id="doc-pdf-title" type="text" autocomplete="off" placeholder="Uses PDF metadata or filename if empty" class="admin-kb-input"></div>';
-      html += '<div class="admin-kb-field"><label class="admin-kb-label" for="doc-pdf-cat">Category</label>';
-      html +=
-        '<input id="doc-pdf-cat" type="text" autocomplete="off" placeholder="default faq" class="admin-kb-input"></div>';
-      html += '</div>';
-      html += '<button type="button" id="doc-pdf-upload" class="admin-kb-btn admin-kb-btn--secondary">Upload PDF &amp; embed</button>';
-      html += '</article></div>';
+      html += semanticIndexIngestPanelsHtml('docidx-');
 
       html += '<div class="admin-kb-tips" role="note">';
       html += '<span class="admin-kb-tips__icon" aria-hidden="true">';
@@ -1223,35 +1276,7 @@
       html += '</tbody></table></div></section></div>';
       main.innerHTML = html;
 
-      document.getElementById('doc-save').addEventListener('click', function() {
-        var title = document.getElementById('doc-title').value.trim();
-        var content = document.getElementById('doc-body').value.trim();
-        var category = document.getElementById('doc-cat').value.trim() || 'faq';
-        if (!title || !content) { Utils.showToast('Title and content required', 'error'); return; }
-        adminFetch('/documents', { method: 'POST', body: { title: title, content: content, category: category } }).then(function() {
-          Utils.showToast('Saved', 'success');
-          loadDocuments();
-        }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
-      });
-      document.getElementById('doc-pdf-upload').addEventListener('click', function() {
-        var fileInput = document.getElementById('doc-pdf-file');
-        var f = fileInput && fileInput.files && fileInput.files[0];
-        if (!f) { Utils.showToast('Choose a PDF file', 'error'); return; }
-        var fd = new FormData();
-        fd.append('file', f);
-        var pt = document.getElementById('doc-pdf-title').value.trim();
-        if (pt) fd.append('title', pt);
-        var pcat = document.getElementById('doc-pdf-cat').value.trim() || 'faq';
-        fd.append('category', pcat);
-        var btn = document.getElementById('doc-pdf-upload');
-        btn.disabled = true;
-        adminFetch('/documents/upload-pdf', { method: 'POST', body: fd }).then(function(j) {
-          Utils.showToast('Added ' + (j.inserted || 0) + ' chunk(s)', 'success');
-          fileInput.value = '';
-          loadDocuments();
-        }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); })
-          .finally(function() { btn.disabled = false; });
-      });
+      bindSemanticIndexIngest('docidx-', function() { loadKbWithQuery(qTrim); });
 
       function runKbSearch() {
         var inp = document.getElementById('admin-kb-search');
@@ -1650,28 +1675,64 @@
 
   function loadKb() {
     var main = document.getElementById('admin-main');
-    main.innerHTML = 'Loading FAQ Entries…';
+    main.innerHTML = 'Loading Knowledge Base…';
     adminFetch('/kb?limit=100').then(function(d) {
       var rows = d.entries || [];
-      var html = '<div class="flex justify-between items-center mb-4">';
-      html += '<h2 class="text-xl font-bold dark:text-white">FAQ Entries</h2>';
-      html += '<button type="button" id="kb-new-btn" class="bg-mak-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#009149] transition cursor-pointer border-none shadow-sm shadow-mak-green/25">Add Entry</button>';
+      var html = '<div class="admin-kb">';
+      html +=
+        '<p class="admin-kb-lede text-slate-600 dark:text-slate-300 mb-4">' +
+        '<strong>Text or PDF</strong> below feeds the assistant\'s <em>vector search index</em> (how it finds answers). ' +
+        '<strong>Curated entries</strong> in the table are the browsable FAQ shown to students. Open ' +
+        '<button type="button" id="kb-goto-docs" class="text-mak-green font-semibold underline underline-offset-2 hover:opacity-90 border-none bg-transparent cursor-pointer p-0">AI Documents</button> ' +
+        'to list, search, and edit every indexed chunk.' +
+        '</p>';
+      html += semanticIndexIngestPanelsHtml('kbidx-');
+
+      html += '<div class="admin-kb-tips mb-8" role="note">';
+      html += '<span class="admin-kb-tips__icon" aria-hidden="true">';
+      html +=
+        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>';
+      html += '</span>';
+      html += '<ul class="admin-kb-tips__list">';
+      html += '<li>PDF uploads: up to 25MB; embeddings may take a few seconds.</li>';
+      html += '<li>New FAQ entries can optionally be embedded for search in the same step (see checkbox in the form).</li>';
+      html += '</ul></div>';
+
+      html +=
+        '<section class="border-t border-slate-200 dark:border-gray-800 pt-8"><div class="flex flex-wrap justify-between gap-4 items-start mb-4">';
+      html += '<div class="min-w-0">';
+      html += '<h2 class="text-xl font-bold dark:text-white">Curated FAQ entries</h2>';
+      html +=
+        '<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Listed for students when they browse the Knowledge Base.</p></div>';
+      html +=
+        '<button type="button" id="kb-new-btn" class="bg-mak-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#009149] transition cursor-pointer border-none shadow-sm shadow-mak-green/25 shrink-0">Add entry</button>';
       html += '</div>';
 
       html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
       html += '<th class="p-3">Category</th><th class="p-3">Title</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
-      rows.forEach(function(r) {
-        var status = r.is_published ? '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Published</span>' : '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">Draft</span>';
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
-        html += '<td class="p-3 font-medium">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + status + '</td>';
-        html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs mr-3 kb-edit-btn" data-id="' + r.id + '">Edit</button>';
-        html += '<button type="button" class="text-red-500 text-xs kb-delete-btn" data-id="' + r.id + '">Delete</button></td></tr>';
-      });
-      html += '</tbody></table></div>';
-      if (!rows.length) html += '<p class="text-gray-500 mt-4">No FAQ entries yet.</p>';
-      
+      if (!rows.length) {
+        html +=
+          '<tr><td colspan="4" class="p-8 text-center text-slate-500 dark:text-gray-400">No curated entries yet. Add one, or feed PDF/text above for indexing only.</td></tr>';
+      } else {
+        rows.forEach(function(r) {
+          var status = r.is_published
+            ? '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Published</span>'
+            : '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">Draft</span>';
+          html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
+          html += '<td class="p-3 font-medium">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + status + '</td>';
+          html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs mr-3 kb-edit-btn" data-id="' + r.id + '">Edit</button>';
+          html += '<button type="button" class="text-red-500 text-xs kb-delete-btn" data-id="' + r.id + '">Delete</button></td></tr>';
+        });
+      }
+      html += '</tbody></table></div></section></div>';
+
       main.innerHTML = html;
 
+      bindSemanticIndexIngest('kbidx-');
+
+      document.getElementById('kb-goto-docs').addEventListener('click', function() {
+        loadSection('documents');
+      });
       document.getElementById('kb-new-btn').addEventListener('click', function() { openKbModal(); });
       
       main.querySelectorAll('.kb-edit-btn').forEach(function(btn) {
@@ -1692,7 +1753,16 @@
           }
         });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-red-500">Failed to load KB entries</p>'; });
+    }).catch(function(err) {
+      var msg =
+        err && typeof err.message === 'string' && err.message.trim()
+          ? err.message
+          : 'Failed to load KB entries (check network or sign in again)';
+      main.innerHTML =
+        '<div class="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-red-800 dark:text-red-200 text-sm max-w-xl">' +
+        Utils.escapeHtml(msg) +
+        '</div>';
+    });
   }
 
   function openKbModal(entry = null) {
@@ -1702,10 +1772,14 @@
     html += '<div><label class="block font-semibold mb-1">Title / Question</label><input type="text" id="kbf-title" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.title : '') + '" required></div>';
     html += '<div><label class="block font-semibold mb-1">Content / Answer</label><textarea id="kbf-content" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" required>' + Utils.escapeHtml(entry ? entry.content : '') + '</textarea></div>';
     html += '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '> <span>Published (visible to students)</span></label>';
+    if (!entry) {
+      html +=
+        '<label class="flex items-start gap-2 cursor-pointer rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-800/60"><input type="checkbox" id="kbf-also-embed" checked class="mt-0.5"> <span class="min-w-0"><span class="font-semibold text-gray-800 dark:text-gray-100 block leading-snug">Also add to assistant search index</span><span class="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">Embeds this Q&A so chats can retrieve it semantically alongside PDFs.</span></span></label>';
+    }
     html += '<div class="pt-4 flex justify-end gap-2"><button type="button" class="px-4 py-2 border rounded" onclick="document.getElementById(\'modal-close\').click()">Cancel</button>';
     html += '<button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none">Save</button></div></form>';
     
-    openModal(isEdit ? 'Edit FAQ Entry' : 'New FAQ Entry', html);
+    openModal(isEdit ? 'Edit Knowledge Base Entry' : 'New Knowledge Base Entry', html);
 
     document.getElementById('kb-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -1717,12 +1791,40 @@
       };
       var path = isEdit ? '/kb/' + entry.id : '/kb';
       var method = isEdit ? 'PUT' : 'POST';
-      
-      adminFetch(path, { method: method, body: payload }).then(function() {
-        Utils.showToast('Saved successfully', 'success');
+
+      var done = function(toastMsg) {
+        Utils.showToast(toastMsg, 'success');
         closeModal();
         loadKb();
-      }).catch(function(err) { Utils.showToast(err.message, 'error'); });
+      };
+
+      adminFetch(path, { method: method, body: payload })
+        .then(function() {
+          if (!isEdit) {
+            var also = document.getElementById('kbf-also-embed');
+            if (also && also.checked) {
+              var t = String(document.getElementById('kbf-title').value || '').trim();
+              var c = String(document.getElementById('kbf-content').value || '').trim();
+              var cat = String(document.getElementById('kbf-category').value || '').trim() || 'faq';
+              if (t && c) {
+                return adminFetch('/documents', {
+                  method: 'POST',
+                  body: { title: t, content: c, category: cat }
+                })
+                  .then(function() {
+                    done('Saved to Knowledge Base and assistant search index');
+                  })
+                  .catch(function(err2) {
+                    Utils.showToast('Saved FAQ, but indexing failed: ' + (err2.message || 'error'), 'error');
+                    closeModal();
+                    loadKb();
+                  });
+              }
+            }
+          }
+          done('Saved successfully');
+        })
+        .catch(function(err) { Utils.showToast(err.message, 'error'); });
     });
   }
 
