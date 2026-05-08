@@ -1197,7 +1197,9 @@
       html += '</span>';
       html += '<ul class="admin-kb-tips__list">';
       html += '<li>Embedding can take a few seconds; wait for the confirmation toast.</li>';
-      html += '<li>Manual and PDF chunks show <strong>Edit</strong>; crawled pages are delete-only here.</li>';
+      html +=
+        '<li>Manual and PDF chunks show <strong>Edit</strong>. FAQ chunks (<code class="text-xs">kb-entry://</code>) are managed from the Knowledge Base page—delete only here.</li>';
+      html += '<li>Crawled pages are delete-only here.</li>';
       html += '<li>Large PDFs create many rows—delete one part at a time, or rely on ingestion for bulk refresh.</li>';
       html += '</ul></div>';
 
@@ -1243,8 +1245,11 @@
           var catAttr = catHtml.replace(/"/g, '&quot;');
           var srcAttr = srcHtml.replace(/"/g, '&quot;');
           var srcPlain = rawSrc;
-          var canEdit = (r.metadata && r.metadata.manual) ||
-            (rawSrc && (srcPlain.indexOf('manual://') === 0 || srcPlain.indexOf('manual-pdf://') === 0));
+          var isKbEntryChunk = rawSrc.indexOf('kb-entry://') === 0;
+          var canEdit =
+            !isKbEntryChunk &&
+            ((r.metadata && r.metadata.manual) ||
+              (rawSrc && (srcPlain.indexOf('manual://') === 0 || srcPlain.indexOf('manual-pdf://') === 0)));
           html += '<tr class="admin-kb-tr">';
           html += '<td class="admin-kb-td admin-kb-col-title"><span class="admin-kb-ellipsis" title="' + titleAttr + '">' + titleHtml + '</span></td>';
           html +=
@@ -1695,7 +1700,8 @@
       html += '</span>';
       html += '<ul class="admin-kb-tips__list">';
       html += '<li>PDF uploads: up to 25MB; embeddings may take a few seconds.</li>';
-      html += '<li>New FAQ entries can optionally be embedded for search in the same step (see checkbox in the form).</li>';
+      html +=
+        '<li><strong>Published</strong> curated FAQ entries are synced into the assistant search index automatically; drafts are removed from the index until you publish.</li>';
       html += '</ul></div>';
 
       html +=
@@ -1771,11 +1777,7 @@
     html += '<div><label class="block font-semibold mb-1">Category</label><input type="text" id="kbf-category" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.category : '') + '" required></div>';
     html += '<div><label class="block font-semibold mb-1">Title / Question</label><input type="text" id="kbf-title" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.title : '') + '" required></div>';
     html += '<div><label class="block font-semibold mb-1">Content / Answer</label><textarea id="kbf-content" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" required>' + Utils.escapeHtml(entry ? entry.content : '') + '</textarea></div>';
-    html += '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '> <span>Published (visible to students)</span></label>';
-    if (!entry) {
-      html +=
-        '<label class="flex items-start gap-2 cursor-pointer rounded-lg border border-gray-200 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-800/60"><input type="checkbox" id="kbf-also-embed" checked class="mt-0.5"> <span class="min-w-0"><span class="font-semibold text-gray-800 dark:text-gray-100 block leading-snug">Also add to assistant search index</span><span class="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">Embeds this Q&A so chats can retrieve it semantically alongside PDFs.</span></span></label>';
-    }
+    html += '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '> <span>Published (visible to students and synced to assistant search when published)</span></label>';
     html += '<div class="pt-4 flex justify-end gap-2"><button type="button" class="px-4 py-2 border rounded" onclick="document.getElementById(\'modal-close\').click()">Cancel</button>';
     html += '<button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none">Save</button></div></form>';
     
@@ -1792,37 +1794,17 @@
       var path = isEdit ? '/kb/' + entry.id : '/kb';
       var method = isEdit ? 'PUT' : 'POST';
 
-      var done = function(toastMsg) {
-        Utils.showToast(toastMsg, 'success');
-        closeModal();
-        loadKb();
-      };
-
       adminFetch(path, { method: method, body: payload })
-        .then(function() {
-          if (!isEdit) {
-            var also = document.getElementById('kbf-also-embed');
-            if (also && also.checked) {
-              var t = String(document.getElementById('kbf-title').value || '').trim();
-              var c = String(document.getElementById('kbf-content').value || '').trim();
-              var cat = String(document.getElementById('kbf-category').value || '').trim() || 'faq';
-              if (t && c) {
-                return adminFetch('/documents', {
-                  method: 'POST',
-                  body: { title: t, content: c, category: cat }
-                })
-                  .then(function() {
-                    done('Saved to Knowledge Base and assistant search index');
-                  })
-                  .catch(function(err2) {
-                    Utils.showToast('Saved FAQ, but indexing failed: ' + (err2.message || 'error'), 'error');
-                    closeModal();
-                    loadKb();
-                  });
-              }
-            }
+        .then(function(res) {
+          var sync = res && res.index_sync;
+          if (sync && sync.ok === false) {
+            var detail = sync.error ? String(sync.error) : 'unknown error';
+            Utils.showToast('Saved, but assistant index sync failed: ' + detail, 'warning');
+          } else {
+            Utils.showToast('Saved successfully', 'success');
           }
-          done('Saved successfully');
+          closeModal();
+          loadKb();
         })
         .catch(function(err) { Utils.showToast(err.message, 'error'); });
     });
@@ -1920,6 +1902,10 @@
           else Utils.showToast('Resolved, but email delivery skipped/failed', 'warning');
           
           if (res.kb_entry_id) Utils.showToast('Added to public FAQ', 'success');
+          if (res.index_sync && res.index_sync.ok === false) {
+            var d = res.index_sync.error ? String(res.index_sync.error) : 'unknown error';
+            Utils.showToast('FAQ saved, but assistant index sync failed: ' + d, 'warning');
+          }
           
           closeModal();
           loadKbTickets('pending');

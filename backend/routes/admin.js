@@ -21,6 +21,59 @@ function wordCountKb(s) {
     return (s || '').split(/\s+/).filter(Boolean).length;
 }
 
+function kbEntryDocumentSourceUrl(entryId) {
+    return 'kb-entry://' + String(entryId).trim();
+}
+
+async function removeKbSyncedDocuments(entryId) {
+    await db.query(`DELETE FROM documents WHERE source_url = $1`, [kbEntryDocumentSourceUrl(entryId)]);
+}
+
+/**
+ * Keep vector index aligned with a curated kb_entries row (Option A dual-store).
+ * Published → replace all chunks for kb-entry://id; draft → remove chunks.
+ */
+async function syncKbEntryDocuments(entry) {
+    const id = entry.id;
+    await removeKbSyncedDocuments(id);
+    if (!entry.is_published) {
+        return { ok: true, chunks: 0, mode: 'cleared_draft' };
+    }
+    const category = String(entry.category || 'faq').trim() || 'faq';
+    const title = String(entry.title || '').trim();
+    const body = String(entry.content || '').trim();
+    if (!title || !body) {
+        return { ok: false, chunks: 0, error: 'missing_title_or_content' };
+    }
+    const full = title + '\n\n' + body;
+    let chunks = chunkText(full).filter((c) => wordCountKb(c) >= MIN_KB_CHUNK_WORDS);
+    if (!chunks.length && full.length > 30) {
+        const fallback = full.substring(0, 8000);
+        if (wordCountKb(fallback) >= 4) chunks = [fallback];
+    }
+    if (!chunks.length) {
+        return { ok: false, chunks: 0, error: 'no_indexable_chunks' };
+    }
+    const baseSrc = kbEntryDocumentSourceUrl(id);
+    const chunkTitles = chunks.map((_, i) =>
+        chunks.length > 1 ? `${title} (part ${i + 1}/${chunks.length})` : title
+    );
+    const embedInputs = chunkTitles.map((t, i) => t + '\n\n' + chunks[i]);
+    const embeddings = await generateEmbeddings(embedInputs);
+    for (let i = 0; i < chunks.length; i++) {
+        const embeddingStr = '[' + embeddings[i].join(',') + ']';
+        const meta = { manual: true, kb_synced: true, kb_entry_id: String(id) };
+        await db.query(
+            `INSERT INTO documents (source_url, title, content, chunk_index, embedding, category, metadata)
+             VALUES ($1, $2, $3, $4, $5::vector, $6, $7::jsonb)
+             ON CONFLICT (source_url, chunk_index) DO UPDATE SET title = EXCLUDED.title, content = EXCLUDED.content,
+               embedding = EXCLUDED.embedding, category = EXCLUDED.category, metadata = EXCLUDED.metadata, indexed_at = NOW()`,
+            [baseSrc, chunkTitles[i], chunks[i], i, embeddingStr, category, JSON.stringify(meta)]
+        );
+    }
+    return { ok: true, chunks: chunks.length, mode: 'indexed' };
+}
+
 async function extractTextFromPdfBuffer(buffer) {
     const { PDFParse } = require('pdf-parse');
     const parser = new PDFParse({ data: buffer });
@@ -910,6 +963,14 @@ router.put('/documents/:id', async (req, res, next) => {
                 meta = {};
             }
         }
+        const isKbEntrySync =
+            doc.source_url && String(doc.source_url).startsWith('kb-entry://');
+        if (isKbEntrySync) {
+            return res.status(403).json({
+                error:
+                    'This chunk is synced from Knowledge Base — edit the FAQ entry there so the browse view and assistant index stay in sync.'
+            });
+        }
         const isManual =
             (meta && meta.manual === true) ||
             (doc.source_url &&
@@ -934,19 +995,47 @@ router.put('/documents/:id', async (req, res, next) => {
 
 router.delete('/documents/:id', async (req, res, next) => {
     try {
-        const row = await db.query('SELECT image_keys FROM documents WHERE id = $1', [req.params.id]);
-        if (!row.rows.length) return res.status(404).json({ error: 'Not found' });
-        let keys = row.rows[0].image_keys;
-        if (typeof keys === 'string') {
-            try { keys = JSON.parse(keys); } catch { keys = null; }
+        const sel = await db.query('SELECT id, source_url, image_keys FROM documents WHERE id = $1', [req.params.id]);
+        if (!sel.rows.length) return res.status(404).json({ error: 'Not found' });
+        const anchor = sel.rows[0];
+
+        let toDelete = sel.rows;
+        if (anchor.source_url && String(anchor.source_url).startsWith('kb-entry://')) {
+            const siblings = await db.query(
+                'SELECT id, image_keys FROM documents WHERE source_url = $1 ORDER BY chunk_index ASC',
+                [anchor.source_url]
+            );
+            toDelete = siblings.rows;
         }
-        if (Array.isArray(keys)) {
-            for (const k of keys) {
-                await storage.deleteFile(DOC_BUCKET, k).catch(() => {});
+
+        for (const doc of toDelete) {
+            let keys = doc.image_keys;
+            if (typeof keys === 'string') {
+                try {
+                    keys = JSON.parse(keys);
+                } catch {
+                    keys = null;
+                }
             }
+            if (Array.isArray(keys)) {
+                for (const k of keys) {
+                    await storage.deleteFile(DOC_BUCKET, k).catch(() => {});
+                }
+            }
+            await db.query('DELETE FROM documents WHERE id = $1', [doc.id]);
         }
-        await db.query('DELETE FROM documents WHERE id = $1', [req.params.id]);
-        res.json({ ok: true });
+
+        const removedKb = !!(anchor.source_url && String(anchor.source_url).startsWith('kb-entry://'));
+        res.json({
+            ok: true,
+            deleted: toDelete.length,
+            ...(removedKb
+                ? {
+                      warning:
+                          'Removed assistant index chunks linked to a Knowledge Base entry; the curated FAQ row is unchanged.'
+                  }
+                : {})
+        });
     } catch (err) {
         next(err);
     }
@@ -1260,10 +1349,18 @@ router.post('/kb', async (req, res, next) => {
         }
         const r = await db.query(
             `INSERT INTO kb_entries (category, title, content, is_published)
-             VALUES ($1, $2, $3, $4) RETURNING id`,
+             VALUES ($1, $2, $3, $4) RETURNING *`,
             [category.trim(), title.trim(), content.trim(), is_published !== false]
         );
-        res.status(201).json({ id: r.rows[0].id });
+        const row = r.rows[0];
+        let index_sync = null;
+        try {
+            index_sync = await syncKbEntryDocuments(row);
+        } catch (syncErr) {
+            index_sync = { ok: false, error: syncErr.message || String(syncErr) };
+            console.warn('[AskMak] KB create→index sync failed:', syncErr.message);
+        }
+        res.status(201).json({ id: row.id, index_sync });
     } catch (err) { next(err); }
 });
 
@@ -1286,7 +1383,16 @@ router.put('/kb/:id', async (req, res, next) => {
                 req.params.id
             ]
         );
-        res.json({ ok: true });
+        const full = await db.query(`SELECT * FROM kb_entries WHERE id = $1`, [req.params.id]);
+        const row = full.rows[0];
+        let index_sync = null;
+        try {
+            index_sync = await syncKbEntryDocuments(row);
+        } catch (syncErr) {
+            index_sync = { ok: false, error: syncErr.message || String(syncErr) };
+            console.warn('[AskMak] KB update→index sync failed:', syncErr.message);
+        }
+        res.json({ ok: true, index_sync });
     } catch (err) { next(err); }
 });
 
@@ -1296,6 +1402,7 @@ router.delete('/kb/:id', async (req, res, next) => {
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.params.id)) {
             return res.status(404).json({ error: 'Not found' });
         }
+        await removeKbSyncedDocuments(req.params.id);
         const r = await db.query(`DELETE FROM kb_entries WHERE id = $1 RETURNING id`, [req.params.id]);
         if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
         res.json({ ok: true });
@@ -1374,16 +1481,25 @@ router.patch('/kb-tickets/:id', async (req, res, next) => {
 
         // Optionally create a KB entry from the resolved ticket
         let kbEntryId = null;
+        let entryIndexSync = null;
         if (save_as_kb_entry) {
             const kbInsert = await db.query(
                 `INSERT INTO kb_entries (category, title, content)
-                 VALUES ($1, $2, $3) RETURNING id`,
+                 VALUES ($1, $2, $3)
+                 RETURNING *`,
                 [ticket.category, ticket.title, admin_response.trim()]
             );
-            kbEntryId = kbInsert.rows[0].id;
+            const kbRow = kbInsert.rows[0];
+            kbEntryId = kbRow.id;
+            try {
+                entryIndexSync = await syncKbEntryDocuments(kbRow);
+            } catch (syncErr) {
+                entryIndexSync = { ok: false, error: syncErr.message || String(syncErr) };
+                console.warn('[AskMak] KB ticket→index sync failed:', syncErr.message);
+            }
         }
 
-        res.json({ ok: true, email_sent: emailSent, kb_entry_id: kbEntryId });
+        res.json({ ok: true, email_sent: emailSent, kb_entry_id: kbEntryId, index_sync: entryIndexSync });
     } catch (err) { next(err); }
 });
 
