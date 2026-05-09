@@ -30,6 +30,11 @@ option {
   font-family: 'Anthropic Serif', Georgia, 'Times New Roman', serif;
 }
 
+/* Composer textarea: Styrene B (webfonts in /css/chat-fonts.css; files in /assets/fonts/styrene-b/) */
+#chat-body #message-input {
+  font-family: 'Styrene B', var(--font-sans);
+}
+
 #chat-messages .msg-content pre,
 #chat-messages .msg-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;

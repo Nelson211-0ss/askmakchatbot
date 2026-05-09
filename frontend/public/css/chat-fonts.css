@@ -1,3 +1,23 @@
+/*
+ * Styrene B — composer textarea only (#message-input).
+ * Add licensed .woff2 files under /assets/fonts/styrene-b/ (names below) or adjust urls.
+ */
+@font-face {
+  font-family: 'Styrene B';
+  src: url('/assets/fonts/styrene-b/StyreneB-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Styrene B';
+  src: url('/assets/fonts/styrene-b/StyreneB-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Anthropic Serif — used on chat.html only (see /css/styles.css #chat-body) */
 /* Font files via jsDelivr: https://github.com/devchauhann/fonts */
 
