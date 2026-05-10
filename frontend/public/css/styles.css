@@ -5,6 +5,8 @@
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   /* Admin dashboard: clean geometric sans (scoped via body.admin-app) */
   --font-admin: 'Plus Jakarta Sans', var(--font-sans);
+  /* chat.html: sidebar, header, menus, composer — Styrene B (see /css/chat-fonts.css) */
+  --font-chat-ui: 'Styrene B', var(--font-sans);
 }
 
 html,
@@ -21,18 +23,25 @@ option {
   font-family: var(--font-sans);
 }
 
-/* chat.html: thread, welcome, composer — Anthropic Serif (webfont in /css/chat-fonts.css) */
-#chat-body,
-#chat-body button,
-#chat-body input,
-#chat-body textarea,
-#chat-body select {
-  font-family: 'Anthropic Serif', Georgia, 'Times New Roman', serif;
+/*
+ * chat.html (body.chat-app): UI + prompt/composer = Styrene B (--font-chat-ui).
+ * Assistant reply body text = Anthropic Serif on #chat-messages .msg-content.prose (Georgia / Times fallback).
+ */
+body.chat-app {
+  font-family: var(--font-chat-ui);
 }
 
-/* Composer textarea: Styrene B (webfonts in /css/chat-fonts.css; files in /assets/fonts/styrene-b/) */
-#chat-body #message-input {
-  font-family: 'Styrene B', var(--font-sans);
+body.chat-app button,
+body.chat-app input,
+body.chat-app textarea,
+body.chat-app select,
+body.chat-app optgroup,
+body.chat-app option {
+  font-family: var(--font-chat-ui);
+}
+
+body.chat-app #chat-messages .msg-content.prose {
+  font-family: 'Anthropic Serif', Georgia, 'Times New Roman', serif;
 }
 
 #chat-messages .msg-content pre,

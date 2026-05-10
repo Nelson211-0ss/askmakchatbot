@@ -110,7 +110,7 @@ tailwind.config = {
         sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
         /* admin.html body.admin-app + --font-admin in styles.css */
         admin: ['var(--font-admin)', 'Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
-        /* Chat assistant prose + chat.html body (loaded with /css/chat-fonts.css) */
+        /* Assistant markdown bubbles (prose-serif in chat.js); body/welcome/input stay Styrene B via styles.css */
         serif: ['"Anthropic Serif"', 'Georgia', 'Times New Roman', 'serif'],
       },
       animation: {
