@@ -34,22 +34,32 @@ const KB = (function() {
         // Hide KB section by default until auth state is known
         els.section().classList.add('hidden');
 
-        // Listen for auth ready event to determine visibility
+        // Immediate fallback: if Auth is already resolved before KB.init() runs
+        if (window.Auth && Auth.isAuthenticated && Auth.isAuthenticated() && Auth.user) {
+            show(Auth.user);
+        }
+
+        // Listen for auth:ready event (the normal async path)
         window.addEventListener('auth:ready', (e) => {
             if (e.detail && e.detail.isAuthenticated && e.detail.user) {
-                // Show KB section
-                els.section().classList.remove('hidden');
-                // Pre-fill email in ticket form
-                if (els.ticketEmail()) els.ticketEmail().value = e.detail.user.email || '';
-                // Load categories
-                loadCategories();
+                show(e.detail.user);
             } else {
-                // Hide if logged out or guest
+                // Guest or logged out — hide the section
                 els.section().classList.add('hidden');
             }
         });
 
         setupEventListeners();
+    }
+
+    /** Show the KB section and load categories for the given authenticated user. */
+    function show(user) {
+        if (!els.section()) return;
+        els.section().classList.remove('hidden');
+        if (els.ticketEmail() && user && user.email) {
+            els.ticketEmail().value = user.email;
+        }
+        loadCategories();
     }
 
     function setupEventListeners() {
@@ -110,6 +120,7 @@ const KB = (function() {
     function showCategories() {
         currentCategory = null;
         els.backBtn().classList.add('hidden');
+        els.backBtn().classList.remove('flex');
         els.breadcrumb().textContent = '';
         els.titles().classList.add('hidden');
         els.categories().classList.remove('hidden');
@@ -123,6 +134,7 @@ const KB = (function() {
         
         els.breadcrumb().textContent = category;
         els.backBtn().classList.remove('hidden');
+        els.backBtn().classList.add('flex');  // ensure flex display when unhidden
 
         try {
             const res = await fetch('/api/kb/categories/' + encodeURIComponent(category));
@@ -152,23 +164,33 @@ const KB = (function() {
     }
 
     async function loadAnswer(id, title) {
-        try {
-            // First show user message in chat
-            if (window.Chat) {
-                Chat.switchToChat();
-                Chat.appendMessage('user', title);
-            }
+        if (!window.Chat) return;
 
+        // Switch to chat view and show the user's question as a bubble
+        Chat.switchToChat();
+        Chat.appendMessage(
+            { role: 'user', content: title, created_at: new Date().toISOString() },
+            true
+        );
+
+        // Show typing indicator while fetching
+        Chat.showTyping(true);
+
+        try {
             const res = await fetch('/api/kb/entries/' + id);
             if (!res.ok) throw new Error('Failed to load answer');
             const data = await res.json();
 
-            // Display answer in chat as assistant message
-            if (window.Chat) {
-                Chat.appendMessage('assistant', data.entry.content);
-            }
+            Chat.showTyping(false);
+
+            // Render the KB answer as an assistant message
+            Chat.appendMessage(
+                { role: 'assistant', content: data.entry.content, created_at: new Date().toISOString() },
+                true
+            );
         } catch (err) {
             console.error('[KB]', err);
+            Chat.showTyping(false);
             if (window.Utils) {
                 Utils.showToast('Could not load answer. Please try again.', 'error');
             }
@@ -203,7 +225,7 @@ const KB = (function() {
             return;
         }
 
-        const emailRe = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRe.test(email)) {
             showTicketError('Please enter a valid email address.');
             return;
@@ -249,6 +271,7 @@ const KB = (function() {
 
     return {
         init,
+        show,
         openTicketModal
     };
 })();
