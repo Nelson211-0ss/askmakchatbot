@@ -10,6 +10,10 @@ var Auth = {
       this.user = null;
     }
     this.setupForms();
+    // Notify other modules that auth state is known
+    window.dispatchEvent(new CustomEvent('auth:ready', {
+      detail: { isAuthenticated: this.isAuthenticated(), user: this.user }
+    }));
   },
 
   setupForms: function() {

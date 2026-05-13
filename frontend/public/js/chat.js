@@ -70,6 +70,10 @@ var Chat = {
       Sidebar.init();
       self.renderWelcome();
       Upload.init();
+      // Explicitly show the KB section if the user is logged in
+      if (Auth.isAuthenticated() && window.KB && KB.show) {
+        KB.show(Auth.user);
+      }
     });
 
     var input = document.getElementById('message-input');
