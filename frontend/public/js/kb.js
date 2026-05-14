@@ -28,38 +28,33 @@ const KB = (function() {
     };
 
     function init() {
-        // Only initialize if we're on the chat page with the kb section
-        if (!els.section()) return;
+        // Only initialize if we're on the chat page
+        if (!els.ticketBtn()) return;
 
-        // Hide KB section by default until auth state is known
-        els.section().classList.add('hidden');
-
-        // Immediate fallback: if Auth is already resolved before KB.init() runs
+        // Pre-fill the ticket email if the user is already known.
         if (window.Auth && Auth.isAuthenticated && Auth.isAuthenticated() && Auth.user) {
             show(Auth.user);
         }
-
-        // Listen for auth:ready event (the normal async path)
         window.addEventListener('auth:ready', (e) => {
             if (e.detail && e.detail.isAuthenticated && e.detail.user) {
                 show(e.detail.user);
-            } else {
-                // Guest or logged out — hide the section
-                els.section().classList.add('hidden');
             }
         });
 
         setupEventListeners();
     }
 
-    /** Show the KB section and load categories for the given authenticated user. */
+    /** Show the KB section and load categories for the given authenticated user.
+     * NOTE: The legacy welcome-screen drill-down (category → titles) has been
+     * replaced by the AskMak quick-access topic grid (see quick-topics.js).
+     * We keep this function as a no-op shell so older callers don't break, but
+     * we do NOT re-show the legacy KB section or fetch categories. The only
+     * thing still wired up here is the ticket modal (handlers below).
+     */
     function show(user) {
-        if (!els.section()) return;
-        els.section().classList.remove('hidden');
         if (els.ticketEmail() && user && user.email) {
             els.ticketEmail().value = user.email;
         }
-        loadCategories();
     }
 
     function setupEventListeners() {
