@@ -4,7 +4,7 @@
 
 **Primary path in this app:** Signed-in students open **[Submit a support ticket](#support-ticket)** in the chat. Administrators handle those requests and can **email** you when there is an update.
 
-**Before contacting:** Note your **problem**, **when it started**, **which system** (ACMIS, MUELE, webmail, Wi‑Fi, etc.), and **what you already tried**—do not include **passwords** in the description.
+**Guest users (not signed in):** Submitting a ticket through this system requires a **student account**. Use **[Sign up](/signup.html)** to register, or **[Log in](/login.html)** if you already have an account—then you can use **[Submit a support ticket](#support-ticket)**. Note your **problem**, **when it started**, **which system** (ACMIS, MUELE, webmail, Wi‑Fi, etc.), and **what you already tried**—do not include **passwords** in the description.
 
 **Phone, email, walk-in:** Official **DICTS** or **faculty IT** contact details may appear on **www.mak.ac.ug** or **dicts.mak.ac.ug**; only repeat **specific numbers or emails** if they are in the **knowledge base** or a page you **fetched with tools**.
 
