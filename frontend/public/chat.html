@@ -195,13 +195,16 @@
         <div class="w-full shrink-0 px-0.5 mb-4 sm:mb-5">
           <h2 id="welcome-greeting" class="text-[1.0625rem] sm:text-xl font-semibold text-zinc-800 dark:text-zinc-50 mb-1 leading-snug px-1">Hi, I&apos;m AskMak</h2>
           <p id="welcome-lead" class="text-[0.9375rem] sm:text-base font-medium text-zinc-700 dark:text-zinc-200 leading-snug px-1">How can I help you today?</p>
+          <p class="text-[0.8125rem] sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed px-1 max-w-[28rem] mx-auto">
+            Your Makerere DICTS End-User ICT helpdesk — ask about Wi-Fi, MUELE, ACMIS, university passwords and webmail.
+          </p>
         </div>
 
         <!-- AskMak quick-access topics -->
         <section id="quick-topics" class="w-full" aria-label="AskMak quick-access topics">
           <header class="flex items-center justify-between gap-3 mb-3 px-1">
-            <span class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Quick access</span>
-            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Tap a topic to see common questions</span>
+            <span class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">DICTS quick help</span>
+            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Tap an ICT topic to see common questions</span>
           </header>
 
           <div id="quick-topics-grid"
@@ -210,8 +213,9 @@
           <div id="quick-topics-questions" class="hidden mt-4 flex flex-col gap-2 w-full max-w-lg mx-auto text-left" aria-live="polite"></div>
         </section>
 
-        <!-- Keep ticket escalation link (its handler lives in kb.js) -->
-        <div class="mt-5 border-t border-zinc-200 dark:border-white/[0.08] pt-4 w-full flex justify-center">
+        <!-- Ticket escalation link — only rendered for authenticated students.
+             Hidden by default; kb.js toggles visibility based on auth state. -->
+        <div id="kb-ticket-wrap" class="hidden mt-5 border-t border-zinc-200 dark:border-white/[0.08] pt-4 w-full flex justify-center">
           <button type="button" id="kb-ticket-btn"
             class="text-xs text-zinc-500 dark:text-zinc-400 hover:text-mak-green dark:hover:text-mak-green transition bg-transparent border-none cursor-pointer underline underline-offset-2">
             Can't find your answer? Submit a support ticket
@@ -270,14 +274,14 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden">
-          <textarea id="message-input" placeholder="Ask about courses, fees, admissions…" rows="1"
+          <textarea id="message-input" placeholder="Ask about Wi-Fi, MUELE, ACMIS, passwords, webmail…" rows="1"
             class="flex-1 min-h-[2.75rem] sm:min-h-[2.5rem] resize-none border-none outline-none bg-transparent text-base sm:text-sm text-left text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 leading-relaxed py-2.5 sm:py-2 max-h-32"></textarea>
           <button id="send-btn" type="button" disabled aria-label="Send message" class="shrink-0 w-10 h-10 min-w-[2.75rem] min-h-[2.75rem] sm:w-9 sm:h-9 sm:min-w-[2.25rem] sm:min-h-[2.25rem] rounded-full bg-mak-green text-white flex items-center justify-center disabled:opacity-35 transition cursor-pointer border-none touch-manipulation shadow-sm shadow-mak-green/25 dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="opacity-95 sm:w-[17px] sm:h-[17px]" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
 
-        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mt-3 leading-relaxed px-2 w-full max-w-3xl mx-auto">AskMak can make mistakes—double-check deadlines and fees.<span class="block mt-1">Official records live on <a href="https://myportal.mak.ac.ug/" target="_blank" rel="noopener noreferrer" class="text-mak-green font-medium underline underline-offset-2 hover:text-mak-gold inline-flex items-center gap-0.5">MyPortal <span class="sr-only">(opens in new tab)</span><svg class="inline shrink-0 opacity-70" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 0 0 6"/><path d="M10 14 21 3"/></svg></a>.</span></p>
+        <p class="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mt-3 leading-relaxed px-2 w-full max-w-3xl mx-auto">AskMak is a Makerere DICTS End-User ICT helpdesk assistant — verify sensitive steps with DICTS.<span class="block mt-1">For your account profile and records, visit <a href="https://myportal.mak.ac.ug/" target="_blank" rel="noopener noreferrer" class="text-mak-green font-medium underline underline-offset-2 hover:text-mak-gold inline-flex items-center gap-0.5">MyPortal <span class="sr-only">(opens in new tab)</span><svg class="inline shrink-0 opacity-70" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 0 0 6"/><path d="M10 14 21 3"/></svg></a>.</span></p>
       </div>
     </div>
 
@@ -321,26 +325,27 @@
   <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto thin-scroll mx-0 sm:mx-auto">
     <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-chat-line">
       <div>
-        <h3 class="text-base font-semibold dark:text-zinc-100">Submit a Support Ticket</h3>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">We'll email you when your question is answered.</p>
+        <h3 class="text-base font-semibold dark:text-zinc-100">Submit a DICTS Support Ticket</h3>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">For ICT issues (Wi-Fi, MUELE, ACMIS, passwords, webmail). DICTS will email you when it's resolved.</p>
       </div>
       <button id="kb-ticket-modal-close" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-gray-400 bg-transparent border-none cursor-pointer transition text-lg">&times;</button>
     </div>
     <form id="kb-ticket-form" class="p-5 space-y-4" novalidate>
       <div>
         <label for="kt-category" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Category</label>
-        <input id="kt-category" type="text" maxlength="100" placeholder="e.g. Admissions, Fees, Courses"
+        <input id="kt-category" type="text" maxlength="100" placeholder="e.g. Wi-Fi, MUELE, ACMIS, Password"
           class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
       </div>
       <div>
         <label for="kt-title" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Question / Title</label>
-        <input id="kt-title" type="text" maxlength="512" placeholder="What would you like to know?"
+        <input id="kt-title" type="text" maxlength="512" placeholder="Describe your ICT issue (e.g. Cannot log in to MUELE)"
           class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
       </div>
       <div>
-        <label for="kt-email" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Email <span class="text-zinc-400 font-normal">(for notification)</span></label>
-        <input id="kt-email" type="email" placeholder="your.email@students.mak.ac.ug"
-          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+        <label for="kt-email" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Email <span class="text-zinc-400 font-normal">(from your account)</span></label>
+        <input id="kt-email" type="email" placeholder="your.email@students.mak.ac.ug" readonly
+          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-chat-canvas/70 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition cursor-not-allowed">
+        <p class="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">Tickets are linked to your signed-in account.</p>
       </div>
       <p id="kb-ticket-error" class="hidden text-xs text-red-500 font-medium"></p>
       <button type="submit" id="kb-ticket-submit"

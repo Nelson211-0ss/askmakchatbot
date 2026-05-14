@@ -15,6 +15,7 @@ const KB = (function() {
         breadcrumb: () => document.getElementById('kb-breadcrumb'),
         categories: () => document.getElementById('kb-categories'),
         titles: () => document.getElementById('kb-titles'),
+        ticketWrap: () => document.getElementById('kb-ticket-wrap'),
         ticketBtn: () => document.getElementById('kb-ticket-btn'),
         ticketModal: () => document.getElementById('kb-ticket-modal'),
         ticketModalClose: () => document.getElementById('kb-ticket-modal-close'),
@@ -46,15 +47,17 @@ const KB = (function() {
         setupEventListeners();
     }
 
-    /** Reflect current login state on the ticket trigger button. */
+    /** Show the ticket link only when a student is signed in; hide for guests. */
     function applyAuthStateToTicketBtn() {
+        const wrap = els.ticketWrap();
         const btn = els.ticketBtn();
-        if (!btn) return;
+        if (!wrap) return;
         const signedIn = !!(window.Auth && Auth.isAuthenticated && Auth.isAuthenticated());
-        btn.dataset.requiresLogin = signedIn ? 'false' : 'true';
-        btn.title = signedIn
-            ? 'Submit a support ticket'
-            : 'Sign in with your student account to submit a support ticket';
+        wrap.classList.toggle('hidden', !signedIn);
+        if (btn) {
+            btn.dataset.requiresLogin = signedIn ? 'false' : 'true';
+            btn.title = 'Submit a support ticket';
+        }
     }
 
     /** Show the KB section and load categories for the given authenticated user.
