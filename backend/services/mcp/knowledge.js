@@ -4,7 +4,7 @@ const storage = require('../storage');
 
 function register(reg) {
     reg('search_knowledge_base', {
-        description: 'Search the Makerere University knowledge base for articles, FAQs, and documents. Use this for questions about admissions, programs, fees, policies, campus services, etc.',
+        description: 'Search the Makerere end-user support knowledge base (portals, ICT, fees on university systems, registration, admissions basics, etc.). Use only for in-scope Makerere support questions.',
         parameters: {
             type: 'object',
             properties: {

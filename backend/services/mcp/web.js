@@ -25,7 +25,7 @@ function extractContent(html) {
 
 function register(reg) {
     reg('fetch_mak_page', {
-        description: 'Fetch and read a live Makerere University webpage. Only works for *.mak.ac.ug domains. Use this when the knowledge base does not have the answer and the information might be on the university website.',
+        description: 'Fetch a *.mak.ac.ug page only when it directly helps a Makerere end-user support answer (portals, ICT, fees, registration, official contacts). Do not use for general browsing or off-topic questions.',
         parameters: {
             type: 'object',
             properties: {
@@ -52,7 +52,7 @@ function register(reg) {
     });
 
     reg('get_upcoming_events', {
-        description: 'Get upcoming events at Makerere University',
+        description: 'List upcoming Makerere events from the website. Use only if the user’s question is genuinely about Makerere and events—not general chat.',
         parameters: { type: 'object', properties: {} }
     }, async () => {
         try {
@@ -80,7 +80,7 @@ function register(reg) {
     });
 
     reg('get_latest_news', {
-        description: 'Get the latest news from Makerere University website',
+        description: 'Get recent news snippets from mak.ac.ug. Use only if relevant to Makerere end-user support; do not use for unrelated or general knowledge questions.',
         parameters: {
             type: 'object',
             properties: {
@@ -113,7 +113,7 @@ function register(reg) {
     });
 
     reg('check_academic_calendar', {
-        description: 'Get current academic calendar information including semester dates, registration deadlines, and exam periods',
+        description: 'Fetch academic calendar dates from mak.ac.ug. Use only for Makerere support questions about term dates, registration or exam periods—not general conversation.',
         parameters: { type: 'object', properties: {} }
     }, async () => {
         try {
