@@ -191,14 +191,21 @@
 
       <div id="welcome-screen" class="welcome-screen-block relative z-[1] shrink-0 flex flex-col items-center justify-center text-center px-4 sm:px-5 py-6 sm:py-8 animate-fade-in max-w-2xl mx-auto w-full">
 
+        <!-- Welcome heading (chat.js renderWelcome() personalises this once Auth resolves) -->
+        <div class="w-full shrink-0 px-0.5 mb-4 sm:mb-5">
+          <h2 id="welcome-greeting" class="text-[1.0625rem] sm:text-xl font-semibold text-zinc-800 dark:text-zinc-50 mb-1 leading-snug px-1">Hi, I&apos;m AskMak</h2>
+          <p id="welcome-lead" class="text-[0.9375rem] sm:text-base font-medium text-zinc-700 dark:text-zinc-200 leading-snug px-1">How can I help you today?</p>
+        </div>
+
         <!-- AskMak quick-access topics -->
         <section id="quick-topics" class="w-full" aria-label="AskMak quick-access topics">
           <header class="flex items-center justify-between gap-3 mb-3 px-1">
             <span class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Quick access</span>
-            <span class="text-[11px] text-zinc-400 dark:text-zinc-500">Tap a topic to see common questions</span>
+            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Tap a topic to see common questions</span>
           </header>
 
-          <div id="quick-topics-grid" class="flex flex-wrap gap-2 justify-center"></div>
+          <div id="quick-topics-grid"
+            class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5"></div>
 
           <div id="quick-topics-questions" class="hidden mt-4 flex flex-col gap-2 w-full max-w-lg mx-auto text-left" aria-live="polite"></div>
         </section>
@@ -361,6 +368,14 @@
 <script src="/js/sidebar.js"></script>
 <script src="/js/kb.js"></script>
 <script src="/js/chat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.0/dist/feather.min.js"></script>
 <script src="/js/quick-topics.js"></script>
+<script>
+  // Initial Feather pass for any static [data-feather] markers on the page.
+  // Dynamic chips/questions call feather.replace() themselves after rendering.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof feather !== 'undefined') feather.replace({ 'stroke-width': 2 });
+  });
+</script>
 </body>
 </html>

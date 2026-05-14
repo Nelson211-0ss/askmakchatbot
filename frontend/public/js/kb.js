@@ -31,17 +31,30 @@ const KB = (function() {
         // Only initialize if we're on the chat page
         if (!els.ticketBtn()) return;
 
-        // Pre-fill the ticket email if the user is already known.
+        // Reflect current auth state on the ticket button (label/title/icon).
+        applyAuthStateToTicketBtn();
         if (window.Auth && Auth.isAuthenticated && Auth.isAuthenticated() && Auth.user) {
             show(Auth.user);
         }
         window.addEventListener('auth:ready', (e) => {
+            applyAuthStateToTicketBtn();
             if (e.detail && e.detail.isAuthenticated && e.detail.user) {
                 show(e.detail.user);
             }
         });
 
         setupEventListeners();
+    }
+
+    /** Reflect current login state on the ticket trigger button. */
+    function applyAuthStateToTicketBtn() {
+        const btn = els.ticketBtn();
+        if (!btn) return;
+        const signedIn = !!(window.Auth && Auth.isAuthenticated && Auth.isAuthenticated());
+        btn.dataset.requiresLogin = signedIn ? 'false' : 'true';
+        btn.title = signedIn
+            ? 'Submit a support ticket'
+            : 'Sign in with your student account to submit a support ticket';
     }
 
     /** Show the KB section and load categories for the given authenticated user.
@@ -192,7 +205,24 @@ const KB = (function() {
         }
     }
 
+    /** Returns true if the user is signed in; otherwise nudges them to log in
+     * (toast + redirect to /login.html, preserving return URL). */
+    function ensureSignedIn() {
+        const signedIn = !!(window.Auth && Auth.isAuthenticated && Auth.isAuthenticated() && Auth.user);
+        if (signedIn) return true;
+        if (window.Utils && typeof Utils.showToast === 'function') {
+            Utils.showToast('Sign in with your student account to submit a support ticket.', 'info');
+        }
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        // Small delay so the toast is visible before navigation.
+        setTimeout(() => { window.location.href = '/login.html?next=' + next; }, 700);
+        return false;
+    }
+
     function openTicketModal(categoryPrefill = null) {
+        // Hard gate: only authenticated students may open the ticket form.
+        if (!ensureSignedIn()) return;
+
         const cat = categoryPrefill || currentCategory || '';
         els.ticketCategory().value = cat;
         els.ticketTitle().value = '';
@@ -200,6 +230,16 @@ const KB = (function() {
         els.ticketForm().classList.remove('hidden');
         els.ticketSuccess().classList.add('hidden');
         els.ticketSubmit().disabled = false;
+
+        // Lock the email field to the signed-in account's email. The server
+        // identifies the student from the JWT, so this is purely informational.
+        const emailEl = els.ticketEmail();
+        if (emailEl && window.Auth && Auth.user && Auth.user.email) {
+            emailEl.value = Auth.user.email;
+            emailEl.readOnly = true;
+            emailEl.classList.add('opacity-70', 'cursor-not-allowed');
+        }
+
         els.ticketModal().classList.remove('hidden');
         setTimeout(() => els.ticketTitle().focus(), 100);
     }
@@ -210,19 +250,16 @@ const KB = (function() {
 
     async function handleTicketSubmit(e) {
         e.preventDefault();
-        
+
+        // Re-verify auth at submit time in case the session expired
+        // between opening the modal and submitting.
+        if (!ensureSignedIn()) return;
+
         const category = els.ticketCategory().value.trim();
         const title = els.ticketTitle().value.trim();
-        const email = els.ticketEmail().value.trim();
-        
-        if (!category || !title || !email) {
-            showTicketError('Please fill in all fields.');
-            return;
-        }
 
-        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRe.test(email)) {
-            showTicketError('Please enter a valid email address.');
+        if (!category || !title) {
+            showTicketError('Please fill in the category and your question.');
             return;
         }
 
@@ -234,11 +271,15 @@ const KB = (function() {
             const res = await fetch('/api/kb/tickets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category, title, student_email: email })
+                credentials: 'same-origin', // send auth cookie
+                body: JSON.stringify({ category, title })
             });
 
             const data = await res.json();
-            
+
+            if (res.status === 401) {
+                throw new Error('Your session has expired. Please sign in again.');
+            }
             if (!res.ok) {
                 throw new Error(data.error || 'Failed to submit ticket');
             }
@@ -246,7 +287,7 @@ const KB = (function() {
             // Show success state
             els.ticketForm().classList.add('hidden');
             els.ticketSuccess().classList.remove('hidden');
-            
+
             // Auto close after 3 seconds
             setTimeout(closeTicketModal, 3000);
         } catch (err) {

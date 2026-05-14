@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
 const db = require('../config/db');
+const { requireAuth } = require('../middleware/auth');
 
 const kbLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -61,27 +62,44 @@ router.get('/entries/:id', kbLimiter, async (req, res, next) => {
     }
 });
 
-/** POST /api/kb/tickets — submit a support ticket (student must be logged in, but we accept email too) */
-router.post('/tickets', ticketLimiter, async (req, res, next) => {
+/**
+ * POST /api/kb/tickets — submit a support ticket.
+ *
+ * Restricted to authenticated students. The ticket is always associated with
+ * the signed-in account (email + full name from the JWT); any email/name in
+ * the request body is ignored. This prevents anonymous abuse and stops a
+ * caller from forging tickets under someone else's identity.
+ */
+router.post('/tickets', requireAuth, ticketLimiter, async (req, res, next) => {
     try {
-        const { category, title, student_email, student_name } = req.body;
-        if (!category || !title || !student_email) {
-            return res.status(400).json({ error: 'category, title, and student_email are required' });
+        const { category, title } = req.body || {};
+        if (!category || !title) {
+            return res.status(400).json({ error: 'category and title are required' });
         }
+
+        // Identity comes from the verified JWT, not the request body.
+        const studentEmail = (req.user && req.user.email ? String(req.user.email) : '')
+            .trim()
+            .toLowerCase();
+        const studentName = (req.user && req.user.full_name ? String(req.user.full_name) : '').trim();
+
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRe.test(student_email)) {
-            return res.status(400).json({ error: 'Invalid email address' });
+        if (!emailRe.test(studentEmail)) {
+            // Should never happen for a valid JWT, but guard anyway.
+            return res.status(401).json({ error: 'Your account is missing a valid email. Please sign in again.' });
         }
+
         const result = await db.query(
             `INSERT INTO kb_tickets (category, title, student_email, student_name)
              VALUES ($1, $2, $3, $4) RETURNING id`,
             [
-                category.trim().substring(0, 100),
-                title.trim().substring(0, 512),
-                student_email.trim().toLowerCase(),
-                (student_name || '').trim().substring(0, 255) || null
+                String(category).trim().substring(0, 100),
+                String(title).trim().substring(0, 512),
+                studentEmail,
+                studentName.substring(0, 255) || null
             ]
         );
+
         res.status(201).json({
             id: result.rows[0].id,
             message: 'Ticket submitted successfully. You will be notified by email when it is resolved.'
