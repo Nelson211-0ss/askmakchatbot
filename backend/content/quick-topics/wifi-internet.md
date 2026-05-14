@@ -8,4 +8,4 @@ This topic covers **campus Wi‑Fi** (e.g. **Mak-Connect**, **eduroam**, or othe
 
 **Eduroam:** Where offered, **eduroam** uses your **home institution** credentials; configuration steps follow **DICTS** or **eduroam** documentation for Makerere visitors and staff.
 
-**When to use a support ticket in this app:** If you **still cannot authenticate** after documented steps, have **account-specific** errors, or **only your account** fails across devices—submit **“Can’t find your answer? Submit a support ticket”** so ICT staff can investigate and reply by email.
+**When to use a support ticket in this app:** If you **still cannot authenticate** after documented steps, have **account-specific** errors, or **only your account** fails across devices—open **[Submit a support ticket](#support-ticket)** so ICT staff can investigate and reply by email.

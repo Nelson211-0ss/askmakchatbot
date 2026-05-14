@@ -8,7 +8,15 @@ var Utils = {
         'h1','h2','h3','h4','h5','blockquote','table','thead','tbody','tr','th','td',
         'img','hr','del','sup','sub','span','div']
     });
-    return clean.replace(/<a\s/g, '<a target="_blank" rel="noopener" ');
+    return clean.replace(/<a(\s[^>]*)>/gi, function(_, attrs) {
+      if (/\bhref\s*=\s*["']#/i.test(attrs)) {
+        return '<a' + attrs + '>';
+      }
+      if (/\btarget\s*=/i.test(attrs)) {
+        return '<a' + attrs + '>';
+      }
+      return '<a target="_blank" rel="noopener"' + attrs + '>';
+    });
   },
 
   formatTime: function(dateStr) {

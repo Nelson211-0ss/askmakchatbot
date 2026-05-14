@@ -2,7 +2,7 @@
 
 **ICT support** (including **DICTS** end-user help) assists with **portals**, **network access**, **email**, **teaching systems**, and related **technical** issues.
 
-**Primary path in this app:** Students who are **signed in** should use **“Can’t find your answer? Submit a support ticket”** in the chat. **Administrators** view and respond to those tickets and can **notify users by email** when issues are resolved—this is the **main ticketing channel** referenced by AskMak.
+**Primary path in this app:** Signed-in students open **[Submit a support ticket](#support-ticket)** in the chat. Administrators handle those requests and can **email** you when there is an update.
 
 **Before contacting:** Note your **problem**, **when it started**, **which system** (ACMIS, MUELE, webmail, Wi‑Fi, etc.), and **what you already tried**—do not include **passwords** in the description.
 

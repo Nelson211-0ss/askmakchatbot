@@ -8,4 +8,4 @@ AskMak’s curated help for admissions stays **high level** unless the **knowled
 
 **How to apply:** New applicants should use the **official online application** and deadlines published for that intake; do **not invent** deadlines or cut-offs in chat.
 
-**When to use a support ticket in this app:** For **portal login or technical problems** during application (cannot upload, payment page errors, account issues), use **“Can’t find your answer? Submit a support ticket”** so ICT or admissions support can assist via the **admin workflow**. Purely **policy** questions may still need the **admissions office** if not in the KB.
+**When to use a support ticket in this app:** For **portal login or technical problems** during application (cannot upload, payment page errors, account issues), use **[Submit a support ticket](#support-ticket)** so ICT or admissions support can assist via the **admin workflow**. Purely **policy** questions may still need the **admissions office** if not in the KB.

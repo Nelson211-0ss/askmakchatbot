@@ -8,4 +8,4 @@
 
 **Phone setup:** Add the account through your phone’s **mail or Outlook** app using **work/school account** or **manual** settings only as described in **official IT guidance** for Makerere. If automatic setup fails repeatedly after correct credentials, the mailbox or DNS settings may need a **staff review**.
 
-**When to use a support ticket in this app:** If **recovery email never arrives**, **account is disabled**, or you suspect **compromise** after changing the password—submit **“Can’t find your answer? Submit a support ticket”** so administrators can investigate and follow up by email.
+**When to use a support ticket in this app:** If **recovery email never arrives**, **account is disabled**, or you suspect **compromise** after changing the password—open **[Submit a support ticket](#support-ticket)** so administrators can investigate and follow up by email.

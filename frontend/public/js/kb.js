@@ -45,6 +45,17 @@ const KB = (function() {
         });
 
         setupEventListeners();
+        maybeOpenTicketFromHash();
+        window.addEventListener('hashchange', maybeOpenTicketFromHash);
+    }
+
+    /** Deep link: `.../chat.html#support-ticket` opens the ticket modal (matches assistant markdown links). */
+    function maybeOpenTicketFromHash() {
+        if (window.location.hash !== '#support-ticket') return;
+        openTicketModal();
+        if (window.location.hash === '#support-ticket') {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
     }
 
     /** Show the ticket link only when a student is signed in; hide for guests. */
@@ -216,7 +227,7 @@ const KB = (function() {
         if (window.Utils && typeof Utils.showToast === 'function') {
             Utils.showToast('Sign in with your student account to submit a support ticket.', 'info');
         }
-        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        const next = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
         // Small delay so the toast is visible before navigation.
         setTimeout(() => { window.location.href = '/login.html?next=' + next; }, 700);
         return false;

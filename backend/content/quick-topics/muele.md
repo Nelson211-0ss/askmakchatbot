@@ -8,4 +8,4 @@
 
 **Assignments and uploads:** Use a **supported browser**, **stable connection**, and file types the course specifies. Try a **smaller file** or **different browser** if uploads fail repeatedly.
 
-**When to use a support ticket in this app:** Persistent **login errors**, **MUELE account** creation failures, or **technical blockers** after basic troubleshooting—use **“Can’t find your answer? Submit a support ticket”** so support can escalate to the right team and email you updates.
+**When to use a support ticket in this app:** Persistent **login errors**, **MUELE account** creation failures, or **technical blockers** after basic troubleshooting—open **[Submit a support ticket](#support-ticket)** so support can escalate to the right team and email you updates.

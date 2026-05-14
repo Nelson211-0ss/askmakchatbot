@@ -8,4 +8,4 @@ This topic aligns with **course registration**, **add/drop**, and **viewing regi
 
 **See registered courses:** The **student portal** typically lists **current registration** under academics or registration tabs.
 
-**When to use a support ticket in this app:** If the **portal errors** on every attempt, **courses disappear** after successful save, or **technical blocks** stop registration near deadlines—submit **“Can’t find your answer? Submit a support ticket”** so staff can fix records or permissions and **email** you when resolved.
+**When to use a support ticket in this app:** If the **portal errors** on every attempt, **courses disappear** after successful save, or **technical blocks** stop registration near deadlines—open **[Submit a support ticket](#support-ticket)** so staff can fix records or permissions and **email** you when resolved.
