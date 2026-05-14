@@ -452,13 +452,30 @@ var Chat = {
       html += '<img src="/api/images/' + msg.image_key + '" alt="Attached image" class="mt-2 w-full max-w-full sm:max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition" onclick="Utils.openLightbox(this.src)">';
     }
 
+    // Meta row: clock-style timestamp (e.g. "10:42 AM") for bot responses,
+    // relative time ("2m ago") for user messages. Streaming bot replies get
+    // their actions injected later on the 'done' SSE event; loaded/non-stream
+    // bot replies get the Copy action attached immediately below.
+    var stamp = isUser
+      ? Utils.formatTime(msg.created_at)
+      : Utils.formatClockTime(msg.created_at);
     html += '<div class="msg-meta flex flex-wrap items-center gap-2 mt-1.5">';
-    html += '<span class="text-[11px] text-zinc-500 dark:text-mak-green/50">' + Utils.formatTime(msg.created_at) + '</span>';
+    html += '<span class="msg-time text-[11px] text-zinc-500 dark:text-mak-green/50" data-iso="' + Utils.escapeHtml(msg.created_at || '') + '">' + Utils.escapeHtml(stamp) + '</span>';
     html += '</div>';
 
     html += '</div>';
     div.innerHTML = html;
     msgs.appendChild(div);
+
+    // For non-streaming bot replies (loaded history, KB direct answers, etc.)
+    // attach the Copy action immediately so it isn't missing.
+    if (!isUser && !opts.streaming) {
+      var wrapper = div.querySelector('.msg-meta');
+      if (wrapper) {
+        wrapper.insertAdjacentHTML('beforeend', this.renderActions(msg.id));
+        this.bindActions(div);
+      }
+    }
 
     if (scroll !== false) {
       msgs.scrollTop = msgs.scrollHeight;
@@ -481,18 +498,13 @@ var Chat = {
   },
 
   renderActions: function(messageId) {
+    // Per product spec: bot replies show only the Copy action.
+    // Like/dislike feedback and the "escalate to staff" cloud icon were
+    // intentionally removed; an absolute clock timestamp is rendered
+    // alongside this in the .msg-meta row.
     var html = '<div class="flex gap-0.5 items-center">';
-    html += '<button class="feedback-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" data-type="positive" data-msg="' + (messageId || '') + '" title="Helpful">';
-    html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
-    html += '</button>';
-    html += '<button class="feedback-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" data-type="negative" data-msg="' + (messageId || '') + '" title="Not helpful">';
-    html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>';
-    html += '</button>';
-    html += '<button class="copy-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" title="Copy">';
+    html += '<button class="copy-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" data-msg="' + (messageId || '') + '" aria-label="Copy response" title="Copy response">';
     html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
-    html += '</button>';
-    html += '<button class="escalate-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" data-msg="' + (messageId || '') + '" title="Escalate to staff">';
-    html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4-5 4 5"/></svg>';
     html += '</button>';
     html += '</div>';
     return html;

@@ -25,6 +25,42 @@ var Utils = {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   },
 
+  /**
+   * Absolute clock-time formatter for chat-message timestamps.
+   * Returns "10:42 AM" for today, "Yesterday 10:42 AM" for yesterday, and
+   * "May 14, 10:42 AM" for anything older. Falls back to an empty string
+   * if the input is missing or unparseable so callers can render safely.
+   */
+  formatClockTime: function(dateStr) {
+    if (!dateStr) return '';
+    var date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+
+    var timePart = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    var now = new Date();
+    var sameDay =
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    if (sameDay) return timePart;
+
+    var yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    var isYesterday =
+      date.getFullYear() === yesterday.getFullYear() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getDate() === yesterday.getDate();
+    if (isYesterday) return 'Yesterday ' + timePart;
+
+    var datePart = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return datePart + ', ' + timePart;
+  },
+
   formatDate: function(dateStr) {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric', month: 'short', day: 'numeric',
