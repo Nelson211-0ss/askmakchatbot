@@ -8,6 +8,9 @@ const { scrapeAnswersMak, scrapeMakMainSite, chunkText, categorize } = require('
 const MIN_WORDS = Math.max(4, parseInt(process.env.INGEST_MIN_CHUNK_WORDS || '10', 10));
 const INGEST_VERSION = 1;
 
+/** `quick-topics` (default): only `backend/content/quick-topics/`. `all`: full mak.ac.ug crawl + files in `backend/content/` root. */
+const INGEST_SOURCES = (process.env.INGEST_SOURCES || 'quick-topics').toLowerCase();
+
 function wordCount(s) {
     return (s || '').split(/\s+/).filter(Boolean).length;
 }
@@ -103,15 +106,18 @@ async function ingestArticles(articles) {
     return { chunksCreated, errors, chunksSkipped, minChunkWords: MIN_WORDS };
 }
 
-async function ingestLocalContent() {
-    const contentDir = path.join(__dirname, '..', 'content');
+async function loadContentDir(contentDir, sourcePrefix) {
     if (!fs.existsSync(contentDir)) return [];
 
     const articles = [];
-    const files = fs.readdirSync(contentDir);
+    const files = fs.readdirSync(contentDir).filter(f => !f.startsWith('.'));
 
     for (const file of files) {
+        if (file === 'CONTENT.txt') continue;
+
         const filePath = path.join(contentDir, file);
+        if (!fs.statSync(filePath).isFile()) continue;
+
         const ext = path.extname(file).toLowerCase();
 
         if (ext === '.md' || ext === '.txt') {
@@ -120,7 +126,7 @@ async function ingestLocalContent() {
             articles.push({
                 title,
                 content,
-                source_url: 'local://' + file,
+                source_url: sourcePrefix + file,
                 category: categorize(title + ' ' + content.substring(0, 500)),
                 image_keys: []
             });
@@ -145,7 +151,7 @@ async function ingestLocalContent() {
                 articles.push({
                     title: pdfTitle,
                     content: rawText,
-                    source_url: 'local://' + file,
+                    source_url: sourcePrefix + file,
                     category: categorize(String(pdfTitle) + ' ' + String(rawText).substring(0, 500)),
                     image_keys: []
                 });
@@ -158,39 +164,67 @@ async function ingestLocalContent() {
     return articles;
 }
 
+async function ingestLocalContent() {
+    const contentDir = path.join(__dirname, '..', 'content');
+    return loadContentDir(contentDir, 'local://');
+}
+
+async function ingestQuickTopicsContent() {
+    const dir = path.join(__dirname, '..', 'content', 'quick-topics');
+    return loadContentDir(dir, 'quick-topics://');
+}
+
 async function run() {
     console.log('=== AskMak Knowledge Base Ingestion ===\n');
+    console.log(`INGEST_SOURCES=${INGEST_SOURCES} (set INGEST_SOURCES=all for full mak.ac.ug crawl + backend/content files)\n`);
     const startTime = Date.now();
 
     let allArticles = [];
 
-    console.log('[1/3] Scraping web sources...');
-    try {
-        const answersArticles = await scrapeAnswersMak();
-        console.log(`  Found ${answersArticles.length} articles from answers.mak.ac.ug`);
-        allArticles.push(...answersArticles);
-    } catch (err) {
-        console.error('  Scraping answers.mak.ac.ug failed:', err.message);
+    if (INGEST_SOURCES === 'all') {
+        console.log('[1/3] Scraping web sources...');
+        try {
+            const answersArticles = await scrapeAnswersMak();
+            console.log(`  Found ${answersArticles.length} articles from answers.mak.ac.ug`);
+            allArticles.push(...answersArticles);
+        } catch (err) {
+            console.error('  Scraping answers.mak.ac.ug failed:', err.message);
+        }
+
+        try {
+            const mainArticles = await scrapeMakMainSite();
+            console.log(`  Found ${mainArticles.length} pages from Makerere subsites (*.mak.ac.ug crawl)`);
+            allArticles.push(...mainArticles);
+        } catch (err) {
+            console.error('  Scraping www.mak.ac.ug failed:', err.message);
+        }
+
+        console.log('\n[2/3] Loading local content (backend/content/)...');
+        try {
+            const localArticles = await ingestLocalContent();
+            console.log(`  Found ${localArticles.length} local files`);
+            allArticles.push(...localArticles);
+        } catch (err) {
+            console.error('  Local content loading failed:', err.message);
+        }
+    } else {
+        const del = await db.query('DELETE FROM documents');
+        console.log(`  Cleared ${del.rowCount} existing KB chunk(s) before quick-topics-only ingest.`);
+
+        console.log('[1/1] Quick-topics KB only — loading backend/content/quick-topics/...');
+        try {
+            const qt = await ingestQuickTopicsContent();
+            console.log(`  Found ${qt.length} file(s)`);
+            if (!qt.length) {
+                console.warn('  Add .md, .txt, or .pdf under content/quick-topics/, or run with INGEST_SOURCES=all.');
+            }
+            allArticles.push(...qt);
+        } catch (err) {
+            console.error('  Quick-topics load failed:', err.message);
+        }
     }
 
-    try {
-        const mainArticles = await scrapeMakMainSite();
-        console.log(`  Found ${mainArticles.length} pages from Makerere subsites (*.mak.ac.ug crawl)`);
-        allArticles.push(...mainArticles);
-    } catch (err) {
-        console.error('  Scraping www.mak.ac.ug failed:', err.message);
-    }
-
-    console.log('\n[2/3] Loading local content...');
-    try {
-        const localArticles = await ingestLocalContent();
-        console.log(`  Found ${localArticles.length} local files`);
-        allArticles.push(...localArticles);
-    } catch (err) {
-        console.error('  Local content loading failed:', err.message);
-    }
-
-    console.log(`\n[3/3] Generating embeddings and storing ${allArticles.length} articles...`);
+    console.log(`\n[Final] Generating embeddings and storing ${allArticles.length} articles...`);
     const stats = await ingestArticles(allArticles);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -202,6 +236,7 @@ async function run() {
     console.log(`  Time: ${elapsed}s`);
 
     await recordIngestionRun({
+        ingest_sources: INGEST_SOURCES,
         articles: allArticles.length,
         chunksCreated: stats.chunksCreated,
         chunksSkipped: stats.chunksSkipped,

@@ -1,2 +1,1 @@
-Drop curated .md, .txt, or .pdf files here before running `npm run ingest`.
-Files are indexed with the scraped mak.ac.ug content. Use clear titles and factual text for best retrieval.
+Default ingest indexes **only** `backend/content/quick-topics/` (same themes as the chat quick-access chips). Add or edit `.md`/`.txt`/`.pdf` there, then run `npm run ingest`. For the old university-wide crawl plus files in this folder’s parent `content/`, run `npm run ingest:all`.

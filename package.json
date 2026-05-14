@@ -8,6 +8,7 @@
     "dev": "nodemon backend/server.js",
     "setup-minio": "node backend/scripts/setup-minio.js",
     "ingest": "node backend/scripts/ingest.js",
+    "ingest:all": "INGEST_SOURCES=all node backend/scripts/ingest.js",
     "eval": "node backend/scripts/eval.js",
     "setup": "docker compose up -d && node backend/scripts/apply-admin-schema.js && node backend/scripts/setup-minio.js",
     "db:apply-admin-schema": "node backend/scripts/apply-admin-schema.js",

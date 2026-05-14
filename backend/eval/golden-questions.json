@@ -1,24 +1,24 @@
 {
   "version": 1,
-  "description": "Retrieval checks: after ingest, `npm run eval` should show passes. Adjust must_contain to match your actual KB text.",
+  "description": "Retrieval checks: after quick-topics ingest, `npm run eval` should pass.",
   "cases": [
     {
-      "id": "admissions-mention",
-      "query": "How do I apply to Makerere University undergraduate admissions",
-      "must_contain": ["makerere", "admission"],
+      "id": "acmis-login",
+      "query": "How do I log in to ACMIS student portal Makerere",
+      "must_contain": ["acmis", "portal"],
       "min_retrieval_strength": 0.08
     },
     {
-      "id": "fees-mention",
-      "query": "Where do I find tuition and fees payment at Makerere",
-      "must_contain": ["makerere", "fee"],
+      "id": "fees-prn",
+      "query": "Where do I find my payment reference number PRN Makerere",
+      "must_contain": ["prn", "fee"],
       "min_retrieval_strength": 0.08
     },
     {
-      "id": "university-identity",
-      "query": "What is Makerere University known for",
-      "must_contain": ["makerere", "uganda"],
-      "min_retrieval_strength": 0.05
+      "id": "ticket-in-app",
+      "query": "I still cannot log in after resetting password what should I do",
+      "must_contain": ["support ticket", "submit"],
+      "min_retrieval_strength": 0.08
     }
   ]
 }

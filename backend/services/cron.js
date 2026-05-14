@@ -1,3 +1,4 @@
+const path = require('path');
 const cron = require('node-cron');
 const db = require('../config/db');
 const storage = require('./storage');
@@ -7,7 +8,9 @@ function start() {
         console.log('[CRON] Weekly knowledge base re-ingestion starting...');
         try {
             const { execSync } = require('child_process');
-            execSync('node scripts/ingest.js', { stdio: 'inherit', cwd: process.cwd() });
+            const ingestJs = path.join(__dirname, '..', 'scripts', 'ingest.js');
+            const projectRoot = path.join(__dirname, '..', '..');
+            execSync(`node "${ingestJs}"`, { stdio: 'inherit', cwd: projectRoot, env: process.env });
             console.log('[CRON] Re-ingestion complete');
         } catch (err) {
             console.error('[CRON] Re-ingestion failed:', err.message);
