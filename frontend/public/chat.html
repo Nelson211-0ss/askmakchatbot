@@ -202,9 +202,17 @@
 
         <!-- AskMak quick-access topics -->
         <section id="quick-topics" class="w-full" aria-label="AskMak quick-access topics">
-          <header class="flex items-center justify-between gap-3 mb-3 px-1">
-            <span class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">DICTS quick help</span>
-            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Tap an ICT topic to see common questions</span>
+          <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 px-0.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-lg bg-mak-green/12 text-mak-green dark:bg-mak-green/18 dark:text-mak-green" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              </span>
+              <div class="min-w-0 text-left">
+                <span class="block text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">DICTS quick help</span>
+                <span class="block text-[11px] text-zinc-500 dark:text-zinc-500 font-normal normal-case tracking-normal">Pick a topic, then a question to ask AskMak</span>
+              </div>
+            </div>
+            <span class="text-[11px] text-zinc-400 dark:text-zinc-500 sm:text-right shrink-0 hidden sm:inline">WLAN, MUELE, ACMIS, passwords…</span>
           </header>
 
           <div id="quick-topics-grid"

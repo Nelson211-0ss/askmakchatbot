@@ -188,7 +188,7 @@
 
   function setActiveChip(grid, activeKey) {
     grid.querySelectorAll('button[data-topic]').forEach((b) => {
-      const isActive = b.dataset.topic === activeKey;
+      const isActive = activeKey != null && b.dataset.topic === activeKey;
       b.setAttribute('aria-expanded', isActive ? 'true' : 'false');
       if (isActive) {
         b.classList.add('border-mak-green/60', 'text-mak-green', 'bg-mak-green/10', 'dark:bg-mak-green/15');
@@ -196,6 +196,16 @@
         b.classList.remove('border-mak-green/60', 'text-mak-green', 'bg-mak-green/10', 'dark:bg-mak-green/15');
       }
     });
+  }
+
+  /** Collapse any open question list and return focus to the topic grid (e.g. after #quick-topics deep link). */
+  function resetToGrid() {
+    const grid = document.getElementById('quick-topics-grid');
+    const host = document.getElementById('quick-topics-questions');
+    if (!grid || !host) return;
+    host.innerHTML = '';
+    host.classList.add('hidden');
+    setActiveChip(grid, null);
   }
 
   function showQuestions(topic, chipEl, grid, host) {
@@ -264,10 +274,22 @@
     Chat.sendMessage();
   }
 
+  function handleQuickTopicsHash() {
+    if (window.location.hash !== '#quick-topics') return;
+    if (window.Chat && typeof Chat.focusQuickAccess === 'function') {
+      Chat.focusQuickAccess();
+    }
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
   ready(() => {
     const grid = document.getElementById('quick-topics-grid');
     const host = document.getElementById('quick-topics-questions');
     if (!grid || !host) return;
     renderChips(grid, host);
+    handleQuickTopicsHash();
+    window.addEventListener('hashchange', handleQuickTopicsHash);
   });
+
+  window.AskMakQuickTopics = { resetToGrid: resetToGrid };
 })();

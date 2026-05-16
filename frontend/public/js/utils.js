@@ -8,14 +8,28 @@ var Utils = {
         'h1','h2','h3','h4','h5','blockquote','table','thead','tbody','tr','th','td',
         'img','hr','del','sup','sub','span','div']
     });
+    function anchorAddClass(attrs, classStr) {
+      if (/\bclass\s*=\s*(["'])([^"']*)\1/i.test(attrs)) {
+        return attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/i, function(_m, q, existing) {
+          return 'class=' + q + existing + ' ' + classStr + q;
+        });
+      }
+      return attrs + ' class="' + classStr + '"';
+    }
     return clean.replace(/<a(\s[^>]*)>/gi, function(_, attrs) {
-      if (/\bhref\s*=\s*["']#/i.test(attrs)) {
-        return '<a' + attrs + '>';
+      var out = attrs;
+      if (/\bhref\s*=\s*["']#quick-topics["']/i.test(attrs)) {
+        out = anchorAddClass(out, 'askmak-cta-link askmak-cta-link--topics');
+      } else if (/\bhref\s*=\s*["']#support-ticket["']/i.test(attrs)) {
+        out = anchorAddClass(out, 'askmak-cta-link askmak-cta-link--ticket');
       }
-      if (/\btarget\s*=/i.test(attrs)) {
-        return '<a' + attrs + '>';
+      if (/\bhref\s*=\s*["']#/i.test(out)) {
+        return '<a' + out + '>';
       }
-      return '<a target="_blank" rel="noopener"' + attrs + '>';
+      if (/\btarget\s*=/i.test(out)) {
+        return '<a' + out + '>';
+      }
+      return '<a target="_blank" rel="noopener"' + out + '>';
     });
   },
 

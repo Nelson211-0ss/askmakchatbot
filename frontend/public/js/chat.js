@@ -94,6 +94,13 @@ var Chat = {
 
     sendBtn.addEventListener('click', function() { self.sendMessage(); });
 
+    document.addEventListener('click', function(e) {
+      var q = e.target && e.target.closest ? e.target.closest('a[href="#quick-topics"]') : null;
+      if (!q) return;
+      e.preventDefault();
+      self.focusQuickAccess();
+    });
+
     var themeToggleSidebar = document.getElementById('theme-toggle');
     if (themeToggleSidebar) themeToggleSidebar.addEventListener('click', function() { Theme.toggle(); });
     var themeToggleHeader = document.getElementById('header-theme-toggle');
@@ -244,6 +251,25 @@ var Chat = {
     Sidebar.activeId = null;
     Sidebar.render();
     this.renderWelcome();
+  },
+
+  /**
+   * Return to the welcome screen and DICTS quick-access topic grid (same as starting a new chat).
+   * Used by assistant links `[Choose another quick-access topic](#quick-topics)` and the #quick-topics hash.
+   */
+  focusQuickAccess: function() {
+    this.newChat();
+    if (window.AskMakQuickTopics && typeof window.AskMakQuickTopics.resetToGrid === 'function') {
+      window.AskMakQuickTopics.resetToGrid();
+    }
+    var el = document.getElementById('quick-topics');
+    if (el && typeof el.scrollIntoView === 'function') {
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (_) {
+        el.scrollIntoView();
+      }
+    }
   },
 
   loadChat: async function(id) {

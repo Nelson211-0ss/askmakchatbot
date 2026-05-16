@@ -3897,6 +3897,159 @@ body.admin-app option {
   margin-bottom: 0.5em;
 }
 
+/* Assistant in-app actions: styled like compact buttons (quick-access + ticket deep links) */
+#chat-messages .msg-content.prose a.askmak-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.75em;
+  padding: 0.55rem 0.95rem 0.55rem 0.75rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-sans, Inter, system-ui, sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-decoration: none !important;
+  border-radius: 0.75rem;
+  border-width: 1px;
+  border-style: solid;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+  vertical-align: middle;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.07);
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link:focus-visible {
+  outline: 2px solid #006b3c;
+  outline-offset: 3px;
+}
+
+.dark #chat-messages .msg-content.prose a.askmak-cta-link:focus-visible {
+  outline-color: #34d399;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--topics {
+  background: rgba(0, 107, 60, 0.09);
+  border-color: rgba(0, 107, 60, 0.32);
+  color: #005a33;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--topics:hover {
+  background: rgba(0, 107, 60, 0.14);
+  border-color: rgba(0, 107, 60, 0.48);
+  color: #004529;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--topics::before {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background: currentColor;
+  opacity: 0.92;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1.5' fill='black'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1.5' fill='black'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1.5' fill='black'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--topics::after {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: 0.1rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--ticket {
+  background: rgba(196, 160, 70, 0.11);
+  border-color: rgba(196, 160, 70, 0.38);
+  color: #6b5420;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--ticket:hover {
+  background: rgba(196, 160, 70, 0.18);
+  border-color: rgba(196, 160, 70, 0.52);
+  color: #5c4518;
+}
+
+#chat-messages .msg-content.prose a.askmak-cta-link--ticket::before {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  background: currentColor;
+  opacity: 0.9;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.dark #chat-messages .msg-content.prose a.askmak-cta-link--topics {
+  background: rgba(0, 107, 60, 0.14);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dark #chat-messages .msg-content.prose a.askmak-cta-link--topics:hover {
+  background: rgba(0, 107, 60, 0.22);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #a7f3d0;
+}
+
+.dark #chat-messages .msg-content.prose a.askmak-cta-link--ticket {
+  background: rgba(196, 160, 70, 0.12);
+  border-color: rgba(228, 200, 120, 0.35);
+  color: #e8d48a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dark #chat-messages .msg-content.prose a.askmak-cta-link--ticket:hover {
+  background: rgba(196, 160, 70, 0.2);
+  border-color: rgba(228, 200, 120, 0.48);
+  color: #f5e6b8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #chat-messages .msg-content.prose a.askmak-cta-link:hover,
+  #chat-messages .msg-content.prose a.askmak-cta-link:active {
+    transform: none;
+  }
+}
+
+/* #quick-topics: scroll offset when jumping from assistant link (mobile fixed header) */
+#quick-topics {
+  scroll-margin-top: max(5.5rem, calc(env(safe-area-inset-top, 0px) + 4.25rem));
+}
+
+@media (min-width: 1024px) {
+  #quick-topics {
+    scroll-margin-top: 0.75rem;
+  }
+}
+
 /* Empty state: vertically center greeting + composer; chatting: composer docked bottom */
 #chat-body.chat-body-welcome {
   justify-content: center;
