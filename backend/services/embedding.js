@@ -213,8 +213,8 @@ function formatContextForLLM(docs, retrieval = {}) {
     let preamble = '';
     if (lowConfidence) {
         preamble =
-            `IMPORTANT — Retrieval ${docs.length ? 'is weak' : 'returned no chunks'} (${strengthNote}). ` +
-            'Do not invent fees, dates, or policies. If you lack solid KB support, say so and point users to official Makerere pages or offices.\n\n';
+            `IMPORTANT — Retrieval ${docs.length ? 'did not meet the confidence threshold' : 'returned no chunks'} (${strengthNote}). ` +
+            'Follow the system prompt: use the **mandatory** ICT Helpdesk phrases when required. Do not invent facts or answer from general knowledge.\n\n';
     }
 
     if (!docs.length) {
