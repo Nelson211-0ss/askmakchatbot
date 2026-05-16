@@ -2,7 +2,7 @@
 
 This topic covers **ACMIS** and related **student portal** access at Makerere.
 
-**Logging in:** Use your official **student credentials** on the **ACMIS / student portal** URL provided by the university (check **www.mak.ac.ug** or **MyPortal** for the current link). Use a current browser; avoid saving passwords on shared computers.
+**Logging in:** Use your official **student credentials** on **MyPortal**, the university student portal: **https://myportal.mak.ac.ug/** (ACMIS and related services are reached from there; **www.mak.ac.ug** also links to **MyPortal** under **Students**). Use a current browser; avoid saving passwords on shared computers.
 
 **Forgot password:** Use the portal’s **Forgot password / Reset** option if shown. Complete **identity verification** (often university email or student number) exactly as prompted—**do not share your password** with anyone, including chat support.
 
