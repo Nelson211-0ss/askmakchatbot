@@ -24,8 +24,12 @@ const KB = (function() {
         ticketTitle: () => document.getElementById('kt-title'),
         ticketEmail: () => document.getElementById('kt-email'),
         ticketError: () => document.getElementById('kb-ticket-error'),
+        ticketErrorText: () => document.getElementById('kb-ticket-error-text'),
         ticketSubmit: () => document.getElementById('kb-ticket-submit'),
-        ticketSuccess: () => document.getElementById('kb-ticket-success')
+        ticketSubmitLabel: () => document.getElementById('kb-ticket-submit-label'),
+        ticketSuccess: () => document.getElementById('kb-ticket-success'),
+        ticketSuccessClose: () => document.getElementById('kb-ticket-success-close'),
+        categoryChips: () => document.querySelectorAll('.kt-cat-chip')
     };
 
     function init() {
@@ -97,9 +101,63 @@ const KB = (function() {
             els.ticketModalClose().addEventListener('click', closeTicketModal);
         }
 
+        if (els.ticketSuccessClose()) {
+            els.ticketSuccessClose().addEventListener('click', closeTicketModal);
+        }
+
+        const modal = els.ticketModal();
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeTicketModal();
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+                closeTicketModal();
+            }
+        });
+
+        els.categoryChips().forEach((chip) => {
+            chip.addEventListener('click', () => selectCategoryChip(chip.dataset.category));
+        });
+
+        const catInput = els.ticketCategory();
+        if (catInput) {
+            catInput.addEventListener('input', () => syncCategoryChips(catInput.value.trim()));
+        }
+
         if (els.ticketForm()) {
             els.ticketForm().addEventListener('submit', handleTicketSubmit);
         }
+    }
+
+    function selectCategoryChip(value) {
+        const input = els.ticketCategory();
+        if (!input || !value) return;
+        input.value = value;
+        syncCategoryChips(value);
+        els.ticketError()?.classList.add('hidden');
+    }
+
+    function syncCategoryChips(activeValue) {
+        const normalized = (activeValue || '').toLowerCase();
+        els.categoryChips().forEach((chip) => {
+            const match = chip.dataset.category && chip.dataset.category.toLowerCase() === normalized;
+            chip.classList.toggle('border-mak-green', match);
+            chip.classList.toggle('bg-mak-green/10', match);
+            chip.classList.toggle('text-mak-green', match);
+            chip.classList.toggle('ring-1', match);
+            chip.classList.toggle('ring-mak-green/25', match);
+            chip.classList.toggle('dark:border-mak-green/50', match);
+            chip.classList.toggle('dark:bg-mak-green/15', match);
+            chip.classList.toggle('dark:text-mak-green', match);
+            chip.setAttribute('aria-pressed', match ? 'true' : 'false');
+        });
+    }
+
+    function resetCategoryChips() {
+        syncCategoryChips('');
     }
 
     async function loadCategories() {
@@ -239,27 +297,38 @@ const KB = (function() {
 
         const cat = categoryPrefill || currentCategory || '';
         els.ticketCategory().value = cat;
+        syncCategoryChips(cat);
         els.ticketTitle().value = '';
         els.ticketError().classList.add('hidden');
         els.ticketForm().classList.remove('hidden');
         els.ticketSuccess().classList.add('hidden');
         els.ticketSubmit().disabled = false;
+        setSubmitLabel('Submit ticket');
 
         // Lock the email field to the signed-in account's email. The server
         // identifies the student from the JWT, so this is purely informational.
         const emailEl = els.ticketEmail();
         if (emailEl && window.Auth && Auth.user && Auth.user.email) {
             emailEl.value = Auth.user.email;
-            emailEl.readOnly = true;
-            emailEl.classList.add('opacity-70', 'cursor-not-allowed');
         }
 
         els.ticketModal().classList.remove('hidden');
-        setTimeout(() => els.ticketTitle().focus(), 100);
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            if (cat) els.ticketTitle().focus();
+            else els.ticketCategory().focus();
+        }, 100);
+    }
+
+    function setSubmitLabel(text) {
+        const label = els.ticketSubmitLabel();
+        if (label) label.textContent = text;
     }
 
     function closeTicketModal() {
         els.ticketModal().classList.add('hidden');
+        document.body.style.overflow = '';
+        resetCategoryChips();
     }
 
     async function handleTicketSubmit(e) {
@@ -279,7 +348,7 @@ const KB = (function() {
 
         els.ticketError().classList.add('hidden');
         els.ticketSubmit().disabled = true;
-        els.ticketSubmit().textContent = 'Submitting...';
+        setSubmitLabel('Submitting…');
 
         try {
             const res = await fetch('/api/kb/tickets', {
@@ -309,14 +378,16 @@ const KB = (function() {
             showTicketError(err.message || 'Something went wrong. Please try again.');
         } finally {
             els.ticketSubmit().disabled = false;
-            els.ticketSubmit().textContent = 'Submit Ticket';
+            setSubmitLabel('Submit ticket');
         }
     }
 
     function showTicketError(msg) {
         const errEl = els.ticketError();
-        errEl.textContent = msg;
-        errEl.classList.remove('hidden');
+        const errText = els.ticketErrorText();
+        if (errText) errText.textContent = msg;
+        else if (errEl) errEl.textContent = msg;
+        errEl?.classList.remove('hidden');
     }
 
     return {

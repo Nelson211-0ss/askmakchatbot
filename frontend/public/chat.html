@@ -225,8 +225,14 @@
              Hidden by default; kb.js toggles visibility based on auth state. -->
         <div id="kb-ticket-wrap" class="hidden mt-5 border-t border-zinc-200 dark:border-white/[0.08] pt-4 w-full flex justify-center">
           <button type="button" id="kb-ticket-btn"
-            class="text-xs text-zinc-500 dark:text-zinc-400 hover:text-mak-green dark:hover:text-mak-green transition bg-transparent border-none cursor-pointer underline underline-offset-2">
-            Can't find your answer? Submit a support ticket
+            class="group inline-flex items-center gap-2.5 rounded-xl border border-zinc-200/90 bg-white/80 px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm shadow-zinc-900/[0.04] transition hover:border-mak-green/40 hover:bg-mak-green/[0.06] hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 dark:shadow-none dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 dark:hover:text-mak-green cursor-pointer">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-mak-green/10 text-mak-green transition group-hover:bg-mak-green/15 dark:bg-mak-green/15" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+            </span>
+            <span class="text-left leading-snug">
+              <span class="block text-sm font-semibold">Submit a support ticket</span>
+              <span class="block text-[11px] font-normal text-zinc-500 dark:text-zinc-500 group-hover:text-mak-green/80 dark:group-hover:text-mak-green/70">DICTS will email you when it's resolved</span>
+            </span>
           </button>
         </div>
 
@@ -329,44 +335,73 @@
 </div>
 
 <!-- KB Support Ticket Modal -->
-<div id="kb-ticket-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5 pb-[env(safe-area-inset-bottom,0px)] sm:pb-[env(safe-area-inset-bottom,0px)]">
-  <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-xl w-full max-w-md shadow-xl animate-modal-in border border-gray-200 dark:border-chat-line max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto thin-scroll mx-0 sm:mx-auto">
-    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-chat-line">
-      <div>
-        <h3 class="text-base font-semibold dark:text-zinc-100">Submit a DICTS Support Ticket</h3>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">For ICT issues (Wi-Fi, MUELE, ACMIS, passwords, webmail). DICTS will email you when it's resolved.</p>
+<div id="kb-ticket-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5 pb-[env(safe-area-inset-bottom,0px)] sm:pb-[env(safe-area-inset-bottom,0px)]" role="dialog" aria-modal="true" aria-labelledby="kb-ticket-modal-title">
+  <div class="bg-white dark:bg-chat-raised rounded-t-2xl sm:rounded-2xl w-full max-w-lg shadow-2xl shadow-zinc-900/10 animate-modal-in border border-zinc-200/90 dark:border-chat-line max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-hidden flex flex-col mx-0 sm:mx-auto dark:shadow-[0_24px_64px_-16px_rgba(0,0,0,0.55)]">
+    <div class="relative shrink-0 px-5 pt-5 pb-4 border-b border-zinc-100 dark:border-chat-line/80">
+      <button type="button" id="kb-ticket-modal-close" class="absolute right-3 top-3 w-9 h-9 rounded-xl hover:bg-zinc-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 bg-transparent border-none cursor-pointer transition" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div class="flex items-start gap-3 pr-10">
+        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mak-green/10 text-mak-green ring-1 ring-mak-green/20 dark:bg-mak-green/15 dark:ring-mak-green/25" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+        </span>
+        <div class="min-w-0 pt-0.5">
+          <h3 id="kb-ticket-modal-title" class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">DICTS support ticket</h3>
+          <p class="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 mt-1">Describe your ICT issue. We'll email you when it's resolved.</p>
+        </div>
       </div>
-      <button id="kb-ticket-modal-close" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-mak-green/10 flex items-center justify-center text-gray-400 bg-transparent border-none cursor-pointer transition text-lg">&times;</button>
     </div>
-    <form id="kb-ticket-form" class="p-5 space-y-4" novalidate>
-      <div>
-        <label for="kt-category" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Category</label>
-        <input id="kt-category" type="text" maxlength="100" placeholder="e.g. Wi-Fi, MUELE, ACMIS, Password"
-          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+    <div class="overflow-y-auto thin-scroll flex-1 min-h-0">
+    <form id="kb-ticket-form" class="p-5 space-y-5" novalidate>
+      <fieldset class="space-y-2.5 border-0 p-0 m-0 min-w-0">
+        <legend class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-0">Category</legend>
+        <div id="kt-category-chips" class="flex flex-wrap gap-1.5" role="group" aria-label="Choose a category">
+          <button type="button" data-category="Wi-Fi" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">Wi-Fi</button>
+          <button type="button" data-category="MUELE" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">MUELE</button>
+          <button type="button" data-category="ACMIS" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">ACMIS</button>
+          <button type="button" data-category="Webmail" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">Webmail</button>
+          <button type="button" data-category="Password" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">Password</button>
+          <button type="button" data-category="Other" class="kt-cat-chip px-2.5 py-1.5 rounded-lg text-xs font-medium border border-zinc-200 bg-zinc-50 text-zinc-700 transition hover:border-mak-green/40 hover:bg-mak-green/5 hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 cursor-pointer">Other</button>
+        </div>
+        <label for="kt-category" class="sr-only">Category</label>
+        <input id="kt-category" type="text" maxlength="100" placeholder="Or type a category…"
+          class="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 shadow-sm shadow-zinc-900/[0.02] focus:outline-none focus:border-mak-green focus:ring-[3px] focus:ring-mak-green/15 transition dark:bg-chat-sidebar/85 dark:border-chat-line dark:text-zinc-100 dark:placeholder-zinc-500 dark:shadow-none dark:focus:border-mak-green/70 dark:focus:ring-mak-green/25">
+      </fieldset>
+      <div class="space-y-1.5">
+        <label for="kt-title" class="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">What do you need help with?</label>
+        <textarea id="kt-title" rows="3" maxlength="512" placeholder="e.g. Cannot log in to MUELE after password reset"
+          class="w-full resize-y min-h-[5.5rem] rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm leading-relaxed text-zinc-900 placeholder-zinc-400 shadow-sm shadow-zinc-900/[0.02] focus:outline-none focus:border-mak-green focus:ring-[3px] focus:ring-mak-green/15 transition dark:bg-chat-sidebar/85 dark:border-chat-line dark:text-zinc-100 dark:placeholder-zinc-500 dark:shadow-none dark:focus:border-mak-green/70 dark:focus:ring-mak-green/25"></textarea>
+        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Include what you tried and any error messages. Do not include passwords.</p>
       </div>
-      <div>
-        <label for="kt-title" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Question / Title</label>
-        <input id="kt-title" type="text" maxlength="512" placeholder="Describe your ICT issue (e.g. Cannot log in to MUELE)"
-          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-chat-canvas px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition">
+      <div class="rounded-xl border border-zinc-200/90 bg-zinc-50/80 px-3.5 py-3 dark:border-chat-line/80 dark:bg-chat-sidebar/50">
+        <p class="text-[10px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 mb-1.5">Linked to your account</p>
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-mak-green shadow-sm ring-1 ring-zinc-200/80 dark:bg-chat-raised dark:ring-chat-line/60" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </span>
+          <input id="kt-email" type="email" readonly tabindex="-1" aria-readonly="true"
+            class="min-w-0 flex-1 bg-transparent border-0 p-0 text-sm font-medium text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-0 cursor-default truncate"
+            placeholder="your.email@students.mak.ac.ug">
+        </div>
       </div>
-      <div>
-        <label for="kt-email" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-1.5">Your Email <span class="text-zinc-400 font-normal">(from your account)</span></label>
-        <input id="kt-email" type="email" placeholder="your.email@students.mak.ac.ug" readonly
-          class="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-chat-canvas/70 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-mak-green/40 focus:border-mak-green/60 transition cursor-not-allowed">
-        <p class="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500">Tickets are linked to your signed-in account.</p>
+      <div id="kb-ticket-error" class="hidden flex items-start gap-2 rounded-xl border border-red-200/80 bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
+        <svg class="shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <span id="kb-ticket-error-text"></span>
       </div>
-      <p id="kb-ticket-error" class="hidden text-xs text-red-500 font-medium"></p>
       <button type="submit" id="kb-ticket-submit"
-        class="w-full rounded-lg bg-mak-green hover:bg-[#009149] text-white text-sm font-semibold py-2.5 px-4 transition border-none cursor-pointer shadow-sm shadow-mak-green/25 disabled:opacity-50 disabled:pointer-events-none">
-        Submit Ticket
+        class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-mak-green hover:bg-[#009149] text-white text-sm font-semibold py-3 px-4 transition border-none cursor-pointer shadow-md shadow-mak-green/20 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-[3px] focus:ring-mak-green/30">
+        <svg id="kb-ticket-submit-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        <span id="kb-ticket-submit-label">Submit ticket</span>
       </button>
     </form>
-    <div id="kb-ticket-success" class="hidden p-6 text-center">
-      <div class="w-12 h-12 rounded-full bg-mak-green/15 flex items-center justify-center mx-auto mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mak-green"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <div id="kb-ticket-success" class="hidden p-8 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-mak-green/12 ring-1 ring-mak-green/20 flex items-center justify-center mx-auto mb-4 dark:bg-mak-green/15">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-mak-green"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
-      <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100 mb-1">Ticket submitted!</p>
-      <p class="text-xs text-zinc-500 dark:text-zinc-400">You'll receive an email once your question has been answered by the university team.</p>
+      <p class="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Ticket submitted</p>
+      <p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">DICTS will review your request and email you when it's resolved.</p>
+      <button type="button" id="kb-ticket-success-close" class="mt-6 text-sm font-medium text-mak-green hover:text-[#009149] bg-transparent border-none cursor-pointer transition">Close</button>
+    </div>
     </div>
   </div>
 </div>
