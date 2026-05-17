@@ -80,7 +80,8 @@ var API = {
     var onChatPage = appPathname(window.location.pathname) === '/chat';
 
     if (response.status === 401 && onChatPage) {
-      window.location.href = '/login?next=%2Fchat';
+      sessionStorage.setItem('auth_next', '/chat');
+      window.location.href = '/login';
       throw { status: 401, message: 'Unauthorized' };
     }
 

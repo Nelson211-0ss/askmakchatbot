@@ -16,8 +16,49 @@ var Auth = {
     }));
   },
 
+  /** Store ?next= from the URL in sessionStorage and show a clean address bar (/signup not /signup?next=…). */
+  consumeAuthNextFromUrl: function() {
+    var sp = new URLSearchParams(window.location.search);
+    var next = sp.get('next');
+    if (next && next.charAt(0) === '/' && next.charAt(1) !== '/') {
+      if (/\.html$/i.test(next)) {
+        next = next.replace(/\.html$/i, '') || '/';
+        if (next === '/index') next = '/';
+      }
+      sessionStorage.setItem('auth_next', next);
+    }
+    if (sp.has('next')) {
+      sp.delete('next');
+      var qs = sp.toString();
+      var clean = window.location.pathname + (qs ? '?' + qs : '');
+      window.history.replaceState(null, '', clean);
+    }
+  },
+
+  getAuthNext: function() {
+    var stored = sessionStorage.getItem('auth_next');
+    if (stored && stored.charAt(0) === '/' && stored.charAt(1) !== '/') return stored;
+    var sp = new URLSearchParams(window.location.search);
+    var next = sp.get('next');
+    if (next && next.charAt(0) === '/' && next.charAt(1) !== '/') {
+      if (/\.html$/i.test(next)) {
+        next = next.replace(/\.html$/i, '') || '/';
+        if (next === '/index') next = '/';
+      }
+      return next;
+    }
+    return null;
+  },
+
+  setAuthNext: function(path) {
+    if (path && path.charAt(0) === '/' && path.charAt(1) !== '/') {
+      sessionStorage.setItem('auth_next', path);
+    }
+  },
+
   setupForms: function() {
     var self = this;
+    this.consumeAuthNextFromUrl();
 
     var loginForm = document.getElementById('login-form');
     if (loginForm) {
@@ -94,6 +135,19 @@ var Auth = {
       resendBtn.addEventListener('click', function() {
         self.handleResend(resendBtn);
       });
+    }
+
+    document.querySelectorAll('[data-auth-next]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var p = el.getAttribute('data-auth-next');
+        if (p) self.setAuthNext(p);
+      });
+    });
+
+    var forgotNextInput = document.getElementById('forgot-next');
+    if (forgotNextInput) {
+      var fn = self.getAuthNext();
+      if (fn) forgotNextInput.value = fn;
     }
   },
 
@@ -216,11 +270,8 @@ var Auth = {
 
       await API.post('/auth/reset-password', { token: token, password: pw });
 
-      var params = new URLSearchParams(window.location.search);
-      var next = params.get('next');
-      var safeNext = next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : null;
+      var safeNext = this.getAuthNext();
       var loginHref = '/login';
-      if (safeNext) loginHref += '?next=' + encodeURIComponent(safeNext);
 
       this.showAlert('Password updated. Redirecting to sign in…', 'success');
       setTimeout(function() {
@@ -249,11 +300,7 @@ var Auth = {
 
       this.user = result.user || result;
 
-      var params = new URLSearchParams(window.location.search);
-      var next = params.get('next');
-      var safeNext = next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : null;
-
-      this.redirectAuthenticated(this.user, safeNext);
+      this.redirectAuthenticated(this.user, this.getAuthNext());
     } catch (e) {
       this.showAlert(e.message || 'Invalid email or password', 'error');
     } finally {
@@ -294,11 +341,7 @@ var Auth = {
       if (result.message) {
         sessionStorage.setItem('verify_notice', result.message);
       }
-      var sp = new URLSearchParams(window.location.search);
-      var nextRaw = sp.get('next');
-      if (nextRaw && nextRaw.charAt(0) === '/' && nextRaw.charAt(1) !== '/') {
-        sessionStorage.setItem('auth_next', nextRaw);
-      } else {
+      if (!this.getAuthNext()) {
         sessionStorage.removeItem('auth_next');
       }
       window.location.href = '/verify';

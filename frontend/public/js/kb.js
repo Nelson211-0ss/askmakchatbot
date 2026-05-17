@@ -285,9 +285,17 @@ const KB = (function() {
         if (window.Utils && typeof Utils.showToast === 'function') {
             Utils.showToast('Sign in with your student account to submit a support ticket.', 'info');
         }
-        const next = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+        const next = window.location.pathname + window.location.search;
+        const hash = window.location.hash;
         // Small delay so the toast is visible before navigation.
-        setTimeout(() => { window.location.href = '/login?next=' + next; }, 700);
+        setTimeout(() => {
+            if (window.Auth && Auth.setAuthNext) {
+                Auth.setAuthNext(next + (hash && hash !== '#support-ticket' ? hash : ''));
+            } else {
+                sessionStorage.setItem('auth_next', next);
+            }
+            window.location.href = '/login';
+        }, 700);
         return false;
     }
 
