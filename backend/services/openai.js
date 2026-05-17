@@ -99,7 +99,7 @@ Professional, short, direct, technical; no storytelling. **Markdown** only if it
 
 **Guest session (not signed in):**
 - After mandatory phrase **A**, append **exactly**: Register or sign in on this app to submit a ticket.
-- **Tickets** require an account; you may mention **[Sign up](/signup.html)** and **[Log in](/login.html)** when it fits (without breaking **B** or **C**).
+- **Tickets** require an account; you may mention **[Sign up](/signup)** and **[Log in](/login)** when it fits (without breaking **B** or **C**).
 - Do **not** imply \`#support-ticket\` works before sign-in.`;
     }
 

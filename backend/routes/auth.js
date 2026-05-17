@@ -346,7 +346,7 @@ router.post('/forgot-password', authLimiter, async (req, res, next) => {
                 ? rawNext
                 : '';
         const nextQs = safeNext ? `&next=${encodeURIComponent(safeNext)}` : '';
-        const resetUrl = `${origin}/reset-password.html?token=${encodeURIComponent(rawToken)}${nextQs}`;
+        const resetUrl = `${origin}/reset-password?token=${encodeURIComponent(rawToken)}${nextQs}`;
 
         const html = `<p>Hi ${user.full_name},</p>
 <p>We received a request to reset your AskMak password.</p>

@@ -195,7 +195,7 @@
       opts.body = JSON.stringify(opts.body);
     }
     return fetch('/api/admin' + path, opts).then(function(res) {
-      if (res.status === 401) { window.location.href = '/login.html'; return Promise.reject(); }
+      if (res.status === 401) { window.location.href = '/login'; return Promise.reject(); }
       if (res.status === 403) { window.location.href = '/'; return Promise.reject(); }
       var ct = res.headers.get('content-type') || '';
       if (ct.indexOf('application/json') >= 0) return res.json().then(function(j) {
@@ -1981,7 +1981,7 @@
 
   function init() {
     fetch('/api/auth/me', { credentials: 'include' }).then(function(r) {
-      if (!r.ok) { window.location.href = '/login.html'; return; }
+      if (!r.ok) { window.location.href = '/login'; return; }
       return r.json();
     }).then(function(data) {
       if (
@@ -2030,13 +2030,13 @@
       setInterval(function() {
         if (Date.now() - lastActivity > INACTIVITY_MS) {
           fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).finally(function() {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
           });
         }
       }, 60000);
       pollTimer = setInterval(poll, 60000);
       loadSection('overview');
-    }).catch(function() { window.location.href = '/login.html'; });
+    }).catch(function() { window.location.href = '/login'; });
   }
 
   document.addEventListener('DOMContentLoaded', init);

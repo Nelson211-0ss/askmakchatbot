@@ -88,7 +88,7 @@
           </div>
 
           <div class="flex justify-end">
-            <a href="/forgot-password.html" id="forgot-password-link" class="text-[10px] font-semibold text-mak-green hover:text-[#008a45] dark:hover:text-emerald-400 transition underline-offset-2 hover:underline">Forgot password?</a>
+            <a href="/forgot-password" id="forgot-password-link" class="text-[10px] font-semibold text-mak-green hover:text-[#008a45] dark:hover:text-emerald-400 transition underline-offset-2 hover:underline">Forgot password?</a>
           </div>
 
           <button type="submit" class="mt-0.5 w-full inline-flex items-center justify-center gap-1.5 bg-mak-green text-white py-2.5 rounded-lg text-[1.0625rem] font-bold shadow-md shadow-mak-green/18 hover:shadow-mak-green/26 hover:brightness-[1.02] active:scale-[0.99] transition cursor-pointer dark:shadow-[0_0_20px_-4px_rgba(0,107,60,0.35)]">
@@ -102,7 +102,7 @@
         </p>
 
         <p class="mt-3 pt-2.5 border-t border-gray-200/90 dark:border-chat-line/60 text-[11px] text-gray-500 dark:text-zinc-500 text-center">
-          New here? <a href="/signup.html" class="font-semibold text-mak-green hover:text-[#008a45] dark:hover:text-emerald-400 transition underline-offset-2 hover:underline">Create an account</a>
+          New here? <a href="/signup" class="font-semibold text-mak-green hover:text-[#008a45] dark:hover:text-emerald-400 transition underline-offset-2 hover:underline">Create an account</a>
         </p>
       </div>
     </div>
@@ -123,7 +123,7 @@
       var params = new URLSearchParams(window.location.search);
       var next = params.get('next');
       if (next && next.charAt(0) === '/' && next.charAt(1) !== '/') {
-        a.href = '/forgot-password.html?next=' + encodeURIComponent(next);
+        a.href = '/forgot-password?next=' + encodeURIComponent(next);
       }
     })();
 

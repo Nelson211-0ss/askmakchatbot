@@ -26,7 +26,7 @@ var Sidebar = {
     var signInBtn = document.getElementById('sidebar-sign-in');
     if (signInBtn) {
       signInBtn.addEventListener('click', function() {
-        window.location.href = '/login.html?next=%2Fchat.html';
+        window.location.href = '/login?next=%2Fchat';
       });
     }
 

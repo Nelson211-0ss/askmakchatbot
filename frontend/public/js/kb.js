@@ -53,7 +53,7 @@ const KB = (function() {
         window.addEventListener('hashchange', maybeOpenTicketFromHash);
     }
 
-    /** Deep link: `.../chat.html#support-ticket` opens the ticket modal (matches assistant markdown links). */
+    /** Deep link: `.../chat#support-ticket` opens the ticket modal (matches assistant markdown links). */
     function maybeOpenTicketFromHash() {
         if (window.location.hash !== '#support-ticket') return;
         openTicketModal();
@@ -278,7 +278,7 @@ const KB = (function() {
     }
 
     /** Returns true if the user is signed in; otherwise nudges them to log in
-     * (toast + redirect to /login.html, preserving return URL). */
+     * (toast + redirect to /login, preserving return URL). */
     function ensureSignedIn() {
         const signedIn = !!(window.Auth && Auth.isAuthenticated && Auth.isAuthenticated() && Auth.user);
         if (signedIn) return true;
@@ -287,7 +287,7 @@ const KB = (function() {
         }
         const next = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
         // Small delay so the toast is visible before navigation.
-        setTimeout(() => { window.location.href = '/login.html?next=' + next; }, 700);
+        setTimeout(() => { window.location.href = '/login?next=' + next; }, 700);
         return false;
     }
 

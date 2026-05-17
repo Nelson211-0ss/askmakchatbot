@@ -129,8 +129,13 @@ var Auth = {
     }
   },
 
-  /** Admins always land in the admin app after login/verify unless `next` is an admin URL. Staff must open /chat.html manually if they need the assistant. Students never use admin-only `next`. */
+  /** Admins always land in the admin app after login/verify unless `next` is an admin URL. Staff must open /chat manually if they need the assistant. Students never use admin-only `next`. */
   redirectAuthenticated: function(user, safeNext) {
+    var next = safeNext;
+    if (next && /\.html$/i.test(next)) {
+      next = next.replace(/\.html$/i, '') || '/';
+      if (next === '/index') next = '/';
+    }
     var admin =
       user &&
       String(user.role || '')
@@ -138,22 +143,21 @@ var Auth = {
         .toLowerCase() === 'admin';
     if (admin) {
       var wantsAdminUi =
-        safeNext &&
-        (safeNext === '/admin.html' ||
-          safeNext.indexOf('/admin.html') === 0 ||
-          safeNext.indexOf('/admin/') === 0);
+        next &&
+        (next === '/admin' ||
+          next.indexOf('/admin/') === 0);
       if (wantsAdminUi) {
-        window.location.href = safeNext;
+        window.location.href = next;
       } else {
-        window.location.href = '/admin.html';
+        window.location.href = '/admin';
       }
       return;
     }
-    if (safeNext && (safeNext.indexOf('/admin.html') === 0 || safeNext.indexOf('/admin/') === 0)) {
-      window.location.href = '/chat.html';
+    if (next && (next === '/admin' || next.indexOf('/admin/') === 0)) {
+      window.location.href = '/chat';
       return;
     }
-    window.location.href = safeNext || '/chat.html';
+    window.location.href = next || '/chat';
   },
 
   handleForgotPassword: async function(form) {
@@ -215,7 +219,7 @@ var Auth = {
       var params = new URLSearchParams(window.location.search);
       var next = params.get('next');
       var safeNext = next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : null;
-      var loginHref = '/login.html';
+      var loginHref = '/login';
       if (safeNext) loginHref += '?next=' + encodeURIComponent(safeNext);
 
       this.showAlert('Password updated. Redirecting to sign in…', 'success');
@@ -297,7 +301,7 @@ var Auth = {
       } else {
         sessionStorage.removeItem('auth_next');
       }
-      window.location.href = '/verify.html';
+      window.location.href = '/verify';
     } catch (e) {
       this.showAlert(e.message || 'Signup failed. Please try again.', 'error');
     } finally {
@@ -312,7 +316,7 @@ var Auth = {
     var email = localStorage.getItem('verify_email');
 
     if (!email) {
-      window.location.href = '/signup.html';
+      window.location.href = '/signup';
       return;
     }
 

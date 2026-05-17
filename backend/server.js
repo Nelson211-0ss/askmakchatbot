@@ -165,9 +165,35 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 
 const publicDir = path.join(__dirname, '..', 'frontend', 'public');
 
-app.get('/admin.html', requireAdminPage, (req, res) => {
+/** Extensionless app routes → HTML shells in frontend/public */
+const APP_PAGES = {
+    chat: 'chat.html',
+    login: 'login.html',
+    signup: 'signup.html',
+    'forgot-password': 'forgot-password.html',
+    'reset-password': 'reset-password.html',
+    verify: 'verify.html'
+};
+
+/** e.g. /chat.html → /chat (keeps query string; /index.html → /) */
+app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    if (!/\.html$/i.test(req.path)) return next();
+    let target = req.path.replace(/\.html$/i, '');
+    if (target === '' || target === '/index') target = '/';
+    const q = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    return res.redirect(301, target + q);
+});
+
+app.get('/admin', requireAdminPage, (req, res) => {
     res.sendFile(path.join(publicDir, 'admin.html'));
 });
+
+for (const [route, file] of Object.entries(APP_PAGES)) {
+    app.get(`/${route}`, (req, res) => {
+        res.sendFile(path.join(publicDir, file));
+    });
+}
 
 app.use(express.static(publicDir));
 

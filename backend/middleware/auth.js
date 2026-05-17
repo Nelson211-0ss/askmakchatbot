@@ -43,7 +43,7 @@ function requireAdmin(req, res, next) {
 function requireAdminPage(req, res, next) {
     const token = req.cookies.token;
     if (!token) {
-        return res.redirect(302, '/login.html?next=/admin.html');
+        return res.redirect(302, '/login?next=%2Fadmin');
     }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -53,7 +53,7 @@ function requireAdminPage(req, res, next) {
         next();
     } catch (err) {
         res.clearCookie('token');
-        return res.redirect(302, '/login.html?next=/admin.html');
+        return res.redirect(302, '/login?next=%2Fadmin');
     }
 }
 

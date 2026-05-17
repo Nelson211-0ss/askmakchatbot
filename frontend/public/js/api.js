@@ -1,3 +1,13 @@
+/** Normalize pathname for route checks (extensionless URLs; legacy .html still accepted). */
+function appPathname(path) {
+  var p = path || '/';
+  if (/\.html$/i.test(p)) {
+    p = p.replace(/\.html$/i, '') || '/';
+  }
+  if (p === '/index') return '/';
+  return p;
+}
+
 var API = {
   baseUrl: '/api',
 
@@ -18,19 +28,18 @@ var API = {
     var response = await fetch(this.baseUrl + url, options);
 
     if (response.status === 401) {
-      var path = window.location.pathname;
+      var path = appPathname(window.location.pathname);
       var publicPages = [
-        '/login.html',
-        '/signup.html',
-        '/forgot-password.html',
-        '/reset-password.html',
+        '/login',
+        '/signup',
+        '/forgot-password',
+        '/reset-password',
         '/',
-        '/index.html',
-        '/verify.html',
-        '/chat.html'
+        '/verify',
+        '/chat'
       ];
       if (publicPages.indexOf(path) === -1) {
-        window.location.href = '/login.html';
+        window.location.href = '/login';
         throw { status: 401, message: 'Unauthorized' };
       }
     }
@@ -68,12 +77,10 @@ var API = {
       signal: signal
     });
 
-    var streamPath = window.location.pathname || '';
-    var onChatPage =
-      streamPath === '/chat.html' || (streamPath.length >= 9 && streamPath.slice(-9) === 'chat.html');
+    var onChatPage = appPathname(window.location.pathname) === '/chat';
 
     if (response.status === 401 && onChatPage) {
-      window.location.href = '/login.html?next=%2Fchat.html';
+      window.location.href = '/login?next=%2Fchat';
       throw { status: 401, message: 'Unauthorized' };
     }
 
