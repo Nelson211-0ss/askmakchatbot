@@ -225,13 +225,13 @@
              Hidden by default; kb.js toggles visibility based on auth state. -->
         <div id="kb-ticket-wrap" class="hidden mt-5 border-t border-zinc-200 dark:border-white/[0.08] pt-4 w-full flex justify-center">
           <button type="button" id="kb-ticket-btn"
-            class="group inline-flex items-center gap-2.5 rounded-xl border border-zinc-200/90 bg-white/80 px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm shadow-zinc-900/[0.04] transition hover:border-mak-green/40 hover:bg-mak-green/[0.06] hover:text-mak-green dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 dark:shadow-none dark:hover:border-mak-green/35 dark:hover:bg-mak-green/10 dark:hover:text-mak-green cursor-pointer">
-            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-mak-green/10 text-mak-green transition group-hover:bg-mak-green/15 dark:bg-mak-green/15" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+            class="group w-fit max-w-full inline-flex items-center gap-2 rounded-lg border border-mak-green/80 bg-mak-green px-3 py-2 text-left shadow-sm shadow-mak-green/20 transition hover:bg-[#009149] hover:border-[#009149] focus:outline-none focus:ring-2 focus:ring-mak-green/40 cursor-pointer">
+            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/15 text-white" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
             </span>
-            <span class="text-left leading-snug">
-              <span class="inline-block rounded-md bg-blue-100 px-2.5 py-1 text-sm font-semibold text-blue-900 dark:bg-blue-500/25 dark:text-blue-100">Submit a Support Ticket</span>
-              <span class="block text-[11px] font-normal text-zinc-500 dark:text-zinc-500 group-hover:text-mak-green/80 dark:group-hover:text-mak-green/70">DICTS will email you when it's resolved</span>
+            <span class="leading-tight">
+              <span class="block text-sm font-semibold text-white">Submit a Support Ticket</span>
+              <span class="block text-[10px] font-normal text-white/85">DICTS will email you when resolved</span>
             </span>
           </button>
         </div>
