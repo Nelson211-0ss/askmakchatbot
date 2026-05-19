@@ -60,7 +60,7 @@ router.post('/guest/stream', messageLimiter, async (req, res, next) => {
             res.write('data: ' + JSON.stringify({ type: 'sources', sources: result.sources }) + '\n\n');
         }
 
-        res.write('data: ' + JSON.stringify({ type: 'done', message_id: null, ephemeral: true, kbGrounding: result.kbGrounding }) + '\n\n');
+        res.write('data: ' + JSON.stringify({ type: 'done', message_id: null, ephemeral: true }) + '\n\n');
         res.end();
     } catch (err) {
         console.error('[Guest Chat Error]', err.stack || err.message || err);
@@ -305,7 +305,7 @@ router.post('/:id/messages', messageLimiter, requireRegisteredUser, async (req, 
             res.write('data: ' + JSON.stringify({ type: 'sources', sources: result.sources }) + '\n\n');
         }
 
-        res.write('data: ' + JSON.stringify({ type: 'done', message_id: msgResult.rows[0].id, kbGrounding: result.kbGrounding }) + '\n\n');
+        res.write('data: ' + JSON.stringify({ type: 'done', message_id: msgResult.rows[0].id }) + '\n\n');
         res.end();
 
         await db.query('UPDATE chats SET updated_at = NOW() WHERE id = $1', [chatId]);

@@ -368,7 +368,7 @@ var Chat = {
         if (data.type === 'done') {
           if (botDiv) {
             stripStreamingCaret();
-            var actionsHtml = self.renderActions(data.message_id, data.kbGrounding);
+            var actionsHtml = self.renderActions(data.message_id);
             var wrapper = botDiv.querySelector('.msg-meta');
             if (wrapper) wrapper.insertAdjacentHTML('beforeend', actionsHtml);
             self.bindActions(botDiv);
@@ -523,34 +523,15 @@ var Chat = {
     return html;
   },
 
-  renderActions: function(messageId, kbGrounding) {
-    var noKb = kbGrounding === 'none' || kbGrounding === 'weak';
-
-    // Copy button row
+  renderActions: function(messageId) {
+    // Per product spec: bot replies show only the Copy action.
+    // Like/dislike feedback and the "escalate to staff" cloud icon were
+    // intentionally removed; an absolute clock timestamp is rendered
+    // alongside this in the .msg-meta row.
     var html = '<div class="flex gap-0.5 items-center">';
     html += '<button class="copy-btn bg-transparent border border-transparent rounded p-1 px-1.5 cursor-pointer text-zinc-400 dark:text-zinc-500 flex items-center gap-1 text-xs hover:bg-zinc-100 dark:hover:bg-mak-green/10 hover:border-zinc-200 dark:hover:border-mak-green/30 transition" data-msg="' + (messageId || '') + '" aria-label="Copy response" title="Copy response">';
     html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
     html += '</button>';
-    html += '</div>';
-
-    // Action buttons row — always show quick-access topic; show ticket button only for no-KB replies
-    html += '<div class="flex flex-wrap gap-2 w-full mt-2">';
-
-    // "Choose another quick-access topic" button
-    html += '<button class="quick-topics-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-mak-green/50 text-mak-green dark:text-mak-green text-xs font-medium bg-transparent hover:bg-mak-green/8 dark:hover:bg-mak-green/10 transition cursor-pointer" aria-label="Choose another quick-access topic">';
-    html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>';
-    html += 'Choose another quick-access topic';
-    html += '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
-    html += '</button>';
-
-    if (noKb) {
-      // "Create a ticket" button
-      html += '<button class="create-ticket-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 text-xs font-medium bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition cursor-pointer" aria-label="Create a ticket">';
-      html += '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>';
-      html += 'Create a ticket';
-      html += '</button>';
-    }
-
     html += '</div>';
     return html;
   },
@@ -577,19 +558,6 @@ var Chat = {
           if (ok) Utils.showToast('Copied to clipboard', 'success');
           else Utils.showToast('Could not copy (try HTTPS or paste manually)', 'error');
         });
-      });
-    });
-
-    div.querySelectorAll('.quick-topics-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        self.focusQuickAccess();
-      });
-    });
-
-    div.querySelectorAll('.create-ticket-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var modal = document.getElementById('kb-ticket-modal');
-        if (modal) modal.classList.remove('hidden');
       });
     });
 
