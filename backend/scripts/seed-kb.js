@@ -12,6 +12,13 @@ function wordCountKb(s) {
 }
 
 async function run() {
+    const { hasOpenAIApiKey } = require('../services/openaiClient');
+    if (!hasOpenAIApiKey()) {
+        console.warn('⚠️ Warning: OPENAI_API_KEY is not set. Skipping Knowledge Base seeding.');
+        console.warn('  Add it to your .env file and run `npm run seed-kb` manually when ready.');
+        process.exit(0);
+    }
+
     console.log('=== Seeding Knowledge Base and Syncing to Vector Store ===');
     const contentDir = path.join(__dirname, '..', 'content', 'quick-topics');
     if (!fs.existsSync(contentDir)) {
