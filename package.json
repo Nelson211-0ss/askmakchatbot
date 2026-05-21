@@ -5,7 +5,7 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "npm run seed-kb && nodemon backend/server.js",
+    "dev": "nodemon backend/server.js",
     "setup-minio": "node backend/scripts/setup-minio.js",
     "ingest": "node backend/scripts/ingest.js",
     "ingest:all": "INGEST_SOURCES=all node backend/scripts/ingest.js",
