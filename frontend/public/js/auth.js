@@ -300,14 +300,27 @@ var Auth = {
 
       this.user = result.user || result;
 
-      this.redirectAuthenticated(this.user, this.getAuthNext());
+      var name = (this.user && this.user.full_name) ? this.user.full_name.split(' ')[0] : null;
+      var msg = 'Login successful! Welcome back' + (name ? ', ' + name : '') + '.';
+      if (window.Utils && typeof Utils.showToast === 'function') {
+        Utils.showToast(msg, 'success');
+      } else {
+        this.showAlert(msg, 'success');
+      }
+      btn.textContent = '✓ Signed in';
+
+      var self = this;
+      var next = this.getAuthNext();
+      setTimeout(function() {
+        self.redirectAuthenticated(self.user, next);
+      }, 1500);
     } catch (e) {
       this.showAlert(e.message || 'Invalid email or password', 'error');
-    } finally {
       btn.disabled = false;
       btn.textContent = originalText;
     }
   },
+
 
   handleSignup: async function(form) {
     var btn = form.querySelector('button[type="submit"]');
