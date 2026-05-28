@@ -20,7 +20,7 @@ services:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
     ports:
-      - "127.0.0.1:4520:5432"
+      - "127.0.0.1:4521:5432"
     environment:
       POSTGRES_USER: askmak
       POSTGRES_PASSWORD: askmak_dev
@@ -38,6 +38,25 @@ services:
       timeout: 5s
       retries: 12
       start_period: 20s
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4520:6432"
+    environment:
+      DATABASE_URL: postgresql://askmak:askmak_dev@db:5432/askmak
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 250
+      DEFAULT_POOL_SIZE: 20
+      MAX_PREPARED_STATEMENTS: 100
+      AUTH_TYPE: scram-sha-256
+      LISTEN_PORT: 6432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - dockeruser_network
 
   minio:
     image: minio/minio
@@ -65,11 +84,11 @@ services:
       HOST: "0.0.0.0"
       PORT: "4500"
       NODE_ENV: production
-      DATABASE_URL: postgresql://askmak:askmak_dev@db:5432/askmak
+      DATABASE_URL: postgresql://askmak:askmak_dev@pgbouncer:6432/askmak
       MINIO_ENDPOINT: http://minio:9000
     depends_on:
-      db:
-        condition: service_healthy
+      pgbouncer:
+        condition: service_started
       minio:
         condition: service_started
     networks:
