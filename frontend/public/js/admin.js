@@ -24,6 +24,7 @@
     conversations: { title: 'Conversations', subtitle: 'Browse chat history' },
     feedback: { title: 'Feedback', subtitle: 'Ratings and comments' },
     kb: { title: 'Knowledge Base', subtitle: 'Curated FAQs, PDF uploads, and assistant search index' },
+    'kb-tickets': { title: 'Support Tickets', subtitle: 'Student questions awaiting admin review' },
     documents: { title: 'Knowledge base', subtitle: 'Sources the assistant can cite' },
     reference: { title: 'Reference images', subtitle: 'Images linked from documents' },
     ingest: { title: 'Ingestion', subtitle: 'Import and index content' },
@@ -46,8 +47,56 @@
     exportCsv:
       '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>',
     upload:
-      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>'
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>',
+    kb:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z"/></svg>',
+    tickets:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"/></svg>',
+    settings:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/></svg>',
+    ingest:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>',
+    documents:
+      '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A9.937 9.937 0 0 1 6 17.998c3.087 0 5.738-2.097 9-3a8.957 8.957 0 0 1 3 .512"/></svg>'
   };
+
+  function adminPageFail(msg) {
+    return (
+      '<div class="admin-page-wrap"><div class="admin-page-alert admin-page-alert--error">' +
+      Utils.escapeHtml(msg || 'Something went wrong. Please try again.') +
+      '</div></div>'
+    );
+  }
+
+  function adminPageLoading() {
+    return (
+      '<div class="admin-page-wrap admin-page-loading">' +
+      '<div class="admin-page-loading__bar"></div>' +
+      '<div class="admin-page-loading__bar admin-page-loading__bar--sm"></div>' +
+      '<div class="admin-page-loading__bar admin-page-loading__bar--lg"></div></div>'
+    );
+  }
+
+  function adminPageBadge(text, variant) {
+    return (
+      '<span class="admin-page-badge admin-page-badge--' +
+      (variant || 'neutral') +
+      '">' +
+      Utils.escapeHtml(String(text)) +
+      '</span>'
+    );
+  }
+
+  function adminEscalationBadge(status) {
+    var s = String(status || '')
+      .toLowerCase()
+      .replace(/\s+/g, '_');
+    var v = 'neutral';
+    if (s === 'pending') v = 'warning';
+    else if (s === 'resolved') v = 'success';
+    else if (s === 'dismissed') v = 'muted';
+    return adminPageBadge(String(status || ''), v);
+  }
 
   function adminPageHead(sectionKey, iconSvg) {
     var c = SECTION_COPY[sectionKey] || { title: '', subtitle: '' };
@@ -614,13 +663,23 @@
   function openConversationModal(id) {
     adminFetch('/conversations/' + id).then(function(d) {
       var msgs = d.messages || [];
-      var html = '<div class="space-y-2">';
+      var html = '<div class="admin-modal-body max-h-[60vh] overflow-y-auto thin-scroll">';
       msgs.forEach(function(m) {
         var role = m.role;
-        var bubble = role === 'user' ? 'bg-mak-green/15' : role === 'assistant' ? 'bg-gray-100 dark:bg-gray-800' : 'bg-mak-gold/10';
-        html += '<div class="rounded-lg p-2 ' + bubble + '"><span class="text-xs font-semibold uppercase text-gray-500">' + role + '</span>';
-        html += '<div class="prose prose-sm prose-sans dark:prose-invert max-w-none">' + (role === 'assistant' ? Utils.renderMarkdown(m.content || '') : Utils.escapeHtml(m.content || '')) + '</div>';
-        if (m.image_url) html += '<img src="' + Utils.escapeHtml(m.image_url) + '" class="mt-2 max-h-40 rounded cursor-pointer" onclick="Utils.openLightbox(this.src)">';
+        var cls =
+          role === 'user' ? ' admin-modal-msg--user' : role === 'assistant' ? ' admin-modal-msg--assistant' : '';
+        html += '<div class="admin-modal-msg' + cls + '">';
+        html += '<span class="admin-modal-msg__role">' + Utils.escapeHtml(role) + '</span>';
+        html +=
+          '<div class="admin-modal-msg__body prose prose-sm prose-sans dark:prose-invert max-w-none">' +
+          (role === 'assistant' ? Utils.renderMarkdown(m.content || '') : Utils.escapeHtml(m.content || '')) +
+          '</div>';
+        if (m.image_url) {
+          html +=
+            '<img src="' +
+            Utils.escapeHtml(m.image_url) +
+            '" class="mt-2 max-h-40 rounded cursor-pointer" onclick="Utils.openLightbox(this.src)">';
+        }
         html += '</div>';
       });
       html += '</div>';
@@ -630,14 +689,14 @@
 
   function loadEscalations(statusFilter) {
     var main = document.getElementById('admin-main');
-    main.innerHTML = 'Loading…';
+    main.innerHTML = adminPageLoading();
     var qs = '/escalations?limit=50';
     if (statusFilter) qs += '&status=' + encodeURIComponent(statusFilter);
     adminFetch(qs).then(function(d) {
       var rows = d.escalations || [];
       var html = '<div class="admin-page-wrap">' + adminPageHead('escalations', PAGE_ICONS.escalations);
       html += '<div class="admin-page-card"><div class="admin-page-toolbar">';
-      html += '<label class="sr-only" for="esc-filter">Filter by status</label>';
+      html += '<label class="admin-page-toolbar-label" for="esc-filter">Filter</label>';
       html += '<select id="esc-filter" class="admin-page-select">';
       ['', 'pending', 'in_progress', 'resolved', 'dismissed'].forEach(function(s) {
         var sel = statusFilter === s ? ' selected' : '';
@@ -657,7 +716,7 @@
           html += '<td class="admin-page-td">' + Utils.escapeHtml(who) + '</td>';
           html += '<td class="admin-page-td max-w-xs truncate">' + Utils.escapeHtml(Utils.truncate(e.message_content || '', 60)) + '</td>';
           html +=
-            '<td class="admin-page-td"><span class="admin-page-pill">' + Utils.escapeHtml(String(e.status || '')) + '</span></td>';
+            '<td class="admin-page-td">' + adminEscalationBadge(e.status) + '</td>';
           html +=
             '<td class="admin-page-td"><button type="button" class="admin-page-link admin-esc-open" data-id="' +
             e.id +
@@ -673,26 +732,42 @@
         btn.addEventListener('click', function() { openEscalationDetail(btn.getAttribute('data-id')); });
       });
       adminFetch('/stats').then(function(s) { escBadge(s.pending_escalations || 0); }).catch(function() {});
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed to load</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load escalations.'); });
   }
 
   function openEscalationDetail(id) {
     adminFetch('/escalations/' + id).then(function(d) {
       var esc = d.escalation;
       var msgs = d.messages || [];
-      var html = '<p class="mb-2"><strong>Reason:</strong> ' + Utils.escapeHtml(esc.reason || '—') + '</p>';
-      html += '<div class="space-y-2 max-h-[60vh] overflow-y-auto thin-scroll">';
+      var html = '<div class="admin-modal-body">';
+      html += '<p class="text-sm" style="color:var(--admin-text-secondary)"><strong>Reason:</strong> ' + Utils.escapeHtml(esc.reason || '—') + '</p>';
+      html += '<div class="max-h-[50vh] overflow-y-auto thin-scroll flex flex-col gap-2">';
       msgs.forEach(function(m) {
-        var hl = m.id === esc.message_id ? ' ring-2 ring-mak-red' : '';
-        html += '<div class="rounded-lg p-2 bg-gray-50 dark:bg-gray-800' + hl + '"><span class="text-xs uppercase text-gray-500">' + m.role + '</span>';
-        html += '<div class="text-sm">' + (m.role === 'assistant' ? Utils.renderMarkdown(m.content || '') : Utils.escapeHtml(m.content || '')) + '</div></div>';
+        var hl = m.id === esc.message_id ? ' admin-modal-msg--highlight' : '';
+        html += '<div class="admin-modal-msg' + hl + '">';
+        html += '<span class="admin-modal-msg__role">' + Utils.escapeHtml(m.role) + '</span>';
+        html +=
+          '<div class="admin-modal-msg__body">' +
+          (m.role === 'assistant' ? Utils.renderMarkdown(m.content || '') : Utils.escapeHtml(m.content || '')) +
+          '</div></div>';
       });
-      html += '</div><div class="mt-4 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">';
-      html += '<textarea id="esc-admin-note" rows="2" class="w-full border rounded-lg p-2 text-sm bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" placeholder="Admin response to user…"></textarea>';
-      html += '<div class="flex flex-wrap gap-2">';
-      html += '<button type="button" class="admin-esc-patch px-3 py-2 rounded-lg bg-mak-green text-white text-sm" data-id="' + id + '" data-status="resolved">Resolve with response</button>';
-      html += '<button type="button" class="admin-esc-patch px-3 py-2 rounded-lg border text-sm" data-id="' + id + '" data-status="in_progress">In progress</button>';
-      html += '<button type="button" class="admin-esc-patch px-3 py-2 rounded-lg border text-sm" data-id="' + id + '" data-status="dismissed">Dismiss</button>';
+      html += '</div>';
+      html += '<div class="admin-page-field"><label class="admin-page-label" for="esc-admin-note">Admin response</label>';
+      html +=
+        '<textarea id="esc-admin-note" rows="3" class="admin-page-textarea" placeholder="Reply to send when resolving…"></textarea></div>';
+      html += '<div class="admin-modal-actions">';
+      html +=
+        '<button type="button" class="admin-page-btn admin-esc-patch" data-id="' +
+        id +
+        '" data-status="in_progress">In progress</button>';
+      html +=
+        '<button type="button" class="admin-page-btn admin-esc-patch" data-id="' +
+        id +
+        '" data-status="dismissed">Dismiss</button>';
+      html +=
+        '<button type="button" class="admin-page-btn admin-page-btn--primary admin-esc-patch" data-id="' +
+        id +
+        '" data-status="resolved">Resolve with response</button>';
       html += '</div></div>';
       openModal('Escalation', html);
       document.querySelectorAll('.admin-esc-patch').forEach(function(b) {
@@ -770,31 +845,28 @@
           ).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
         });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load unresolved items.'); });
   }
 
   function adminUsersBadgeRole(role) {
     var r = String(role || 'student').toLowerCase();
-    if (r === 'admin') {
-      return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-[#006b3c]/15 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/22">Admin</span>';
-    }
-    return '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-slate-500/10 text-slate-700 dark:text-slate-300 ring-1 ring-slate-500/15">Student</span>';
+    if (r === 'admin') return adminPageBadge('Admin', 'success');
+    return adminPageBadge('Student', 'neutral');
   }
 
   function adminUsersBadgeVerified(ok) {
     if (ok) {
-      return '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#006b3c]/12 text-[#006636] dark:text-[#86efac] ring-1 ring-[#006b3c]/20"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>';
+      return (
+        '<span class="admin-page-badge admin-page-badge--success">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75 9 17.25 19.5 6.75"/></svg>Verified</span>'
+      );
     }
-    return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/12 text-amber-900 dark:text-amber-200 ring-1 ring-amber-500/25">Pending</span>';
+    return adminPageBadge('Pending', 'warning');
   }
 
   function loadUsers() {
     var main = document.getElementById('admin-main');
-    main.innerHTML =
-      '<div class="admin-users animate-pulse">' +
-      '<div class="h-28 rounded-xl bg-gray-200/60 dark:bg-white/[0.06]"></div>' +
-      '<div class="h-11 max-w-md rounded-xl bg-gray-200/50 dark:bg-white/[0.05]"></div>' +
-      '<div class="h-52 rounded-2xl bg-gray-100/90 dark:bg-[#161b22]/80"></div></div>';
+    main.innerHTML = adminPageLoading();
 
     var qs =
       '?page=' +
@@ -816,60 +888,49 @@
 
         var html = '<div class="admin-users">';
 
-        html += '<div class="admin-users-hero">';
-        html += '<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-1">';
-        html += '<div class="min-w-0 flex-1 flex gap-3 sm:gap-4 items-start">';
+        html += '<div class="admin-page-hero-card">';
+        html += '<div class="admin-page-hero-card__top">';
+        html += '<div class="admin-page-hero-card__main">';
         html += '<span class="admin-page-section-icon admin-page-section-icon--hero shrink-0" aria-hidden="true">' + PAGE_ICONS.users + '</span>';
-        html += '<div class="min-w-0 flex-1">';
+        html += '<div class="min-w-0">';
+        html += '<p class="admin-kb-eyebrow">Directory</p>';
+        html += '<h2 class="admin-page-section-title" style="font-size:1.25rem">Registered users</h2>';
         html +=
-          '<p class="admin-kb-eyebrow text-[11px] font-semibold uppercase tracking-[0.14em] text-[#006b3c] dark:text-[#86efac] mb-1">Directory</p>';
-        html += '<h2 class="text-xl sm:text-2xl font-bold text-mak-dark dark:text-white tracking-tight">Registered users</h2>';
-        html +=
-          '<p class="mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories. Totals below include every account in the database.</p>';
+          '<p class="admin-page-section-sub">Everyone who signed up for AskMak. Search by name or email; open a row for chats and memories.</p>';
         html += '</div></div>';
-        html += '<div class="flex flex-wrap gap-2 sm:flex-col sm:items-end sm:shrink-0">';
-        html +=
-          '<span class="inline-flex items-center gap-2 rounded-xl bg-[#006b3c]/10 px-4 py-2.5 ring-1 ring-[#006b3c]/22"><span class="text-2xl font-bold tabular-nums text-mak-dark dark:text-white">' +
-          String(sum.total_registered != null ? sum.total_registered : total) +
-          '</span><span class="text-[11px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 leading-tight">accounts</span></span>';
-        html += '</div></div>';
+        html += '<div class="admin-page-hero-stat" title="Total registered accounts">';
+        html += '<span class="admin-page-hero-stat__value">' + String(sum.total_registered != null ? sum.total_registered : total) + '</span>';
+        html += '<span class="admin-page-hero-stat__label">accounts</span></div></div>';
 
-        html += '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-2">';
+        html += '<div class="admin-page-stat-grid">';
         var statCards = [
           { label: 'Verified email', val: sum.verified },
           { label: 'Awaiting verify', val: sum.pending_verification },
           { label: 'Administrators', val: sum.admins },
-          { label: 'This page', val: rows.length }
+          { label: 'This page', val: rows.length, accent: true }
         ];
-        statCards.forEach(function(sc, i) {
-          var muted = i === 3;
+        statCards.forEach(function(sc) {
           html +=
-            '<div class="rounded-xl border px-4 py-3 ' +
-            (muted
-              ? 'border-[#006b3c]/25 dark:border-[#006b3c]/18 bg-[#006b3c]/[0.06] dark:bg-[#006b3c]/[0.06]'
-              : 'border-gray-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#161b22]/75') +
-            '">';
-          html +=
-            '<p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">' +
+            '<div class="admin-page-stat' +
+            (sc.accent ? ' admin-page-stat--accent' : '') +
+            '"><p class="admin-page-stat__label">' +
             Utils.escapeHtml(sc.label) +
-            '</p>';
-          html +=
-            '<p class="mt-1 text-lg font-semibold tabular-nums text-mak-dark dark:text-white">' +
+            '</p><p class="admin-page-stat__value">' +
             Utils.escapeHtml(String(sc.val != null ? sc.val : '—')) +
             '</p></div>';
         });
         html += '</div></div>';
 
-        html += '<div class="admin-users-search-row">';
+        html += '<div class="admin-page-search-row">';
         html += '<label class="sr-only" for="admin-users-search">Search users</label>';
-        html += '<div class="relative admin-users-search-field">';
+        html += '<div class="relative admin-page-search-field">';
         html +=
-          '<span class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-gray-400 dark:text-zinc-500" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
+          '<span class="admin-page-search-icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg></span>';
         html +=
           '<input id="admin-users-search" type="search" autocomplete="off" placeholder="Search name or email…" value="' +
           Utils.escapeHtml(adminUsersPager.q) +
           '" class="admin-users-input"></div>';
-        html += '<button type="button" id="admin-users-search-btn" class="admin-users-search-btn">Search</button>';
+        html += '<button type="button" id="admin-users-search-btn" class="admin-page-btn admin-page-btn--primary">Search</button>';
         html += '</div>';
 
         var tableBarMeta = '';
@@ -882,57 +943,47 @@
         } else {
           tableBarMeta = total ? 'Rows ' + fromIx + '–' + toIx + ' · ' + total + ' on file' : 'No accounts yet';
         }
-        html += '<p class="admin-users-range">' + tableBarMeta + '</p>';
+        html += '<p class="admin-page-meta">' + tableBarMeta + '</p>';
 
-        html += '<div class="admin-users-table-shell">';
-        html += '<div class="overflow-x-auto">';
+        html += '<div class="admin-page-card">';
+        html += '<div class="admin-page-table-scroll">';
+        html += '<table class="admin-page-table"><thead class="admin-page-thead"><tr>';
         html +=
-          '<table class="admin-users-table min-w-full text-sm"><thead><tr class="border-b border-gray-200 dark:border-white/[0.06] bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/10 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">';
-        html +=
-          '<th class="px-4 py-3.5 whitespace-nowrap">Member</th><th class="px-4 py-3.5 whitespace-nowrap">Email</th><th class="px-4 py-3.5 whitespace-nowrap">Role</th><th class="px-4 py-3.5 whitespace-nowrap">Status</th><th class="px-4 py-3.5 whitespace-nowrap">Joined</th><th class="px-4 py-3.5 whitespace-nowrap">Last active</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Chats</th><th class="px-4 py-3.5 whitespace-nowrap text-right">Actions</th></tr></thead><tbody>';
+          '<th class="admin-page-th">Member</th><th class="admin-page-th">Email</th><th class="admin-page-th">Role</th><th class="admin-page-th">Status</th><th class="admin-page-th">Joined</th><th class="admin-page-th">Last active</th><th class="admin-page-th text-right">Chats</th><th class="admin-page-th"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
 
         if (!rows.length) {
           html +=
-            '<tr><td colspan="8" class="px-6 py-16 text-center text-gray-500 dark:text-gray-400">' +
+            '<tr><td colspan="8"><p class="admin-page-empty">' +
             (adminUsersPager.q
-              ? 'No users match <strong class="text-mak-dark dark:text-white">' +
-                Utils.escapeHtml(adminUsersPager.q) +
-                '</strong>. Try another search.'
+              ? 'No users match <strong>' + Utils.escapeHtml(adminUsersPager.q) + '</strong>. Try another search.'
               : 'No registered users yet. New signups will appear here.') +
-            '</td></tr>';
+            '</p></td></tr>';
         } else {
           rows.forEach(function(u) {
+            html += '<tr class="admin-page-tr admin-users-table-row">';
+            html += '<td class="admin-page-td font-semibold">' + Utils.escapeHtml(u.full_name || '—') + '</td>';
             html +=
-              '<tr class="admin-users-table-row border-b border-gray-100 dark:border-white/[0.06] last:border-0 hover:bg-[#006b3c]/[0.06] dark:hover:bg-[#006b3c]/[0.08] transition-colors">';
-            html += '<td class="px-4 py-3.5 font-medium text-mak-dark dark:text-white">' + Utils.escapeHtml(u.full_name || '—') + '</td>';
-            html +=
-              '<td class="px-4 py-3.5 text-gray-700 dark:text-gray-300 max-w-[14rem] truncate" title="' +
+              '<td class="admin-page-td max-w-[14rem] truncate" title="' +
               Utils.escapeHtml(u.email || '') +
               '">' +
               Utils.escapeHtml(u.email || '') +
               '</td>';
-            html += '<td class="px-4 py-3.5">' + adminUsersBadgeRole(u.role) + '</td>';
-            html += '<td class="px-4 py-3.5">' + adminUsersBadgeVerified(u.email_verified) + '</td>';
+            html += '<td class="admin-page-td">' + adminUsersBadgeRole(u.role) + '</td>';
+            html += '<td class="admin-page-td">' + adminUsersBadgeVerified(u.email_verified) + '</td>';
+            html += '<td class="admin-page-td whitespace-nowrap">' + Utils.escapeHtml(Utils.formatTime(u.created_at)) + '</td>';
             html +=
-              '<td class="px-4 py-3.5 whitespace-nowrap text-gray-600 dark:text-gray-400 text-xs">' +
-              Utils.escapeHtml(Utils.formatTime(u.created_at)) +
-              '</td>';
-            html +=
-              '<td class="px-4 py-3.5 whitespace-nowrap text-gray-600 dark:text-gray-400 text-xs">' +
+              '<td class="admin-page-td whitespace-nowrap">' +
               (u.last_active ? Utils.escapeHtml(Utils.formatTime(u.last_active)) : '—') +
               '</td>';
+            html += '<td class="admin-page-td text-right tabular-nums font-semibold">' + String(u.chat_count != null ? u.chat_count : 0) + '</td>';
+            html += '<td class="admin-page-td text-right whitespace-nowrap">';
             html +=
-              '<td class="px-4 py-3.5 text-right tabular-nums font-medium text-mak-dark dark:text-white">' +
-              String(u.chat_count != null ? u.chat_count : 0) +
-              '</td>';
-            html += '<td class="px-4 py-3.5 text-right whitespace-nowrap space-x-2">';
-            html +=
-              '<button type="button" class="inline-flex items-center rounded-lg border border-[#006b3c]/28 dark:border-[#006b3c]/35 bg-[#006b3c]/[0.08] dark:bg-[#006b3c]/12 px-2.5 py-1.5 text-xs font-semibold text-[#008a45] dark:text-[#4ade80] hover:bg-[#006b3c]/15 dark:hover:bg-[#006b3c]/20 cursor-pointer admin-user-open" data-id="' +
+              '<button type="button" class="admin-page-btn admin-user-open" data-id="' +
               u.id +
-              '">View</button>';
+              '">View</button> ';
             if (u.role !== 'admin') {
               html +=
-                '<button type="button" class="inline-flex items-center rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50/80 dark:bg-red-950/30 px-2.5 py-1.5 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50 cursor-pointer admin-user-del" data-id="' +
+                '<button type="button" class="admin-page-btn admin-page-btn--danger admin-user-del" data-id="' +
                 u.id +
                 '">Delete</button>';
             }
@@ -942,20 +993,20 @@
         html += '</tbody></table></div></div>';
 
         if (total > limit || page > 1) {
-          html += '<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">';
+          html += '<div class="admin-page-pagination">';
           html +=
-            '<p class="text-xs text-gray-500 dark:text-gray-400 order-2 sm:order-1">Page <span class="font-semibold text-mak-dark dark:text-white">' +
+            '<p class="admin-page-pagination__info">Page <strong>' +
             page +
-            '</span> of <span class="font-semibold">' +
+            '</strong> of <strong>' +
             totalPages +
-            '</span></p>';
-          html += '<div class="flex gap-2 order-1 sm:order-2">';
+            '</strong></p>';
+          html += '<div class="admin-page-pagination__actions">';
           html +=
-            '<button type="button" id="admin-users-prev" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-prev" class="admin-page-btn"' +
             (page <= 1 ? ' disabled' : '') +
             '>Previous</button>';
           html +=
-            '<button type="button" id="admin-users-next" class="rounded-xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#161b22] px-4 py-2 text-sm font-medium text-mak-dark dark:text-white hover:bg-[#006b3c]/10 dark:hover:bg-[#006b3c]/12 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"' +
+            '<button type="button" id="admin-users-next" class="admin-page-btn"' +
             (page >= totalPages ? ' disabled' : '') +
             '>Next</button>';
           html += '</div></div>';
@@ -1068,8 +1119,7 @@
         });
       })
       .catch(function() {
-        main.innerHTML =
-          '<p class="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/40 dark:border-red-900/40 p-6 text-red-800 dark:text-red-200 font-medium">Could not load users. Check network and permissions, then reopen this section.</p>';
+        main.innerHTML = adminPageFail('Could not load users. Check network and permissions, then reopen this section.');
       });
   }
 
@@ -1104,7 +1154,7 @@
       main.querySelectorAll('.admin-open-chat').forEach(function(btn) {
         btn.addEventListener('click', function() { openConversationModal(btn.getAttribute('data-id')); });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load conversations.'); });
   }
 
   function loadFeedback() {
@@ -1128,7 +1178,7 @@
           html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(f.created_at) + '</td>';
           html +=
             '<td class="admin-page-td">' +
-            (f.rating ? 'Up' : 'Down') +
+            (f.rating ? adminPageBadge('Positive', 'success') : adminPageBadge('Negative', 'danger')) +
             '</td>';
           html +=
             '<td class="admin-page-td truncate max-w-md">' +
@@ -1152,7 +1202,7 @@
           URL.revokeObjectURL(a.href);
         }).catch(function() { Utils.showToast('Export failed', 'error'); });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load feedback.'); });
   }
 
   function loadDocuments() {
@@ -1343,7 +1393,7 @@
           });
         });
       });
-      }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+      }).catch(function() { main.innerHTML = adminPageFail('Failed to load documents.'); });
     }
 
     loadKbWithQuery('');
@@ -1370,23 +1420,25 @@
         imgs.forEach(function(im) {
           html += '<article class="admin-ref-tile">';
           if (im.url) {
-            html +=
-              '<img src="' +
-              Utils.escapeHtml(im.url) +
-              '" alt="" class="w-full h-28 object-cover cursor-pointer" onclick="Utils.openLightbox(this.src)">';
-          }
           html +=
-            '<div class="p-2 text-xs flex flex-col gap-1"><span class="truncate text-gray-600 dark:text-gray-300" title="' +
+            '<img src="' +
+            Utils.escapeHtml(im.url) +
+            '" alt="" onclick="Utils.openLightbox(this.src)">';
+          }
+          html += '<div class="admin-ref-tile__body">';
+          html +=
+            '<span class="admin-ref-tile__title" title="' +
             Utils.escapeHtml(im.key) +
             '">' +
             Utils.escapeHtml(im.display_name || im.key) +
             '</span>';
+          html += '<div class="admin-ref-tile__actions">';
           html +=
-            '<div class="flex justify-end gap-2"><button type="button" class="admin-page-link shrink-0 admin-ref-edit" data-key="' +
+            '<button type="button" class="admin-page-link admin-ref-edit" data-key="' +
             Utils.escapeHtml(im.key) +
             '">Edit meta</button>';
           html +=
-            '<button type="button" class="text-mak-red shrink-0 text-xs font-semibold admin-ref-del" data-key="' +
+            '<button type="button" class="admin-page-link admin-ref-del" style="color:#b91c1c" data-key="' +
             Utils.escapeHtml(im.key) +
             '">Delete</button></div></div></article>';
         });
@@ -1409,12 +1461,16 @@
           var key = btn.getAttribute('data-key');
           var im = imgs.filter(function(x) { return x.key === key; })[0] || {};
           var tagsStr = Array.isArray(im.tags) ? im.tags.join(', ') : (im.tags ? String(im.tags) : '');
-          var mh = '<div class="space-y-2 text-sm"><p class="text-xs text-gray-500 break-all">' + Utils.escapeHtml(key) + '</p>';
-          mh += '<label class="block text-xs text-gray-500">Display name</label><input id="ref-meta-name" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" value="' + Utils.escapeHtml(im.display_name || '') + '">';
-          mh += '<label class="block text-xs text-gray-500 mt-2">Category</label><input id="ref-meta-cat" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" value="' + Utils.escapeHtml(im.category || '') + '">';
-          mh += '<label class="block text-xs text-gray-500 mt-2">Description</label><textarea id="ref-meta-desc" rows="3" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">' + Utils.escapeHtml(im.description || '') + '</textarea>';
-          mh += '<label class="block text-xs text-gray-500 mt-2">Tags (comma-separated)</label><input id="ref-meta-tags" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" value="' + Utils.escapeHtml(tagsStr) + '">';
-          mh += '<button type="button" id="ref-meta-save" class="mt-2 w-full py-2 rounded-lg bg-mak-green text-white text-sm font-medium">Save metadata</button></div>';
+          var mh = '<div class="admin-modal-body"><p class="admin-page-meta break-all">' + Utils.escapeHtml(key) + '</p>';
+          mh += '<div class="admin-page-field"><label class="admin-page-label" for="ref-meta-name">Display name</label>';
+          mh += '<input id="ref-meta-name" class="admin-page-input" value="' + Utils.escapeHtml(im.display_name || '') + '"></div>';
+          mh += '<div class="admin-page-field"><label class="admin-page-label" for="ref-meta-cat">Category</label>';
+          mh += '<input id="ref-meta-cat" class="admin-page-input" value="' + Utils.escapeHtml(im.category || '') + '"></div>';
+          mh += '<div class="admin-page-field"><label class="admin-page-label" for="ref-meta-desc">Description</label>';
+          mh += '<textarea id="ref-meta-desc" rows="3" class="admin-page-textarea">' + Utils.escapeHtml(im.description || '') + '</textarea></div>';
+          mh += '<div class="admin-page-field"><label class="admin-page-label" for="ref-meta-tags">Tags (comma-separated)</label>';
+          mh += '<input id="ref-meta-tags" class="admin-page-input" value="' + Utils.escapeHtml(tagsStr) + '"></div>';
+          mh += '<div class="admin-modal-actions"><button type="button" id="ref-meta-save" class="admin-page-btn admin-page-btn--primary">Save metadata</button></div></div>';
           openModal('Reference image', mh);
           document.getElementById('ref-meta-save').addEventListener('click', function() {
             var rawTags = document.getElementById('ref-meta-tags').value.split(',').map(function(t) { return t.trim(); }).filter(Boolean);
@@ -1441,7 +1497,7 @@
           adminFetch('/reference-images/' + encodeURIComponent(key), { method: 'DELETE' }).then(function() { loadReference(); });
         });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load reference images.'); });
   }
 
   function loadIngest() {
@@ -1543,7 +1599,7 @@
             if (btn) btn.disabled = false;
           });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load ingestion status.'); });
   }
 
   function loadSettings() {
@@ -1580,7 +1636,7 @@
 
       var schemaMissing = !!(d.note && String(d.note).indexOf('admin_schema') >= 0);
 
-      var html = '<div class="admin-settings">';
+      var html = '<div class="admin-page-wrap admin-settings">';
       html += '<div class="admin-settings-hero"><div>';
       html += '<h2>Platform settings</h2>';
       html += '<p>Configure prompts, safeguards, guest access, and tool limits stored in your database.</p>';
@@ -1675,25 +1731,26 @@
           loadSettings();
         }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-mak-red">Failed</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load settings.'); });
   }
 
   function loadKb() {
     var main = document.getElementById('admin-main');
-    main.innerHTML = 'Loading Knowledge Base…';
+    main.innerHTML = adminPageLoading();
     adminFetch('/kb?limit=100').then(function(d) {
       var rows = d.entries || [];
-      var html = '<div class="admin-kb">';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('kb', PAGE_ICONS.kb);
+      html += '<div class="admin-kb-tips" role="note"><span class="admin-kb-tips__icon" aria-hidden="true">';
       html +=
-        '<p class="admin-kb-lede text-slate-600 dark:text-slate-300 mb-4">' +
-        '<strong>Text or PDF</strong> below feeds the assistant\'s <em>vector search index</em> (how it finds answers). ' +
-        '<strong>Curated entries</strong> in the table are the browsable FAQ shown to students. Open ' +
-        '<button type="button" id="kb-goto-docs" class="text-mak-green font-semibold underline underline-offset-2 hover:opacity-90 border-none bg-transparent cursor-pointer p-0">AI Documents</button> ' +
-        'to list, search, and edit every indexed chunk.' +
-        '</p>';
-      html += semanticIndexIngestPanelsHtml('kbidx-');
+        '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg></span>';
+      html += '<p class="admin-kb-tips__list" style="margin:0;list-style:none;padding:0">';
+      html +=
+        '<strong>Text or PDF</strong> below feeds the assistant\'s vector search index. <strong>Curated entries</strong> are the browsable FAQ for students. Open ';
+      html +=
+        '<button type="button" id="kb-goto-docs" class="admin-page-link">AI Documents</button> to manage indexed chunks.</p></div>';
+      html += '<div class="admin-kb">' + semanticIndexIngestPanelsHtml('kbidx-');
 
-      html += '<div class="admin-kb-tips mb-8" role="note">';
+      html += '<div class="admin-kb-tips" role="note">';
       html += '<span class="admin-kb-tips__icon" aria-hidden="true">';
       html +=
         '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>';
@@ -1704,33 +1761,33 @@
         '<li><strong>Published</strong> curated FAQ entries are synced into the assistant search index automatically; drafts are removed from the index until you publish.</li>';
       html += '</ul></div>';
 
-      html +=
-        '<section class="border-t border-slate-200 dark:border-gray-800 pt-8"><div class="flex flex-wrap justify-between gap-4 items-start mb-4">';
-      html += '<div class="min-w-0">';
-      html += '<h2 class="text-xl font-bold dark:text-white">Curated FAQ entries</h2>';
-      html +=
-        '<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Listed for students when they browse the Knowledge Base.</p></div>';
-      html +=
-        '<button type="button" id="kb-new-btn" class="bg-mak-green text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#009149] transition cursor-pointer border-none shadow-sm shadow-mak-green/25 shrink-0">Add entry</button>';
+      html += '<section class="admin-page-card" aria-labelledby="admin-kb-faq-heading">';
+      html += '<div class="admin-page-toolbar admin-page-toolbar--loose">';
+      html += '<div class="admin-page-section-block__text">';
+      html += '<h2 id="admin-kb-faq-heading">Curated FAQ entries</h2>';
+      html += '<p>Listed for students when they browse the Knowledge Base.</p></div>';
+      html += '<button type="button" id="kb-new-btn" class="admin-page-btn admin-page-btn--primary">Add entry</button>';
       html += '</div>';
 
-      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
-      html += '<th class="p-3">Category</th><th class="p-3">Title</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
       if (!rows.length) {
-        html +=
-          '<tr><td colspan="4" class="p-8 text-center text-slate-500 dark:text-gray-400">No curated entries yet. Add one, or feed PDF/text above for indexing only.</td></tr>';
+        html += '<p class="admin-page-empty">No curated entries yet. Add one, or feed PDF/text above for indexing only.</p>';
       } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html += '<th class="admin-page-th">Category</th><th class="admin-page-th">Title</th><th class="admin-page-th">Status</th><th class="admin-page-th"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
         rows.forEach(function(r) {
-          var status = r.is_published
-            ? '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Published</span>'
-            : '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">Draft</span>';
-          html += '<tr class="border-b border-gray-100 dark:border-gray-800"><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
-          html += '<td class="p-3 font-medium">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + status + '</td>';
-          html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs mr-3 kb-edit-btn" data-id="' + r.id + '">Edit</button>';
-          html += '<button type="button" class="text-red-500 text-xs kb-delete-btn" data-id="' + r.id + '">Delete</button></td></tr>';
+          var status = r.is_published ? adminPageBadge('Published', 'success') : adminPageBadge('Draft', 'muted');
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(r.category) + '</td>';
+          html += '<td class="admin-page-td font-semibold">' + Utils.escapeHtml(r.title) + '</td>';
+          html += '<td class="admin-page-td">' + status + '</td>';
+          html += '<td class="admin-page-td text-right whitespace-nowrap">';
+          html += '<button type="button" class="admin-page-link kb-edit-btn" data-id="' + r.id + '">Edit</button> ';
+          html += '<button type="button" class="admin-page-link kb-delete-btn" style="color:#b91c1c" data-id="' + r.id + '">Delete</button>';
+          html += '</td></tr>';
         });
+        html += '</tbody></table></div>';
       }
-      html += '</tbody></table></div></section></div>';
+      html += '</section></div></div>';
 
       main.innerHTML = html;
 
@@ -1764,22 +1821,25 @@
         err && typeof err.message === 'string' && err.message.trim()
           ? err.message
           : 'Failed to load KB entries (check network or sign in again)';
-      main.innerHTML =
-        '<div class="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-red-800 dark:text-red-200 text-sm max-w-xl">' +
-        Utils.escapeHtml(msg) +
-        '</div>';
+      main.innerHTML = adminPageFail(msg);
     });
   }
 
   function openKbModal(entry = null) {
     var isEdit = !!entry;
-    var html = '<form id="kb-form" class="space-y-4 text-sm">';
-    html += '<div><label class="block font-semibold mb-1">Category</label><input type="text" id="kbf-category" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.category : '') + '" required></div>';
-    html += '<div><label class="block font-semibold mb-1">Title / Question</label><input type="text" id="kbf-title" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" value="' + Utils.escapeHtml(entry ? entry.title : '') + '" required></div>';
-    html += '<div><label class="block font-semibold mb-1">Content / Answer</label><textarea id="kbf-content" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" required>' + Utils.escapeHtml(entry ? entry.content : '') + '</textarea></div>';
-    html += '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '> <span>Published (visible to students and synced to assistant search when published)</span></label>';
-    html += '<div class="pt-4 flex justify-end gap-2"><button type="button" class="px-4 py-2 border rounded" onclick="document.getElementById(\'modal-close\').click()">Cancel</button>';
-    html += '<button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none">Save</button></div></form>';
+    var html = '<form id="kb-form" class="admin-modal-body">';
+    html += '<div class="admin-page-field"><label class="admin-page-label" for="kbf-category">Category</label>';
+    html += '<input type="text" id="kbf-category" class="admin-page-input" value="' + Utils.escapeHtml(entry ? entry.category : '') + '" required></div>';
+    html += '<div class="admin-page-field"><label class="admin-page-label" for="kbf-title">Title / Question</label>';
+    html += '<input type="text" id="kbf-title" class="admin-page-input" value="' + Utils.escapeHtml(entry ? entry.title : '') + '" required></div>';
+    html += '<div class="admin-page-field"><label class="admin-page-label" for="kbf-content">Content / Answer</label>';
+    html += '<textarea id="kbf-content" rows="6" class="admin-page-textarea" required>' + Utils.escapeHtml(entry ? entry.content : '') + '</textarea></div>';
+    html += '<label class="admin-modal-check" for="kbf-published">';
+    html += '<input type="checkbox" id="kbf-published" ' + (!entry || entry.is_published ? 'checked' : '') + '>';
+    html += '<span>Published (visible to students and synced to assistant search when published)</span></label>';
+    html += '<div class="admin-modal-actions">';
+    html += '<button type="button" class="admin-page-btn" onclick="document.getElementById(\'modal-close\').click()">Cancel</button>';
+    html += '<button type="submit" class="admin-page-btn admin-page-btn--primary">Save</button></div></form>';
     
     openModal(isEdit ? 'Edit Knowledge Base Entry' : 'New Knowledge Base Entry', html);
 
@@ -1812,37 +1872,56 @@
 
   function loadKbTickets(statusFilter = '') {
     var main = document.getElementById('admin-main');
-    main.innerHTML = 'Loading Tickets…';
-    var qs = '/kb-tickets?limit=50' + (statusFilter ? '&status=' + statusFilter : '');
-    
+    main.innerHTML = adminPageLoading();
+    var qs = '/kb-tickets?limit=50' + (statusFilter ? '&status=' + encodeURIComponent(statusFilter) : '');
+
     adminFetch(qs).then(function(d) {
       var rows = d.tickets || [];
-      
-      // Update sidebar badge
+
       var badge = document.getElementById('nav-ticket-count');
       if (badge) {
-        if (d.pending_count > 0) { badge.textContent = d.pending_count; badge.classList.remove('hidden'); }
-        else { badge.classList.add('hidden'); }
+        if (d.pending_count > 0) {
+          badge.textContent = d.pending_count;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
       }
 
-      var html = '<div class="flex justify-between items-center mb-4">';
-      html += '<h2 class="text-xl font-bold dark:text-white">Support Tickets</h2>';
-      html += '<select id="kbt-filter" class="border rounded p-2 text-sm dark:bg-gray-800 dark:border-gray-700"><option value="">All tickets</option><option value="pending" ' + (statusFilter === 'pending' ? 'selected' : '') + '>Pending</option><option value="resolved" ' + (statusFilter === 'resolved' ? 'selected' : '') + '>Resolved</option></select>';
-      html += '</div>';
+      var html = '<div class="admin-page-wrap">' + adminPageHead('kb-tickets', PAGE_ICONS.tickets);
+      html += '<div class="admin-page-card"><div class="admin-page-toolbar admin-page-toolbar--loose">';
+      html += '<span class="admin-page-toolbar-label">Show</span>';
+      html +=
+        '<select id="kbt-filter" class="admin-page-select"><option value="">All tickets</option><option value="pending"' +
+        (statusFilter === 'pending' ? ' selected' : '') +
+        '>Pending</option><option value="resolved"' +
+        (statusFilter === 'resolved' ? ' selected' : '') +
+        '>Resolved</option></select></div>';
 
-      html += '<div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"><table class="min-w-full text-sm"><thead><tr class="border-b text-left text-gray-500">';
-      html += '<th class="p-3">Date</th><th class="p-3">Student</th><th class="p-3">Category</th><th class="p-3">Question</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead><tbody>';
-      
-      rows.forEach(function(r) {
-        var statusHtml = r.status === 'pending' ? '<span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium">Pending</span>' : '<span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-medium">Resolved</span>';
-        html += '<tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"><td class="p-3 whitespace-nowrap">' + Utils.formatTime(r.created_at) + '</td>';
-        html += '<td class="p-3">' + Utils.escapeHtml(r.student_email) + '</td><td class="p-3">' + Utils.escapeHtml(r.category) + '</td>';
-        html += '<td class="p-3 font-medium truncate max-w-xs">' + Utils.escapeHtml(r.title) + '</td><td class="p-3">' + statusHtml + '</td>';
-        html += '<td class="p-3 text-right"><button type="button" class="text-mak-green text-xs font-semibold kbt-view-btn border-none bg-transparent cursor-pointer" data-id="' + r.id + '">Review</button></td></tr>';
-      });
-      html += '</tbody></table></div>';
-      if (!rows.length) html += '<p class="text-gray-500 mt-4">No tickets found.</p>';
-      
+      if (!rows.length) {
+        html += '<p class="admin-page-empty">No support tickets found for this filter.</p>';
+      } else {
+        html += '<div class="admin-page-table-scroll"><table class="admin-page-table"><thead class="admin-page-thead"><tr>';
+        html +=
+          '<th class="admin-page-th">Date</th><th class="admin-page-th">Student</th><th class="admin-page-th">Category</th><th class="admin-page-th">Question</th><th class="admin-page-th">Status</th><th class="admin-page-th"><span class="sr-only">Actions</span></th></tr></thead><tbody>';
+
+        rows.forEach(function(r) {
+          var statusHtml =
+            r.status === 'pending' ? adminPageBadge('Pending', 'warning') : adminPageBadge('Resolved', 'success');
+          html += '<tr class="admin-page-tr">';
+          html += '<td class="admin-page-td whitespace-nowrap">' + Utils.formatTime(r.created_at) + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(r.student_email) + '</td>';
+          html += '<td class="admin-page-td">' + Utils.escapeHtml(r.category) + '</td>';
+          html += '<td class="admin-page-td font-semibold truncate max-w-xs">' + Utils.escapeHtml(r.title) + '</td>';
+          html += '<td class="admin-page-td">' + statusHtml + '</td>';
+          html +=
+            '<td class="admin-page-td text-right"><button type="button" class="admin-page-link kbt-view-btn" data-id="' +
+            r.id +
+            '">Review</button></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
       main.innerHTML = html;
 
       document.getElementById('kbt-filter').addEventListener('change', function(e) {
@@ -1856,30 +1935,34 @@
           });
         });
       });
-    }).catch(function() { main.innerHTML = '<p class="text-red-500">Failed to load tickets</p>'; });
+    }).catch(function() { main.innerHTML = adminPageFail('Failed to load support tickets.'); });
   }
 
   function openTicketModal(t) {
     var isPending = t.status === 'pending';
-    var html = '<div class="space-y-4 text-sm">';
-    
-    html += '<div class="grid grid-cols-2 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">';
-    html += '<div><span class="block text-xs text-gray-500 uppercase font-semibold">Student</span><span class="font-medium">' + Utils.escapeHtml(t.student_email) + '</span></div>';
-    html += '<div><span class="block text-xs text-gray-500 uppercase font-semibold">Category</span><span class="font-medium">' + Utils.escapeHtml(t.category) + '</span></div>';
-    html += '<div class="col-span-2"><span class="block text-xs text-gray-500 uppercase font-semibold mb-1">Question</span><span class="font-semibold text-lg">' + Utils.escapeHtml(t.title) + '</span></div>';
-    html += '</div>';
+    var html = '<div class="admin-modal-body">';
+
+    html += '<dl class="admin-modal-meta-grid">';
+    html += '<div><dt>Student</dt><dd>' + Utils.escapeHtml(t.student_email) + '</dd></div>';
+    html += '<div><dt>Category</dt><dd>' + Utils.escapeHtml(t.category) + '</dd></div>';
+    html += '<div class="admin-modal-meta-grid__full"><dt>Question</dt><dd>' + Utils.escapeHtml(t.title) + '</dd></div>';
+    html += '</dl>';
 
     if (isPending) {
-      html += '<form id="ticket-resolve-form" class="space-y-3 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">';
-      html += '<div><label class="block font-semibold mb-1">Your Answer</label><p class="text-xs text-gray-500 mb-2">This will be emailed to the student.</p>';
-      html += '<textarea id="kbt-response" rows="6" class="w-full border rounded p-2 dark:bg-gray-800 dark:border-gray-700" placeholder="Type the answer here..." required></textarea></div>';
-      html += '<label class="flex items-center gap-2 cursor-pointer mt-2 bg-emerald-50 dark:bg-mak-green/10 p-3 rounded-lg border border-emerald-100 dark:border-mak-green/20"><input type="checkbox" id="kbt-save-kb" checked> <span class="font-medium text-emerald-800 dark:text-emerald-200">Also publish this answer to the public FAQ Knowledge Base</span></label>';
-      html += '<div class="pt-2 flex justify-end gap-2"><button type="submit" class="px-4 py-2 bg-mak-green text-white rounded font-semibold border-none flex items-center gap-2 shadow-sm shadow-mak-green/25"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Resolve & Email Student</button></div></form>';
+      html += '<form id="ticket-resolve-form" class="admin-modal-body" style="padding:0">';
+      html += '<div class="admin-page-field"><label class="admin-page-label" for="kbt-response">Your answer</label>';
+      html += '<p class="admin-page-meta" style="margin:0 0 0.35rem">This will be emailed to the student.</p>';
+      html +=
+        '<textarea id="kbt-response" rows="6" class="admin-page-textarea" placeholder="Type the answer here…" required></textarea></div>';
+      html += '<label class="admin-modal-check" for="kbt-save-kb">';
+      html += '<input type="checkbox" id="kbt-save-kb" checked>';
+      html += '<span>Also publish this answer to the public FAQ Knowledge Base</span></label>';
+      html += '<div class="admin-modal-actions">';
+      html +=
+        '<button type="submit" class="admin-page-btn admin-page-btn--primary">Resolve &amp; email student</button></div></form>';
     } else {
-      html += '<div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">';
-      html += '<span class="block text-xs text-gray-500 uppercase font-semibold mb-2">Admin Answer (Sent to student)</span>';
-      html += '<div class="p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 whitespace-pre-wrap">' + Utils.escapeHtml(t.admin_response) + '</div>';
-      html += '</div>';
+      html += '<div class="admin-page-field"><span class="admin-page-label">Admin answer (sent to student)</span>';
+      html += '<div class="admin-modal-msg admin-modal-msg__body whitespace-pre-wrap">' + Utils.escapeHtml(t.admin_response) + '</div></div>';
     }
 
     html += '</div>';

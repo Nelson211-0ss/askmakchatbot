@@ -11,22 +11,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="admin-app font-admin min-h-dvh h-dvh max-h-dvh flex flex-col overflow-hidden bg-[#eceeed] text-gray-900 dark:bg-[#0b0e11] dark:text-gray-100 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] box-border antialiased">
+<body class="admin-app font-admin min-h-dvh h-dvh max-h-dvh flex flex-col overflow-hidden bg-[#eceeed] text-gray-900 dark:bg-[#0b0e11] dark:text-gray-100 box-border antialiased">
 
 <div id="admin-root" class="flex flex-1 min-h-0 h-full overflow-hidden">
-  <aside id="admin-sidebar" aria-hidden="true" class="admin-sidebar-shell admin-sidebar-mobile-hidden w-[min(calc(100vw-2rem),292px)] max-w-[calc(100vw-1.5rem)] sm:w-[292px] flex flex-col shrink-0 z-40 fixed lg:static inset-y-0 left-0 transition-transform duration-300 ease-out text-white border-r border-white/[0.04]">
+  <aside id="admin-sidebar" aria-hidden="true" class="admin-sidebar-shell admin-sidebar-mobile-hidden w-[min(calc(100vw-2rem),292px)] max-w-[calc(100vw-1.5rem)] sm:w-[292px] flex flex-col shrink-0 z-40 fixed lg:static transition-transform duration-300 ease-out text-white">
 
     <div class="px-4 pt-4 pb-2 flex items-start justify-between gap-2 shrink-0">
       <a href="/admin" class="flex flex-col gap-1.5 min-w-0 flex-1" title="AskMak Admin">
         <img src="/assets/askmak%20logo%20darkmode.png" alt="AskMak chatbot" class="admin-sidebar-logo h-14 w-auto max-w-[min(100%,15rem)] sm:h-[4.25rem] sm:max-w-[min(100%,18rem)] object-contain object-left shrink-0" width="216" height="60" decoding="async" />
-        <p class="text-[11px] leading-snug text-white/45 font-medium pl-0.5">Intelligent Campus Assistant</p>
+        <p class="admin-sidebar-tagline text-[11px] leading-snug font-medium pl-0.5">Intelligent Campus Assistant</p>
       </a>
       <button type="button" id="sidebar-close" class="lg:hidden shrink-0 flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white hover:bg-white/10 border-none bg-transparent cursor-pointer" aria-label="Close menu">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
       </button>
     </div>
 
-    <p class="px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/40">Navigate</p>
+    <p class="admin-sidebar-section-label px-5 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider">Navigate</p>
     <nav class="flex-1 overflow-y-auto sidebar-scroll py-1 px-2 text-sm pb-3">
       <button type="button" data-section="overview" class="admin-nav flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left transition-all duration-150 text-white/65 hover:bg-white/[0.06] hover:text-white data-[active=true]:bg-mak-green data-[active=true]:text-white data-[active=true]:shadow-[0_2px_14px_-4px_rgba(0,107,60,0.5)] data-[active=true]:font-semibold">
         <span class="admin-sidebar-nav-icon" aria-hidden="true">
@@ -133,7 +133,7 @@
 
   <div id="sidebar-overlay" class="hidden fixed inset-0 bg-mak-dark/60 backdrop-blur-[2px] z-30 lg:hidden"></div>
 
-  <div class="admin-main-shell flex-1 flex flex-col min-w-0 min-h-0 pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
+  <div class="admin-main-shell flex-1 flex flex-col min-w-0 min-h-0">
     <header class="admin-shell-header sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 px-3 sm:px-5 py-3 sm:py-4 shrink-0">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button type="button" id="sidebar-open" class="lg:hidden shrink-0 p-2.5 min-w-[2.75rem] min-h-[2.75rem] rounded-xl border admin-header-icon-btn cursor-pointer touch-manipulation" aria-label="Open menu">
@@ -141,12 +141,12 @@
         </button>
         <div class="min-w-0">
           <h1 id="section-title" class="text-lg sm:text-xl font-bold tracking-tight truncate text-slate-900 dark:text-white">Dashboard</h1>
-          <p id="section-subtitle" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">Overview of your assistant</p>
+          <p id="section-subtitle" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-0.5 truncate">Overview of your assistant</p>
         </div>
       </div>
       <div class="hidden sm:flex flex-col items-end gap-2 shrink-0">
         <div class="flex items-center gap-2 admin-header-user-chip">
-          <span class="text-sm text-slate-700 dark:text-zinc-200 whitespace-nowrap max-w-[12rem] sm:max-w-[16rem] truncate text-right">Welcome, <span id="admin-user-label" class="font-semibold text-slate-900 dark:text-white">Admin</span></span>
+          <span class="text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[12rem] sm:max-w-[16rem] truncate text-right">Welcome, <span id="admin-user-label" class="font-semibold text-slate-900 dark:text-white">Admin</span></span>
           <div class="flex items-center gap-0.5 shrink-0">
             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white admin-header-avatar" id="admin-user-avatar" aria-hidden="true">A</div>
             <span class="text-slate-400 dark:text-zinc-500 hidden sm:inline-flex" aria-hidden="true">
@@ -167,13 +167,13 @@
   </div>
 </div>
 
-<div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-[env(safe-area-inset-bottom,0px)] sm:pb-4 bg-black/50">
-  <div class="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-xl max-w-3xl w-full max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1rem))] overflow-hidden shadow-xl flex flex-col border border-emerald-200/40 dark:border-mak-green/25 mx-0 sm:mx-auto">
-    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0 bg-emerald-50/50 dark:bg-mak-green/5">
-      <h3 id="modal-title" class="font-semibold text-mak-dark dark:text-white"></h3>
-      <button type="button" id="modal-close" class="text-2xl leading-none text-gray-400 hover:text-mak-green dark:hover:text-mak-green border-none bg-transparent cursor-pointer">&times;</button>
+<div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-[env(safe-area-inset-bottom,0px)] sm:pb-4 bg-black/50 backdrop-blur-[1px]">
+  <div class="admin-modal-panel bg-white dark:bg-[#161b22] rounded-t-[var(--admin-radius-card)] sm:rounded-[var(--admin-radius-card)] max-w-3xl w-full max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1rem))] overflow-hidden shadow-xl flex flex-col border border-[var(--admin-border-light)] dark:border-[var(--admin-border-dark)] mx-0 sm:mx-auto">
+    <div class="admin-modal-header flex items-center justify-between px-4 py-3 border-b border-[var(--admin-border-light)] dark:border-[var(--admin-border-dark)] shrink-0">
+      <h3 id="modal-title" class="font-semibold text-[var(--admin-text-primary)] dark:text-[var(--admin-text-primary-dark)]"></h3>
+      <button type="button" id="modal-close" class="text-2xl leading-none text-[var(--admin-text-muted)] hover:text-[#006b3c] dark:hover:text-[#86efac] border-none bg-transparent cursor-pointer">&times;</button>
     </div>
-    <div id="modal-body" class="p-4 overflow-y-auto thin-scroll flex-1 text-sm"></div>
+    <div id="modal-body" class="p-4 overflow-y-auto thin-scroll flex-1 text-sm text-[var(--admin-text-secondary)] dark:text-[var(--admin-text-secondary-dark)]"></div>
   </div>
 </div>
 
