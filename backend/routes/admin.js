@@ -7,6 +7,7 @@ const db = require('../config/db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { adminLimiter } = require('../middleware/rateLimit');
 const storage = require('../services/storage');
+const { clearKBCache } = require('../config/redis');
 const { generateEmbedding, generateEmbeddings } = require('../services/embedding');
 const { chunkText } = require('../services/scraper');
 const { getToolSchemas } = require('../services/mcp/registry');
@@ -1360,6 +1361,7 @@ router.post('/kb', async (req, res, next) => {
             index_sync = { ok: false, error: syncErr.message || String(syncErr) };
             console.warn('[AskMak] KB create→index sync failed:', syncErr.message);
         }
+        await clearKBCache();
         res.status(201).json({ id: row.id, index_sync });
     } catch (err) { next(err); }
 });
@@ -1392,6 +1394,7 @@ router.put('/kb/:id', async (req, res, next) => {
             index_sync = { ok: false, error: syncErr.message || String(syncErr) };
             console.warn('[AskMak] KB update→index sync failed:', syncErr.message);
         }
+        await clearKBCache();
         res.json({ ok: true, index_sync });
     } catch (err) { next(err); }
 });
@@ -1405,6 +1408,7 @@ router.delete('/kb/:id', async (req, res, next) => {
         await removeKbSyncedDocuments(req.params.id);
         const r = await db.query(`DELETE FROM kb_entries WHERE id = $1 RETURNING id`, [req.params.id]);
         if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
+        await clearKBCache();
         res.json({ ok: true });
     } catch (err) { next(err); }
 });
@@ -1497,6 +1501,7 @@ router.patch('/kb-tickets/:id', async (req, res, next) => {
                 entryIndexSync = { ok: false, error: syncErr.message || String(syncErr) };
                 console.warn('[AskMak] KB ticket→index sync failed:', syncErr.message);
             }
+            await clearKBCache();
         }
 
         res.json({ ok: true, email_sent: emailSent, kb_entry_id: kbEntryId, index_sync: entryIndexSync });
