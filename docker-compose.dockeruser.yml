@@ -3,12 +3,13 @@
 # Host ports (keep in 4000–4999 to avoid clashes with other stacks):
 #   4500  app HTTP (127.0.0.1 — nginx proxies here)
 #   4520  Postgres
+#   4530  Redis
 #   4900  MinIO API
 #   4901  MinIO console
 #
 # Prerequisites:
 #   docker network create dockeruser_network
-#   mkdir -p "${HOME}/docker-volumes/askmak/pgdata" "${HOME}/docker-volumes/askmak/minio"
+#   mkdir -p "${HOME}/docker-volumes/askmak/pgdata" "${HOME}/docker-volumes/askmak/minio" "${HOME}/docker-volumes/askmak/redis"
 # Copy `.env` (JWT, OpenAI keys, TRUST_PROXY, CORS_ORIGIN, etc.).
 # Compose overrides DATABASE_URL and MINIO_ENDPOINT for the app container (@db:5432, http://minio:9000).
 #
@@ -73,6 +74,16 @@ services:
     networks:
       - dockeruser_network
 
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4530:6379"
+    volumes:
+      - ${HOME}/docker-volumes/askmak/redis:/data
+    networks:
+      - dockeruser_network
+
   app:
     build: .
     restart: unless-stopped
@@ -86,10 +97,13 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://askmak:askmak_dev@pgbouncer:6432/askmak
       MINIO_ENDPOINT: http://minio:9000
+      REDIS_URL: redis://redis:6379
     depends_on:
       pgbouncer:
         condition: service_started
       minio:
+        condition: service_started
+      redis:
         condition: service_started
     networks:
       - dockeruser_network

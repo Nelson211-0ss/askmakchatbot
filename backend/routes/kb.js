@@ -2,6 +2,7 @@ const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
+const { getCache, setCache } = require('../config/redis');
 
 const kbLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -23,10 +24,20 @@ const ticketLimiter = rateLimit({
 /** GET /api/kb/categories — distinct published categories */
 router.get('/categories', kbLimiter, async (req, res, next) => {
     try {
+        const cacheKey = 'kb:categories';
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            return res.json(JSON.parse(cached));
+        }
+
         const result = await db.query(
             `SELECT DISTINCT category FROM kb_entries WHERE is_published = TRUE ORDER BY category`
         );
-        res.json({ categories: result.rows.map(r => r.category) });
+        
+        const payload = { categories: result.rows.map(r => r.category) };
+        await setCache(cacheKey, 3600, JSON.stringify(payload));
+        
+        res.json(payload);
     } catch (err) {
         next(err);
     }
@@ -35,13 +46,24 @@ router.get('/categories', kbLimiter, async (req, res, next) => {
 /** GET /api/kb/categories/:category — all published titles in a category */
 router.get('/categories/:category', kbLimiter, async (req, res, next) => {
     try {
+        const category = req.params.category;
+        const cacheKey = `kb:category:${category}`;
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            return res.json(JSON.parse(cached));
+        }
+
         const result = await db.query(
             `SELECT id, title FROM kb_entries
              WHERE category = $1 AND is_published = TRUE
              ORDER BY title`,
-            [req.params.category]
+            [category]
         );
-        res.json({ entries: result.rows });
+        
+        const payload = { entries: result.rows };
+        await setCache(cacheKey, 3600, JSON.stringify(payload));
+        
+        res.json(payload);
     } catch (err) {
         next(err);
     }
@@ -50,13 +72,24 @@ router.get('/categories/:category', kbLimiter, async (req, res, next) => {
 /** GET /api/kb/entries/:id — full content of a single published entry */
 router.get('/entries/:id', kbLimiter, async (req, res, next) => {
     try {
+        const id = req.params.id;
+        const cacheKey = `kb:entry:${id}`;
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            return res.json(JSON.parse(cached));
+        }
+
         const result = await db.query(
             `SELECT id, category, title, content FROM kb_entries
              WHERE id = $1 AND is_published = TRUE`,
-            [req.params.id]
+            [id]
         );
         if (!result.rows.length) return res.status(404).json({ error: 'Not found' });
-        res.json({ entry: result.rows[0] });
+        
+        const payload = { entry: result.rows[0] };
+        await setCache(cacheKey, 3600, JSON.stringify(payload));
+        
+        res.json(payload);
     } catch (err) {
         next(err);
     }
