@@ -192,6 +192,31 @@
     return a.toLocaleDateString(undefined, opts) + ' – ' + b.toLocaleDateString(undefined, opts);
   }
 
+  /** Fill every day in the window (zeros on quiet days) so the line chart rises and falls. */
+  function fillTimeseries(points, windowDays) {
+    var days = windowDays || 30;
+    var byDay = {};
+    (points || []).forEach(function(p) {
+      byDay[overviewDayKey(p.d)] = p.c != null ? p.c : 0;
+    });
+    var out = [];
+    var end = new Date();
+    end.setHours(12, 0, 0, 0);
+    for (var i = days - 1; i >= 0; i--) {
+      var d = new Date(end.getTime());
+      d.setDate(d.getDate() - i);
+      var key = overviewDayKey(d);
+      out.push({ d: key, c: byDay[key] != null ? byDay[key] : 0 });
+    }
+    return out;
+  }
+
+  function overviewChartLabel(dayVal) {
+    var d = parseOverviewDay(dayVal);
+    if (!d) return String(dayVal || '');
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
   function trendArrowSvg(cls) {
     if (cls === 'neutral') return '';
     if (cls === 'up') {
@@ -398,7 +423,7 @@
       adminFetch('/activity/recent?limit=20')
     ]).then(function(results) {
       var s = results[0];
-      var ts = results[1].points || [];
+      var ts = fillTimeseries(results[1].points || [], 30);
       var perfRaw = results[2].segments || [];
       var topicsDays = results[2].days != null ? results[2].days : 90;
       var activity = results[3].chats || [];
@@ -553,7 +578,7 @@
       });
 
       var labels = ts.map(function(p) {
-        return overviewDayKey(p.d);
+        return overviewChartLabel(p.d);
       });
       var data = ts.map(function(p) {
         return p.c;
@@ -571,10 +596,14 @@
               backgroundColor: 'rgba(0,107,60,0.14)',
               fill: true,
               cubicInterpolationMode: 'monotone',
-              tension: 0.45,
+              tension: 0.35,
               pointRadius: 0,
-              pointHoverRadius: 5,
-              borderWidth: 2
+              pointHoverRadius: 6,
+              pointHoverBorderWidth: 2,
+              pointHoverBackgroundColor: DASH_ACCENT,
+              pointHoverBorderColor: '#ffffff',
+              borderWidth: 2.5,
+              spanGaps: false
             }
           ]
         },
@@ -582,14 +611,30 @@
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
-          plugins: { legend: { display: false } },
+          animation: {
+            duration: 1400,
+            easing: 'easeOutQuart'
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: function(items) {
+                  var idx = items[0] && items[0].dataIndex;
+                  if (idx == null || !ts[idx]) return '';
+                  return overviewDayKey(ts[idx].d);
+                }
+              }
+            }
+          },
           scales: {
             x: {
               grid: { display: false },
-              ticks: { maxRotation: 0, autoSkip: true, color: cc.tick }
+              ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8, color: cc.tick }
             },
             y: {
               beginAtZero: true,
+              grace: '10%',
               ticks: { precision: 0, color: cc.tick },
               grid: { color: cc.grid }
             }

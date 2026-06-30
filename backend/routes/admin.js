@@ -224,9 +224,23 @@ router.get('/stats/timeseries', async (req, res, next) => {
     try {
         const days = Math.min(parseInt(req.query.days, 10) || 30, 90);
         const result = await db.query(
-            `SELECT (created_at AT TIME ZONE 'UTC')::date AS d, COUNT(*)::int AS c
-             FROM chats WHERE created_at >= NOW() - ($1::int * INTERVAL '1 day')
-             GROUP BY 1 ORDER BY 1`,
+            `WITH day_series AS (
+                SELECT generate_series(
+                    ((NOW() AT TIME ZONE 'UTC')::date - ($1::int - 1)),
+                    (NOW() AT TIME ZONE 'UTC')::date,
+                    '1 day'::interval
+                )::date AS d
+            ),
+            daily_counts AS (
+                SELECT (created_at AT TIME ZONE 'UTC')::date AS d, COUNT(*)::int AS c
+                FROM chats
+                WHERE created_at >= NOW() - ($1::int * INTERVAL '1 day')
+                GROUP BY 1
+            )
+            SELECT day_series.d, COALESCE(daily_counts.c, 0)::int AS c
+            FROM day_series
+            LEFT JOIN daily_counts USING (d)
+            ORDER BY day_series.d`,
             [days]
         );
         res.json({ points: result.rows });
