@@ -1,26 +1,119 @@
 /**
- * AskMak Quick-Access Topics (Dynamic from Knowledge Base)
+ * AskMak Quick-Access Topics
  *
- * Fetches categories and titles dynamically from the kb_entries database.
- * Renders categories as topic chips, and titles as question buttons.
- * Clicking a title button sends the question to the LLM.
+ * Renders a clean grid of topic chips in the welcome area using Feather icons.
+ * Tapping a chip reveals a short list of common questions for that topic.
+ * Tapping a question sends it through the normal Chat.sendMessage() pipeline,
+ * so the bot answers in the chat just like any user-typed prompt.
  */
 (function () {
-  const ICON_MAPPING = {
-    'it': 'cpu',
-    'admissions': 'award',
-    'programs': 'layers',
-    'fees': 'credit-card',
-    'general': 'globe',
-    'acmis': 'user',
-    'webmail': 'mail',
-    'wifi': 'wifi',
-    'muele': 'book-open',
-    'password': 'key',
-    'other': 'help-circle'
-  };
-
-  let activeCategory = null;
+  // Topic catalogue. Each entry shows up as a chip; clicking it reveals the
+  // listed questions. The icon names map to Feather (https://feathericons.com).
+  const TOPICS = [
+    {
+      key: 'acmis',
+      label: 'ACMIS / Student portal',
+      icon: 'user',
+      questions: [
+        'How do I log in to ACMIS (the student portal)?',
+        'I forgot my ACMIS password — how do I reset it?',
+        'How do I register for my courses on ACMIS?',
+        'Where can I see my exam results on ACMIS?'
+      ]
+    },
+    {
+      key: 'webmail',
+      label: 'University webmail',
+      icon: 'mail',
+      questions: [
+        'How do I log in to my Makerere webmail?',
+        'I forgot my university email password — how do I recover it?',
+        'How do I set up my Makerere email on my phone?'
+      ]
+    },
+    {
+      key: 'fees',
+      label: 'Fees & payments',
+      icon: 'credit-card',
+      questions: [
+        'I paid my fees but they are not reflecting on the portal — what should I do?',
+        'How do I check my fees balance?',
+        'Where can I find my payment reference number (PRN)?',
+        'What are the deadlines for tuition payment this semester?'
+      ]
+    },
+    {
+      key: 'wifi',
+      label: 'Wi-Fi / Internet',
+      icon: 'wifi',
+      questions: [
+        'How do I connect to Mak-Connect Wi-Fi?',
+        'I cannot connect to Makerere Wi-Fi — how do I fix this?',
+        'How do I sign in to eduroam at Makerere?'
+      ]
+    },
+    {
+      key: 'muele',
+      label: 'MUELE (LMS)',
+      icon: 'book-open',
+      questions: [
+        'How do I log in to MUELE?',
+        'My course is not showing on MUELE — what should I do?',
+        'How do I submit an assignment on MUELE?',
+        'I cannot upload my file to MUELE — how do I fix it?'
+      ]
+    },
+    {
+      key: 'password',
+      label: 'Password reset',
+      icon: 'key',
+      questions: [
+        'How do I reset my Makerere account password?',
+        'I forgot my student portal password — how do I recover it?',
+        'My account is locked — how do I unlock it?'
+      ]
+    },
+    {
+      key: 'account',
+      label: 'Account recovery',
+      icon: 'life-buoy',
+      questions: [
+        'I think my account was hacked — what should I do?',
+        'How do I recover my Makerere account if I lost access to email?',
+        'I changed my phone number — how do I update my recovery details?'
+      ]
+    },
+    {
+      key: 'admissions',
+      label: 'Admissions',
+      icon: 'award',
+      questions: [
+        'How do I check my admission status?',
+        'What documents do I need to report for admission?',
+        'How do I apply for a Makerere programme?'
+      ]
+    },
+    {
+      key: 'courses',
+      label: 'Courses & registration',
+      icon: 'layers',
+      questions: [
+        'How do I register for courses this semester?',
+        'How do I add or drop a course?',
+        'Where can I see my registered courses?'
+      ]
+    },
+    {
+      key: 'contact',
+      label: 'Contact ICT support',
+      icon: 'phone-call',
+      questions: [
+        'How do I contact DICTS / the ICT helpdesk?',
+        'What are the helpdesk working hours?',
+        'Where is the ICT helpdesk located on campus?'
+      ]
+    }
+  ];
 
   function ready(fn) {
     if (document.readyState === 'loading') {
@@ -30,14 +123,12 @@
     }
   }
 
-  function getIcon(category) {
-    const key = (category || '').toLowerCase().trim();
-    return ICON_MAPPING[key] || 'help-circle';
-  }
-
   function paintFeather(scope) {
     if (typeof window === 'undefined' || typeof window.feather === 'undefined') return;
     try {
+      // Feather 4 replaces *all* [data-feather] markers in the document.
+      // Scoping by re-replace is fine — it only touches nodes that still
+      // carry the data-feather attribute (replaced nodes lose it).
       window.feather.replace({ 'stroke-width': 2 });
     } catch (_) {
       /* ignore */
@@ -45,72 +136,54 @@
     void scope;
   }
 
-  async function loadAndRenderCategories(grid, questionsHost) {
-    grid.innerHTML = '<div class="col-span-full text-center text-xs text-zinc-400 py-4 animate-pulse">Loading topics…</div>';
-    
-    try {
-      const res = await fetch('/api/kb/categories');
-      if (!res.ok) throw new Error('Failed to load categories');
-      const data = await res.json();
-      
-      const categories = data.categories || [];
-      if (!categories.length) {
-        grid.innerHTML = '<div class="col-span-full text-center text-xs text-zinc-400 py-4">No topics available.</div>';
-        return;
-      }
+  function renderChips(grid, questionsHost) {
+    grid.innerHTML = '';
+    TOPICS.forEach((topic) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.topic = topic.key;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.className = [
+        'group',
+        'flex items-center gap-2.5',
+        'w-full min-h-[2.75rem] sm:min-h-[2.5rem]',
+        'px-3 py-2 rounded-xl',
+        'border border-zinc-200 dark:border-white/10',
+        'bg-white dark:bg-white/[0.04]',
+        'text-left text-[13px] sm:text-xs font-medium',
+        'text-zinc-700 dark:text-zinc-300',
+        'hover:border-mak-green/50 hover:bg-mak-green/5',
+        'dark:hover:bg-mak-green/10',
+        'hover:text-mak-green dark:hover:text-mak-green',
+        'transition shadow-sm cursor-pointer'
+      ].join(' ');
 
-      grid.innerHTML = '';
-      categories.forEach((cat) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.topic = cat;
-        btn.setAttribute('aria-expanded', 'false');
-        btn.className = [
-          'group',
-          'flex items-center gap-2.5',
-          'w-full min-h-[2.75rem] sm:min-h-[2.5rem]',
-          'px-3 py-2 rounded-xl',
-          'border border-zinc-200 dark:border-white/10',
-          'bg-white dark:bg-white/[0.04]',
-          'text-left text-[13px] sm:text-xs font-medium',
-          'text-zinc-700 dark:text-zinc-300',
-          'hover:border-mak-green/50 hover:bg-mak-green/5',
-          'dark:hover:bg-mak-green/10',
-          'hover:text-mak-green dark:hover:text-mak-green',
-          'transition shadow-sm cursor-pointer'
-        ].join(' ');
+      const iconWrap = document.createElement('span');
+      iconWrap.className = [
+        'shrink-0 inline-flex h-7 w-7 items-center justify-center',
+        'rounded-lg bg-mak-green/10 text-mak-green',
+        'dark:bg-mak-green/15 dark:text-mak-green',
+        'group-hover:bg-mak-green/20 transition'
+      ].join(' ');
+      const ico = document.createElement('i');
+      ico.setAttribute('data-feather', topic.icon);
+      ico.setAttribute('width', '15');
+      ico.setAttribute('height', '15');
+      ico.setAttribute('aria-hidden', 'true');
+      iconWrap.appendChild(ico);
 
-        const iconWrap = document.createElement('span');
-        iconWrap.className = [
-          'shrink-0 inline-flex h-7 w-7 items-center justify-center',
-          'rounded-lg bg-mak-green/10 text-mak-green',
-          'dark:bg-mak-green/15 dark:text-mak-green',
-          'group-hover:bg-mak-green/20 transition'
-        ].join(' ');
-        
-        const ico = document.createElement('i');
-        ico.setAttribute('data-feather', getIcon(cat));
-        ico.setAttribute('width', '15');
-        ico.setAttribute('height', '15');
-        ico.setAttribute('aria-hidden', 'true');
-        iconWrap.appendChild(ico);
+      const labelEl = document.createElement('span');
+      labelEl.className = 'truncate';
+      labelEl.textContent = topic.label;
 
-        const labelEl = document.createElement('span');
-        labelEl.className = 'truncate';
-        labelEl.textContent = cat;
+      btn.appendChild(iconWrap);
+      btn.appendChild(labelEl);
 
-        btn.appendChild(iconWrap);
-        btn.appendChild(labelEl);
+      btn.addEventListener('click', () => showQuestions(topic, btn, grid, questionsHost));
+      grid.appendChild(btn);
+    });
 
-        btn.addEventListener('click', () => handleCategoryClick(cat, btn, grid, questionsHost));
-        grid.appendChild(btn);
-      });
-
-      paintFeather(grid);
-    } catch (err) {
-      console.error('[QuickTopics]', err);
-      grid.innerHTML = '<div class="col-span-full text-center text-xs text-red-400 py-4">Failed to load help topics.</div>';
-    }
+    paintFeather(grid);
   }
 
   function setActiveChip(grid, activeKey) {
@@ -125,6 +198,7 @@
     });
   }
 
+  /** Collapse any open question list and return focus to the topic grid (e.g. after #quick-topics deep link). */
   function resetToGrid() {
     const grid = document.getElementById('quick-topics-grid');
     const host = document.getElementById('quick-topics-questions');
@@ -132,83 +206,60 @@
     host.innerHTML = '';
     host.classList.add('hidden');
     setActiveChip(grid, null);
-    activeCategory = null;
   }
 
-  async function handleCategoryClick(category, chipEl, grid, host) {
-    if (activeCategory === category) {
-      resetToGrid();
-      return;
-    }
-
-    activeCategory = category;
-    setActiveChip(grid, category);
-    host.innerHTML = '<div class="text-xs text-center text-zinc-400 py-4 animate-pulse">Loading questions…</div>';
+  function showQuestions(topic, chipEl, grid, host) {
+    setActiveChip(grid, topic.key);
+    host.innerHTML = '';
     host.classList.remove('hidden');
 
-    try {
-      const res = await fetch('/api/kb/categories/' + encodeURIComponent(category));
-      if (!res.ok) throw new Error('Failed to load questions');
-      const data = await res.json();
+    const header = document.createElement('div');
+    header.className = 'flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500 px-1 pb-1';
+    const headerIcon = document.createElement('i');
+    headerIcon.setAttribute('data-feather', topic.icon);
+    headerIcon.setAttribute('width', '12');
+    headerIcon.setAttribute('height', '12');
+    headerIcon.setAttribute('aria-hidden', 'true');
+    const headerText = document.createElement('span');
+    headerText.textContent = 'Common ' + topic.label + ' questions';
+    header.appendChild(headerIcon);
+    header.appendChild(headerText);
+    host.appendChild(header);
 
-      host.innerHTML = '';
-      const entries = data.entries || [];
-      if (!entries.length) {
-        host.innerHTML = '<div class="text-xs text-zinc-400 py-2">No questions found in this category.</div>';
-        return;
-      }
+    topic.questions.forEach((q) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = [
+        'group',
+        'flex items-start gap-2 w-full text-left',
+        'px-4 py-3 rounded-xl',
+        'border border-zinc-200 dark:border-white/10',
+        'bg-white/80 dark:bg-white/5',
+        'hover:bg-mak-green/5 dark:hover:bg-mak-green/10',
+        'hover:border-mak-green/30 dark:hover:border-mak-green/30',
+        'text-sm font-medium text-zinc-800 dark:text-zinc-200',
+        'transition shadow-sm cursor-pointer'
+      ].join(' ');
 
-      const header = document.createElement('div');
-      header.className = 'flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500 px-1 pb-1';
-      const headerIcon = document.createElement('i');
-      headerIcon.setAttribute('data-feather', getIcon(category));
-      headerIcon.setAttribute('width', '12');
-      headerIcon.setAttribute('height', '12');
-      headerIcon.setAttribute('aria-hidden', 'true');
-      const headerText = document.createElement('span');
-      headerText.textContent = 'Common ' + category + ' questions';
-      header.appendChild(headerIcon);
-      header.appendChild(headerText);
-      host.appendChild(header);
+      const chevWrap = document.createElement('span');
+      chevWrap.className = 'mt-0.5 shrink-0 text-zinc-400 group-hover:text-mak-green transition';
+      const chev = document.createElement('i');
+      chev.setAttribute('data-feather', 'message-circle');
+      chev.setAttribute('width', '14');
+      chev.setAttribute('height', '14');
+      chev.setAttribute('aria-hidden', 'true');
+      chevWrap.appendChild(chev);
 
-      entries.forEach((entry) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = [
-          'group',
-          'flex items-start gap-2 w-full text-left',
-          'px-4 py-3 rounded-xl',
-          'border border-zinc-200 dark:border-white/10',
-          'bg-white/80 dark:bg-white/5',
-          'hover:bg-mak-green/5 dark:hover:bg-mak-green/10',
-          'hover:border-mak-green/30 dark:hover:border-mak-green/30',
-          'text-sm font-medium text-zinc-800 dark:text-zinc-200',
-          'transition shadow-sm cursor-pointer'
-        ].join(' ');
+      const qText = document.createElement('span');
+      qText.textContent = q;
 
-        const chevWrap = document.createElement('span');
-        chevWrap.className = 'mt-0.5 shrink-0 text-zinc-400 group-hover:text-mak-green transition';
-        const chev = document.createElement('i');
-        chev.setAttribute('data-feather', 'message-circle');
-        chev.setAttribute('width', '14');
-        chev.setAttribute('height', '14');
-        chev.setAttribute('aria-hidden', 'true');
-        chevWrap.appendChild(chev);
+      btn.appendChild(chevWrap);
+      btn.appendChild(qText);
+      btn.addEventListener('click', () => askQuestion(q));
+      host.appendChild(btn);
+    });
 
-        const qText = document.createElement('span');
-        qText.textContent = entry.title;
-
-        btn.appendChild(chevWrap);
-        btn.appendChild(qText);
-        btn.addEventListener('click', () => askQuestion(entry.title));
-        host.appendChild(btn);
-      });
-
-      paintFeather(host);
-    } catch (err) {
-      console.error('[QuickTopics]', err);
-      host.innerHTML = '<div class="text-xs text-red-400 py-2">Failed to load questions.</div>';
-    }
+    paintFeather(host);
   }
 
   function askQuestion(question) {
@@ -235,7 +286,7 @@
     const grid = document.getElementById('quick-topics-grid');
     const host = document.getElementById('quick-topics-questions');
     if (!grid || !host) return;
-    loadAndRenderCategories(grid, host);
+    renderChips(grid, host);
     handleQuickTopicsHash();
     window.addEventListener('hashchange', handleQuickTopicsHash);
   });

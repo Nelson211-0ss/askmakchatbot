@@ -77,7 +77,7 @@ body.admin-app {
   --admin-border-light: rgba(15, 23, 42, 0.1);
   --admin-border-dark: rgba(255, 255, 255, 0.09);
   --admin-card-bg-light: #ffffff;
-  --admin-card-bg-dark: #161b22;
+  --admin-card-bg-dark: #0b0e11;
 
   padding-top: max(var(--admin-layout-inset), env(safe-area-inset-top, 0px));
   padding-right: max(var(--admin-layout-inset), env(safe-area-inset-right, 0px));
@@ -1039,7 +1039,7 @@ body.admin-app {
 }
 
 .dark .admin-dash-activity-card--recent .admin-dash-inset-head {
-  border-bottom-color: rgba(0, 107, 60, 0.32);
+  border-bottom-color: rgba(51, 65, 85, 0.5);
 }
 
 .admin-dash-activity-card--recent .admin-dash-inset-title {
@@ -1047,7 +1047,7 @@ body.admin-app {
 }
 
 .dark .admin-dash-activity-card--recent .admin-dash-inset-title {
-  color: #86efac;
+  color: var(--admin-text-primary-dark);
 }
 
 .admin-dash-quick .admin-dash-inset-head {
@@ -1137,7 +1137,7 @@ body.admin-app {
 }
 
 .dark .admin-dash-activity-card.admin-dash-activity-card--recent .admin-overview-activity-row + .admin-overview-activity-row {
-  border-top-color: rgba(0, 107, 60, 0.22);
+  border-top-color: rgba(51, 65, 85, 0.5);
 }
 
 /* Shared layout for sidebar sections (tables, toolbars) — matches dashboard tokens */
@@ -2856,7 +2856,26 @@ body.admin-app {
 }
 
 .dark .admin-overview-panel--accent .admin-overview-chart-title {
-  color: rgb(254 240 219);
+  color: var(--admin-text-primary-dark);
+}
+
+/* Dark mode — flat cards matching sidebar shell; beats per-tone gradient/border rules above */
+.dark .admin-stat-card[data-tone],
+.dark .admin-overview-panel,
+.dark .admin-overview-panel--accent,
+.dark .admin-overview-panel--neutral,
+.dark .admin-overview-activity:not(.admin-overview-activity--in-card) {
+  border-color: var(--admin-border-dark);
+  background: var(--admin-card-bg-dark);
+  box-shadow: none;
+}
+
+.dark .admin-stat-card[data-tone] .admin-stat-label {
+  color: var(--admin-text-muted-dark);
+}
+
+.dark .admin-stat-card[data-tone] .admin-stat-value {
+  color: var(--admin-text-primary-dark);
 }
 
 /* Recent activity list */
@@ -2881,8 +2900,8 @@ body.admin-app {
 }
 
 .dark .admin-overview-activity {
-  border-color: rgba(16, 185, 129, 0.14);
-  background: rgba(17, 24, 39, 0.97);
+  border-color: var(--admin-border-dark);
+  background: var(--admin-card-bg-dark);
 }
 
 .admin-overview-activity .admin-overview-activity-row + .admin-overview-activity-row {
@@ -4105,7 +4124,7 @@ body.admin-app {
   background: var(--admin-card-bg-dark);
 }
 
-/* Dark mode — unified flat card surface (no per-card tint gradients) */
+/* Dark mode — unified flat card surface (matches sidebar #0b0e11) */
 .dark :is(
   .admin-dash-kpi,
   .admin-dash-chart-panel,
@@ -4114,8 +4133,12 @@ body.admin-app {
   .admin-dash-substats,
   .admin-page-card,
   .admin-page-hero-card,
+  .admin-page-stat,
+  .admin-page-stat--accent,
+  .admin-page-hero-stat,
   .admin-users-table-shell,
   .admin-kb-hero,
+  .admin-kb-hero__stat,
   .admin-kb-panel,
   .admin-kb-section,
   .admin-kb-table-scroll,
@@ -4123,9 +4146,13 @@ body.admin-app {
   .admin-ingest-hero,
   .admin-ingest-panel,
   .admin-stat-card,
+  .admin-stat-card[data-tone],
   .admin-overview-panel,
+  .admin-overview-panel--accent,
+  .admin-overview-panel--neutral,
   .admin-overview-activity,
-  .admin-settings-card
+  .admin-settings-card,
+  .admin-ref-tile
 ) {
   background: var(--admin-card-bg-dark);
   box-shadow: none;
@@ -4135,12 +4162,17 @@ body.admin-app {
   .admin-dash-activity-card,
   .admin-dash-activity-card--recent,
   .admin-stat-card,
+  .admin-stat-card[data-tone],
   .admin-overview-panel,
   .admin-overview-panel--accent,
   .admin-overview-panel--neutral,
   .admin-settings-card,
   .admin-settings-card--muted,
-  .admin-kb-tips
+  .admin-kb-tips,
+  .admin-page-stat,
+  .admin-page-stat--accent,
+  .admin-page-hero-stat,
+  .admin-kb-hero__stat
 ) {
   border-color: var(--admin-border-dark);
 }
