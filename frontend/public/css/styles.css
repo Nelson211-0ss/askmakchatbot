@@ -305,27 +305,9 @@ body.admin-app {
   }
 }
 
-/* Index hero: visible accent pulse on “assistant” (entrance uses Tailwind on index.html) */
-@keyframes home-hero-accent-shimmer {
-  0%,
-  100% {
-    text-shadow: 0 0 14px rgba(0, 107, 60, 0.2);
-  }
-  50% {
-    text-shadow: 0 0 28px rgba(0, 107, 60, 0.48);
-  }
-}
-
+/* Index hero: "Assistant" accent — solid brand green matching the Sign up button */
 .home-hero-accent {
   display: inline-block;
-  animation: home-hero-accent-shimmer 2.6s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-hero-accent {
-    animation: none !important;
-    text-shadow: none;
-  }
 }
 
 .thin-scroll::-webkit-scrollbar {
