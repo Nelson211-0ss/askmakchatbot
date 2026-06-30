@@ -101,8 +101,6 @@ var Chat = {
       self.focusQuickAccess();
     });
 
-    var themeToggleSidebar = document.getElementById('theme-toggle');
-    if (themeToggleSidebar) themeToggleSidebar.addEventListener('click', function() { Theme.toggle(); });
     var themeToggleHeader = document.getElementById('header-theme-toggle');
     if (themeToggleHeader) {
       themeToggleHeader.addEventListener('click', function(e) {
@@ -112,30 +110,48 @@ var Chat = {
     }
     document.getElementById('modal-theme-toggle').addEventListener('click', function() { Theme.toggle(); });
 
-    document.getElementById('user-menu-btn').addEventListener('click', function(e) {
+    var userMenuWrap = document.getElementById('user-menu-wrap');
+    var userMenuBtn = document.getElementById('user-menu-btn');
+    var userMenuDropdown = document.getElementById('user-menu-dropdown');
+
+    function openUserMenu() {
+      userMenuDropdown.classList.remove('hidden');
+      userMenuBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeUserMenu() {
+      userMenuDropdown.classList.add('hidden');
+      userMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    if (userMenuWrap) {
+      userMenuWrap.addEventListener('mouseenter', openUserMenu);
+      userMenuWrap.addEventListener('mouseleave', closeUserMenu);
+    }
+
+    userMenuBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      document.getElementById('user-menu-dropdown').classList.toggle('hidden');
+      if (userMenuDropdown.classList.contains('hidden')) openUserMenu();
+      else closeUserMenu();
     });
 
     document.addEventListener('click', function(e) {
-      if (!e.target.closest('#user-menu-btn') && !e.target.closest('#user-menu-dropdown')) {
-        document.getElementById('user-menu-dropdown').classList.add('hidden');
-      }
+      if (!e.target.closest('#user-menu-wrap')) closeUserMenu();
     });
 
     document.getElementById('settings-btn').addEventListener('click', function() {
-      document.getElementById('user-menu-dropdown').classList.add('hidden');
+      closeUserMenu();
       document.getElementById('settings-modal').classList.remove('hidden');
     });
 
     document.getElementById('memories-btn').addEventListener('click', function() {
-      document.getElementById('user-menu-dropdown').classList.add('hidden');
+      closeUserMenu();
       document.getElementById('memories-modal').classList.remove('hidden');
       self.loadMemories();
     });
 
     document.getElementById('logout-btn').addEventListener('click', function() {
-      document.getElementById('user-menu-dropdown').classList.add('hidden');
+      closeUserMenu();
       Auth.logout();
     });
 
