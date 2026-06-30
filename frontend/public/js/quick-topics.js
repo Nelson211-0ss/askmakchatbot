@@ -23,7 +23,7 @@
     },
     {
       key: 'webmail',
-      label: 'University webmail',
+      label: 'Webmail',
       icon: 'mail',
       questions: [
         'How do I log in to my Makerere webmail?',
@@ -81,36 +81,6 @@
         'I think my account was hacked — what should I do?',
         'How do I recover my Makerere account if I lost access to email?',
         'I changed my phone number — how do I update my recovery details?'
-      ]
-    },
-    {
-      key: 'admissions',
-      label: 'Admissions',
-      icon: 'award',
-      questions: [
-        'How do I check my admission status?',
-        'What documents do I need to report for admission?',
-        'How do I apply for a Makerere programme?'
-      ]
-    },
-    {
-      key: 'courses',
-      label: 'Courses & registration',
-      icon: 'layers',
-      questions: [
-        'How do I register for courses this semester?',
-        'How do I add or drop a course?',
-        'Where can I see my registered courses?'
-      ]
-    },
-    {
-      key: 'contact',
-      label: 'Contact ICT support',
-      icon: 'phone-call',
-      questions: [
-        'How do I contact DICTS / the ICT helpdesk?',
-        'What are the helpdesk working hours?',
-        'Where is the ICT helpdesk located on campus?'
       ]
     }
   ];
