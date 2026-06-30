@@ -112,7 +112,8 @@ var Auth = {
       if (notice) {
         var stored = sessionStorage.getItem('verify_notice');
         if (stored) {
-          notice.textContent = stored;
+          var noticeText = document.getElementById('verify-notice-text');
+          if (noticeText) noticeText.textContent = stored;
           notice.classList.remove('hidden');
           sessionStorage.removeItem('verify_notice');
         }
@@ -376,6 +377,8 @@ var Auth = {
       return;
     }
 
+    var succeeded = false;
+
     try {
       btn.disabled = true;
       btn.textContent = 'Verifying...';
@@ -391,12 +394,22 @@ var Auth = {
       sessionStorage.removeItem('auth_next');
       var safeNext =
         storedNext && storedNext.charAt(0) === '/' && storedNext.charAt(1) !== '/' ? storedNext : null;
-      this.redirectAuthenticated(verifiedUser, safeNext);
+
+      btn.textContent = '✓ Verified';
+      this.showAlert('Email verified! Taking you in…', 'success');
+      succeeded = true;
+
+      var self = this;
+      setTimeout(function() {
+        self.redirectAuthenticated(verifiedUser, safeNext);
+      }, 1500);
     } catch (e) {
       this.showAlert(e.message || 'Invalid verification code', 'error');
     } finally {
-      btn.disabled = false;
-      btn.textContent = originalText;
+      if (!succeeded) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
   },
 

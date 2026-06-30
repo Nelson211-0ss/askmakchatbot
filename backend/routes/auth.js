@@ -121,9 +121,8 @@ router.post('/signup', authLimiter, async (req, res, next) => {
         if (existing.rows.length) return res.status(409).json({ error: 'Email already registered' });
 
         const wantsEmailVerify = smtpConfigured() && !verificationEmailDisabled();
-        const isProduction = process.env.NODE_ENV === 'production';
 
-        if (isProduction && !wantsEmailVerify) {
+        if (!wantsEmailVerify) {
             return res.status(503).json({
                 error:
                     'Registration unavailable: configure SMTP_HOST (and SMTP_FROM) on the server to send verification emails.'
@@ -142,30 +141,16 @@ router.post('/signup', authLimiter, async (req, res, next) => {
         const newUserId = insertResult.rows[0].id;
 
         const html = `<p>Hi ${value.full_name},</p><p>Your verification code is: <strong>${code}</strong></p><p>This code expires in 15 minutes.</p>`;
-        if (wantsEmailVerify) {
-            const emailSent = await sendVerificationMail(value.email, 'Verify your AskMak account', html);
-            if (!emailSent) {
-                await db.query('DELETE FROM users WHERE id = $1', [newUserId]);
-                return res.status(503).json({
-                    error:
-                        'Could not send the verification email. Check SMTP settings, then try signing up again.'
-                });
-            }
-        } else {
-            console.warn(
-                `[AskMak DEV] Verification code for ${value.email}: ${code} (set SMTP_HOST in production to send mail)`
-            );
+        const emailSent = await sendVerificationMail(value.email, 'Verify your AskMak account', html);
+        if (!emailSent) {
+            await db.query('DELETE FROM users WHERE id = $1', [newUserId]);
+            return res.status(503).json({
+                error:
+                    'Could not send the verification email. Check SMTP settings, then try signing up again.'
+            });
         }
 
-        let message =
-            'Account created. Check your email for the verification code. Enter it on the next screen.';
-        if (!wantsEmailVerify) {
-            message =
-                'Account created. On this server SMTP is off (dev): the verification code was printed in the AskMak server logs.';
-        }
-        if (process.env.SMTP_INBOX_URL && wantsEmailVerify) {
-            message += ' Mailpit/UI: ' + process.env.SMTP_INBOX_URL;
-        }
+        const message = 'Account created. Check your email for the verification code.';
 
         res.status(201).json({ message });
     } catch (err) {
