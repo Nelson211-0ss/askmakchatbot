@@ -12,6 +12,9 @@ var Utils = {
   renderMarkdown: function(text) {
     if (!text) return '';
     text = Utils.dedupeSupportTicketLink(text);
+    if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+      return Utils.escapeHtml(text).replace(/\n/g, '<br>');
+    }
     var html = marked.parse(text);
     var clean = DOMPurify.sanitize(html, {
       ADD_ATTR: ['target'],

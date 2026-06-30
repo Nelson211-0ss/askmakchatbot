@@ -739,6 +739,7 @@
     if (statusFilter) qs += '&status=' + encodeURIComponent(statusFilter);
     adminFetch(qs).then(function(d) {
       var rows = d.escalations || [];
+      var total = d.total != null ? d.total : rows.length;
       var html = '<div class="admin-page-wrap">' + adminPageHead('escalations', PAGE_ICONS.escalations);
       html += '<div class="admin-page-card"><div class="admin-page-toolbar">';
       html += '<label class="admin-page-toolbar-label" for="esc-filter">Filter</label>';
@@ -747,7 +748,8 @@
         var sel = statusFilter === s ? ' selected' : '';
         html += '<option value="' + s + '"' + sel + '>' + (s || 'All statuses') + '</option>';
       });
-      html += '</select></div>';
+      html += '</select>';
+      html += '<span class="admin-page-meta">' + total + ' escalation' + (total === 1 ? '' : 's') + '</span></div>';
       if (!rows.length) {
         html += '<p class="admin-page-empty">No escalations for this filter.</p>';
       } else {
@@ -784,8 +786,20 @@
     adminFetch('/escalations/' + id).then(function(d) {
       var esc = d.escalation;
       var msgs = d.messages || [];
+      var who = esc.full_name || esc.email || (esc.guest_token ? 'Guest' : 'Unknown user');
       var html = '<div class="admin-modal-body">';
-      html += '<p class="text-sm" style="color:var(--admin-text-secondary)"><strong>Reason:</strong> ' + Utils.escapeHtml(esc.reason || '—') + '</p>';
+      html += '<dl class="admin-modal-meta-grid">';
+      html += '<div><dt>Status</dt><dd>' + adminEscalationBadge(esc.status) + '</dd></div>';
+      html += '<div><dt>User</dt><dd>' + Utils.escapeHtml(who) + '</dd></div>';
+      html += '<div class="admin-modal-meta-grid__full"><dt>Chat</dt><dd>' + Utils.escapeHtml(esc.chat_title || 'Conversation') + '</dd></div>';
+      html += '<div class="admin-modal-meta-grid__full"><dt>Reason</dt><dd>' + Utils.escapeHtml(esc.reason || '—') + '</dd></div>';
+      if (esc.admin_response) {
+        html +=
+          '<div class="admin-modal-meta-grid__full"><dt>Staff response</dt><dd class="whitespace-pre-wrap">' +
+          Utils.escapeHtml(esc.admin_response) +
+          '</dd></div>';
+      }
+      html += '</dl>';
       html += '<div class="max-h-[50vh] overflow-y-auto thin-scroll flex flex-col gap-2">';
       msgs.forEach(function(m) {
         var hl = m.id === esc.message_id ? ' admin-modal-msg--highlight' : '';
@@ -794,7 +808,14 @@
         html +=
           '<div class="admin-modal-msg__body">' +
           (m.role === 'assistant' ? Utils.renderMarkdown(m.content || '') : Utils.escapeHtml(m.content || '')) +
-          '</div></div>';
+          '</div>';
+        if (m.image_url) {
+          html +=
+            '<img src="' +
+            Utils.escapeHtml(m.image_url) +
+            '" class="mt-2 max-h-40 rounded cursor-pointer" onclick="Utils.openLightbox(this.src)">';
+        }
+        html += '</div>';
       });
       html += '</div>';
       html += '<div class="admin-page-field"><label class="admin-page-label" for="esc-admin-note">Admin response</label>';
@@ -828,7 +849,7 @@
           }).catch(function(e) { Utils.showToast(e.message || 'Failed', 'error'); });
         });
       });
-    });
+    }).catch(function() { Utils.showToast('Failed to load escalation details', 'error'); });
   }
 
   function loadUnresolved() {
