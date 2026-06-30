@@ -1,6 +1,17 @@
 var Utils = {
+  dedupeSupportTicketLink: function(text) {
+    if (!text) return text;
+    var link = '[Submit a support ticket](#support-ticket)';
+    var re = /\[Submit a support ticket\]\(#support-ticket\)/gi;
+    var matches = text.match(re);
+    if (!matches || matches.length <= 1) return text;
+    var body = text.replace(re, '').replace(/\n{3,}/g, '\n\n').trim();
+    return body ? body + '\n\n' + link : link;
+  },
+
   renderMarkdown: function(text) {
     if (!text) return '';
+    text = Utils.dedupeSupportTicketLink(text);
     var html = marked.parse(text);
     var clean = DOMPurify.sanitize(html, {
       ADD_ATTR: ['target'],
