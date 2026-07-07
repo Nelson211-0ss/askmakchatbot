@@ -99,7 +99,7 @@ function signToken(user) {
     return jwt.sign(
         { id: user.id, email: user.email, role: user.role, full_name: user.full_name },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '15m' }
     );
 }
 
@@ -108,7 +108,7 @@ function setAuthCookie(res, token) {
         httpOnly: true,
         secure: useSecureCookies(),
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 1 * 24 * 60 * 60 * 1000
     });
 }
 
