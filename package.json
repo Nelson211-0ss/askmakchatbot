@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
+    "test": "jest --forceExit --runInBand",
     "setup-minio": "node backend/scripts/setup-minio.js",
     "ingest": "node backend/scripts/ingest.js",
     "ingest:all": "INGEST_SOURCES=all node backend/scripts/ingest.js",
@@ -43,6 +44,16 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testMatch": ["**/backend/tests/**/*.test.js"],
+    "setupFiles": ["./backend/tests/setup.js"],
+    "moduleNameMapper": {
+      "^.*/config/redis$": "<rootDir>/backend/tests/mocks/redis.js"
+    },
+    "testTimeout": 15000
   }
 }

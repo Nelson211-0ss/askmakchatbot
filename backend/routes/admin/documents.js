@@ -19,7 +19,7 @@ async function extractTextFromPdfBuffer(buffer) {
     try {
         const textResult = await parser.getText();
         const infoResult = await parser.getInfo();
-        const text = (textResult.text || '').replace(/\\s+/g, ' ').trim();
+        const text = (textResult.text || '').replace(/\s+/g, ' ').trim();
         const dict = infoResult.info || {};
         const docTitle = dict.Title || dict.title || null;
         return { text, docTitle };
