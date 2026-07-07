@@ -5,7 +5,7 @@ const { chunkText } = require('../../services/scraper');
 const MIN_KB_CHUNK_WORDS = Math.max(4, parseInt(process.env.INGEST_MIN_CHUNK_WORDS || '10', 10));
 
 function wordCountKb(s) {
-    return (s || '').split(/\\s+/).filter(Boolean).length;
+    return (s || '').split(/\s+/).filter(Boolean).length;
 }
 
 function kbEntryDocumentSourceUrl(entryId) {

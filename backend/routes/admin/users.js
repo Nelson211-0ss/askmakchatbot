@@ -218,8 +218,8 @@ router.get('/feedback/export', async (req, res, next) => {
             const cells = [
                 row.created_at,
                 row.rating,
-                (row.comment || '').replace(/"/g, '""'),
-                (row.message_content || '').replace(/"/g, '""').substring(0, 2000),
+                row.comment || '',
+                (row.message_content || '').substring(0, 2000),
                 row.chat_id,
                 row.email || '',
                 row.guest_token || ''

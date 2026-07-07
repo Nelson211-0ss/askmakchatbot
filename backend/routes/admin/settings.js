@@ -44,6 +44,7 @@ router.get('/settings', async (req, res, next) => {
 
 router.put('/settings', async (req, res, next) => {
     try {
+        if (!req.body || typeof req.body !== 'object') return res.status(400).json({ error: 'Invalid body' });
         const body = req.body.settings || req.body;
         if (typeof body !== 'object' || body === null) return res.status(400).json({ error: 'Invalid body' });
         for (const key of Object.keys(body)) {
