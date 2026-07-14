@@ -4,7 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 const { hybridSearch, expandAbbreviations } = require('../services/embedding');
 
 async function run() {
-    const goldenPath = path.join(__dirname, '..', 'eval', 'golden-questions.json');
+    const goldenPath = path.join(__dirname, 'golden-questions.json');
     const fs = require('fs');
     if (!fs.existsSync(goldenPath)) {
         console.error('Missing', goldenPath);
