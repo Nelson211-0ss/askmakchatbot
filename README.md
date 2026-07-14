@@ -118,10 +118,10 @@ npm run ingest
 | `dev` | `nodemon backend/server.js` | Run with file watching |
 | `setup` | `docker compose up -d && node backend/scripts/setup-minio.js` | Infra + MinIO buckets |
 | `setup-dockeruser` | `docker compose -f docker-compose.dockeruser.yml up -d && node backend/scripts/setup-minio.js` | Policy stack (`dockeruser_network`, ports **4000–4999**) + MinIO buckets |
-| `vps:bootstrap` | `bash scripts/vps-bootstrap.sh` | VPS-first flow: network + volumes + compose up + wait for Postgres/MinIO + `setup-minio` |
+| `vps:bootstrap` | `bash deploy/vps-bootstrap.sh` | VPS-first flow: network + volumes + compose up + wait for Postgres/MinIO + `setup-minio` |
 | `setup-minio` | `node backend/scripts/setup-minio.js` | Create MinIO buckets only |
 | `ingest` | `node backend/scripts/ingest.js` | Run ingestion |
-| `eval` | `node backend/scripts/eval.js` | Check retrieval against `backend/eval/golden-questions.json` (run after `ingest`) |
+| `eval` | `node backend/eval/run.js` | Check retrieval against `backend/eval/golden-questions.json` (run after `ingest`) |
 
 ## Troubleshooting
 
