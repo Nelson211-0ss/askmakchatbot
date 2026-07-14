@@ -7,6 +7,8 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "test": "jest --forceExit --runInBand",
+    "test:backend": "jest --forceExit --runInBand backend/tests",
+    "test:frontend": "jest --forceExit --runInBand frontend/tests",
     "setup-minio": "node backend/scripts/setup-minio.js",
     "ingest": "node backend/scripts/ingest.js",
     "ingest:all": "INGEST_SOURCES=all node backend/scripts/ingest.js",
