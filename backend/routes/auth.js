@@ -21,7 +21,7 @@ function getMailTransport() {
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
         opts.auth = { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
     }
-    // Gmail and most providers use STARTTLS on 587 (not implicit TLS).
+
     if (port === 587 && !secure) {
         opts.requireTLS = true;
     }
