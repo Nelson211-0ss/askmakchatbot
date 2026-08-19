@@ -24,9 +24,7 @@ async function chatOwnedByUser(chatId, userId) {
     return String(uid) === String(userId);
 }
 
-/**
- * Guest / ephemeral: no chats or messages are written. Uses in-request history only.
- */
+
 router.post('/guest/stream', messageLimiter, async (req, res, next) => {
     try {
         if (req.user && req.user.id) {
